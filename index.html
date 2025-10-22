@@ -139,6 +139,13 @@ body {
     height: 100%;
 }
 
+/* Đảm bảo khối feature-item hoạt động như một liên kết */
+.feature-item-link {
+    display: block; 
+    text-decoration: none; /* <--- Dòng này để xoá gạch chân */
+    color: inherit; 
+}
+
 .feature-item:hover { 
     transform: scale(1.05); /* Hiệu ứng phóng to nhẹ */
 }
