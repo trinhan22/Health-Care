@@ -147,55 +147,67 @@
             color: var(--off-white);
         }
 
-        /* ------------------------------------------------ */
-        /* MAIN CONTENT LAYOUT (STICKY SIDEBAR) */
-        /* ------------------------------------------------ */
-        .content-layout {
-            display: grid;
-            grid-template-columns: 300px 1fr; /* Sidebar 300px, Nội dung chính 1 phần */
-            gap: 30px;
-            margin-top: 30px;
-        }
-        
-        .sidebar-nav {
-            /* Hiệu ứng Sticky */
-            position: sticky;
-            top: 100px; /* Cố định cách header một khoảng */
-            height: fit-content;
-            
-            /* Box Styling */
-            background-color: var(--off-white);
-            border-radius: var(--card-radius);
-            box-shadow: var(--shadow-clean);
-            padding: 20px 0;
-            border: 1px solid #eee;
-        }
-        
-        .sidebar-nav ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .sidebar-nav li a {
-            display: block;
-            padding: 12px 20px;
-            color: var(--dark-text);
-            font-weight: 500;
-            transition: background-color 0.2s, color 0.2s;
-            border-left: 3px solid transparent;
-        }
+/* ------------------------------------------------ */
+/* MAIN CONTENT LAYOUT (STICKY SIDEBAR) */
+/* ------------------------------------------------ */
+.content-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr; /* Sidebar 300px, Nội dung chính 1 phần */
+    gap: 30px;
+    margin-top: 30px;
+    
+    /* 🔥 KHẮC PHỤC LỖI GRID: Ngăn cột kéo dãn chiều cao, kích hoạt sticky */
+    align-items: start; 
+}
 
-        .sidebar-nav li a:hover {
-            background-color: #f0f7ff;
-            color: var(--primary-blue);
-        }
+/* KHỐI BỌC MỚI: CHỨA CẢ MENU VÀ MAP */
+.sidebar-left-column {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    
+    /* ĐẶT STICKY TẠI ĐÂY (CỐ ĐỊNH CẢ KHỐI) */
+    position: sticky; 
+    top: 100px; 
+    height: fit-content; /* Rất quan trọng để giới hạn chiều cao */
+}
 
-        .sidebar-nav li.active a {
-            background-color: #f0f7ff;
-            color: var(--primary-blue);
-            border-left: 3px solid var(--primary-blue);
-        }
+/* Cập nhật: Loại bỏ Sticky khỏi khối con menu */
+.sidebar-nav {
+    /* Đã XÓA: position: sticky; */
+    /* Đã XÓA: top: 100px; */ 
+    height: fit-content; /* Giữ lại */
+    
+    /* Box Styling */
+    background-color: var(--off-white);
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-clean);
+    padding: 20px 0;
+    border: 1px solid #eee;
+}
+/* Giữ nguyên CSS còn lại của .sidebar-nav (ul, li, a...) */
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.sidebar-nav li a {
+    display: block;
+    padding: 12px 20px;
+    color: var(--dark-text);
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+    border-left: 3px solid transparent;
+}
+.sidebar-nav li a:hover {
+    background-color: #f0f7ff;
+    color: var(--primary-blue);
+}
+.sidebar-nav li.active a {
+    background-color: #f0f7ff;
+    color: var(--primary-blue);
+    border-left: 3px solid var(--primary-blue);
+}
 
         /* ------------------------------------------------ */
         /* HOSPITAL INFO SECTIONS */
@@ -331,21 +343,30 @@
         align-items: center;
         max-width: 350px; /* <-- THU NHỎ RÕ RỆT */
         margin: 0 auto 20px auto; 
+        border-radius: var(--card-radius); /* THÊM BO GÓC */
     }
     
-    /* 2. Đưa Sidebar lên trên và Thu nhỏ/Căn giữa */
-    .sidebar-nav {
-        position: static; 
+    /* 2. Đưa Sidebar LÊN TRÊN và Thu nhỏ/Căn giữa (Áp dụng cho khối bọc) */
+    .sidebar-left-column {
+        position: static; /* 🔥 CHÍNH XÁC: Đảm bảo map và nav cuộn theo trang (không cố định) */
         top: auto;
-        order: -1; 
+        height: auto;
+        order: -1; /* Đẩy khối này lên trên cùng của mobile */
         
         /* CĂN GIỮA & GIỚI HẠN */
         width: 95%; 
         max-width: 350px; /* <-- THU NHỎ RÕ RỆT */
         margin: 0 auto 20px auto; 
-        padding: 15px;
-        overflow-x: auto; /* Bổ sung để đảm bảo cuộn ngang nếu menu dài */
+        gap: 10px; /* Giảm khoảng cách giữa nav và map trên mobile */
     }
+
+    /* 2b. Điều chỉnh Sidebar Nav con (Nội dung) */
+    .sidebar-nav {
+        padding: 15px; /* Điều chỉnh padding cho phù hợp với mobile */
+        overflow-x: auto; /* Bổ sung để đảm bảo cuộn ngang nếu menu dài */
+        border-radius: var(--card-radius); /* THÊM BO GÓC */
+    }
+    
     /* Kích hoạt cuộn ngang cho menu */
     .sidebar-nav ul {
         display: flex;
@@ -366,11 +387,10 @@
         border: 1px solid var(--primary-blue);
     }
     
-    
     /* 3. CĂN GIỮA VÀ GIỚI HẠN CHIỀU RỘNG CỘT NỘI DUNG CHÍNH (CONTAINER) */
     .hospital-info {
         /* FIX CĂN GIỮA VÀ THU NHỎ CONTAINER */
-        width: 95%; 
+        width: 90%; 
         max-width: 350px; /* <-- THU NHỎ RÕ RỆT */
         margin: 0 center; 
         padding-bottom: 80px; 
@@ -380,11 +400,13 @@
     .hospital-info .section-block {
         width: 100%; /* Chiếm 100% của container 450px đã được căn giữa */
         padding: 15px; /* Giảm padding cho card gọn hơn */
+        border-radius: var(--card-radius); /* ĐÃ CÓ BO GÓC Ở CHẾ ĐỘ THƯỜNG, GIỮ NGUYÊN */
     }
     
     /* 5. Các card con (Doctor Card) */
     .doctor-card {
         padding: 10px; 
+        border-radius: var(--card-radius); /* THÊM BO GÓC */
     }
 
     /* Tinh chỉnh các thành phần phụ */
@@ -406,6 +428,7 @@
     .hero-section { padding: 80px 0 60px; }
     .hero-section h1 { font-size: 2rem; }
     
+    /* 1. KHẮC PHỤC LỖI HIỂN THỊ HAMBURGER */
 /* 1. HIỂN THỊ NÚT HAMBURGER (Phải có !important để ghi đè display: none ở trên) */
     .hamburger-toggle {
         display: block !important; 
@@ -497,6 +520,17 @@
 body.menu-open {
     overflow: hidden;
 }
+
+/* Quy tắc này phải được thêm vào phần CSS chung (ngoài @media) */
+.map-container {
+    /* Bo góc cho khối bọc map ở cả PC và Mobile */
+    border-radius: var(--card-radius); 
+}
+.map-container iframe {
+    /* Đảm bảo iframe bên trong cũng bo góc để khớp */
+    border-radius: var(--card-radius); 
+}
+
     </style>
 </head>
 <body>
@@ -548,14 +582,27 @@ body.menu-open {
             
             <div class="content-layout">
                 
-                <div class="sidebar-nav">
-                    <ul>
-                        <li class="active"><a href="#gioi-thieu">Giới thiệu</a></li>
-                        <li><a href="#chuyen-khoa">Các Chuyên khoa</a></li>
-                        <li><a href="#bac-si">Đội ngũ Bác sĩ</a></li>
-                        <li><a href="#danh-gia">Đánh giá</a></li>
-                        <li><a href="#lien-he">Liên hệ & Bản đồ</a></li>
-                    </ul>
+                <div class="sidebar-left-column"> <div class="sidebar-nav">
+                        <ul>
+                            <li class="active"><a href="#gioi-thieu">Giới thiệu</a></li>
+                            <li><a href="#chuyen-khoa">Các Chuyên khoa</a></li>
+                            <li><a href="#bac-si">Đội ngũ Bác sĩ</a></li>
+                            <li><a href="#danh-gia">Đánh giá</a></li>
+                            <li><a href="#lien-he">Liên hệ & Bản đồ</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div id="map-section" class="map-container">
+                        <iframe 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.549953171923!2d106.66843181052421!3d10.769126189334877!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752ede1ad51af1%3A0x520c34a578581e8!2zQuG7h25oIHZp4buHbiBOaGkgxJHhu5NuZyAx!5e0!3m2!1svi!2s!4v1761149428272!5m2!1svi!2s" 
+                            width="100%" 
+                            height="300" 
+                            style="border:0;" 
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade"
+                        ></iframe>
+                    </div>
                 </div>
                 
                 <div class="hospital-info">
