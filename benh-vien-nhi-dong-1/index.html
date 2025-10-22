@@ -120,7 +120,9 @@
             font-size: 0.95rem;
         }
         .rating-stars {
-            color: #ffc107;
+            color: #ffc107; /* Màu vàng sao */
+            font-size: 1.3rem; /* Kích thước sao lớn hơn chút */
+            /* Sử dụng Unicode star (U+2605) */
         }
         .btn-follow {
             background: #f0f7ff;
@@ -301,66 +303,191 @@
             font-size: 1.1rem;
         }
 
-        /* ------------------------------------------------ */
-        /* RESPONSIVE */
-        /* ------------------------------------------------ */
-        @media (max-width: 992px) {
-            .content-layout {
-                grid-template-columns: 1fr; /* Chuyển sang bố cục một cột */
-                gap: 20px;
-            }
-            .sidebar-nav {
-                position: static; /* Bỏ sticky trên mobile */
-                top: auto;
-                padding: 15px;
-                order: -1; /* Đưa sidebar lên đầu (trên breadcrumb) */
-            }
-            .sidebar-nav ul {
-                display: flex;
-                overflow-x: auto; /* Cho phép cuộn ngang */
-                gap: 10px;
-                padding-bottom: 5px;
-            }
-            .sidebar-nav li {
-                flex-shrink: 0;
-            }
-            .sidebar-nav li a {
-                padding: 8px 15px;
-                border-left: none;
-                border-radius: var(--button-radius);
-                border: 1px solid #ddd;
-            }
-            .sidebar-nav li.active a {
-                border-left: none;
-                border: 1px solid var(--primary-blue);
-            }
-            
-            .hospital-header {
-                flex-direction: column;
-                gap: 20px;
-                padding: 20px 0;
-                text-align: center;
-                align-items: center;
-            }
-
-            .hospital-info-text h1 {
-                font-size: 1.6rem;
-            }
-            
-            .department-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .sticky-booking-cta {
-                display: block; /* Hiển thị CTA booking ở cuối trang mobile */
-            }
-            
-            .hospital-info {
-                padding-bottom: 80px; /* Thêm khoảng đệm cho CTA cố định */
-            }
-        }
-
+/* ------------------------------------------------ */
+/* FIX CẤP TỐC: Tối ưu Tablet và Mobile Lớn (max-width: 992px) */
+/* ĐÃ GIỚI HẠN CHIỀU RỘNG MẠNH VÀ CĂN GIỮA MỌI KHỐI NỘI DUNG */
+/* ------------------------------------------------ */
+@media (max-width: 992px) {
+    .content-layout {
+        grid-template-columns: 1fr; /* Chuyển sang bố cục một cột */
+        gap: 20px;
+    }
+    
+    /* 1. Căn giữa & Thu nhỏ Header Bệnh viện */
+    .hospital-header {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px 0;
+        text-align: center;
+        align-items: center;
+        max-width: 350px; /* <-- THU NHỎ RÕ RỆT */
+        margin: 0 auto 20px auto; 
+    }
+    
+    /* 2. Đưa Sidebar lên trên và Thu nhỏ/Căn giữa */
+    .sidebar-nav {
+        position: static; 
+        top: auto;
+        order: -1; 
         
+        /* CĂN GIỮA & GIỚI HẠN */
+        width: 95%; 
+        max-width: 350px; /* <-- THU NHỎ RÕ RỆT */
+        margin: 0 auto 20px auto; 
+        padding: 15px;
+        overflow-x: auto; /* Bổ sung để đảm bảo cuộn ngang nếu menu dài */
+    }
+    /* Kích hoạt cuộn ngang cho menu */
+    .sidebar-nav ul {
+        display: flex;
+        padding: 0; 
+        gap: 10px;
+    }
+    .sidebar-nav li {
+        flex-shrink: 0;
+    }
+    .sidebar-nav li a {
+        padding: 8px 15px;
+        border-left: none;
+        border-radius: var(--button-radius);
+        border: 1px solid #ddd;
+    }
+    .sidebar-nav li.active a {
+        border-left: none;
+        border: 1px solid var(--primary-blue);
+    }
+    
+    
+    /* 3. CĂN GIỮA VÀ GIỚI HẠN CHIỀU RỘNG CỘT NỘI DUNG CHÍNH (CONTAINER) */
+    .hospital-info {
+        /* FIX CĂN GIỮA VÀ THU NHỎ CONTAINER */
+        width: 95%; 
+        max-width: 350px; /* <-- THU NHỎ RÕ RỆT */
+        margin: 0 center; 
+        padding-bottom: 80px; 
+    }
+    
+    /* 4. Đảm bảo các khối CARD bên trong (section-block) */
+    .hospital-info .section-block {
+        width: 100%; /* Chiếm 100% của container 450px đã được căn giữa */
+        padding: 15px; /* Giảm padding cho card gọn hơn */
+    }
+    
+    /* 5. Các card con (Doctor Card) */
+    .doctor-card {
+        padding: 10px; 
+    }
+
+    /* Tinh chỉnh các thành phần phụ */
+    .hospital-info .section-block h2 {
+        font-size: 1.4rem;
+    }
+
+    .department-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .sticky-booking-cta {
+        display: block; 
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section { padding: 80px 0 60px; }
+    .hero-section h1 { font-size: 2rem; }
+    
+/* 1. HIỂN THỊ NÚT HAMBURGER (Phải có !important để ghi đè display: none ở trên) */
+    .hamburger-toggle {
+        display: block !important; 
+        z-index: 1001; 
+        position: relative; 
+    }
+
+    /* 2. CHUYỂN .nav-area THÀNH OVERLAY MENU */
+    .nav-area {
+        position: fixed;
+        top: 0;
+        left: -100%; 
+        width: 80%;
+        max-width: 300px;
+        height: 100%;
+        background-color: var(--off-white); 
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+        z-index: 999;
+        padding: 80px 20px 20px; 
+        transition: left 0.3s ease-in-out;
+        display: block !important; /* Ghi đè display: flex desktop */
+    }
+    
+    /* 3. MENU MỞ */
+    .nav-area.open {
+        left: 0; 
+    }
+
+    /* 4. Đảm bảo logo và hamburger nằm đúng vị trí */
+    .header-content {
+        padding: 0 15px; /* Giữ padding ngang */
+    }
+    
+    /* 5. Sắp xếp lại các liên kết menu theo chiều dọc */
+    /* Lưu ý: Các thẻ này nằm trong menu.html được nhúng vào */
+    .nav-area .nav-links {
+        list-style: none;
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        margin-bottom: 20px;
+    }
+    .nav-area .nav-links li {
+        border-bottom: 1px solid #eee;
+        width: 100%;
+    }
+    .nav-area .nav-links a {
+        padding: 15px 0;
+        font-size: 1.1rem;
+        font-weight: 500;
+        display: block;
+    }
+    .nav-area .btn-login {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .ai-search-box { flex-direction: column; padding: 10px; }
+    .btn-ai-search { width: 100%; padding: 15px; }
+    .ai-search-box input { padding: 15px 10px; }
+    .feature-container { margin-top: 0px; margin-bottom: 40px; }
+    .feature-grid { grid-template-columns: repeat(4, 1fr); padding: 15px; gap: 5px; }
+    .feature-item p { font-size: 0.75rem; }
+    .feature-item { padding: 10px 3px; }
+    .section-title { font-size: 1.8rem; margin-bottom: 25px; }
+    .slider-button { display: none; }
+    .hospital-doctor-grid { margin: 0; padding-left: 0; padding-right: 0; }
+}
+
+/* BỔ SUNG: CSS cho Menu Mobile (Đặt ở đây để ưu tiên xử lý cơ bản trước) */
+/* NÚT HAMBURGER (Mới) */
+.hamburger-toggle {
+    display: none; /* Mặc định ẩn trên desktop */
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--dark-text);
+    padding: 0;
+    line-height: 1;
+    z-index: 1001; /* Đảm bảo nút nằm trên menu */
+}
+
+/* NGĂN CHẶN CUỘN TRANG KHI MENU MỞ */
+body.menu-open {
+    overflow: hidden;
+}
     </style>
 </head>
 <body>
@@ -369,7 +496,11 @@
     <div class="container header-content">
         <div class="logo">HEALTH<span style="color: #666; font-weight: 500;">CARE</span></div>
         
-        <div class="nav-area" data-include-html="../menu.html">
+        <button class="hamburger-toggle" id="menu-toggle" aria-label="Toggle Menu">
+            &#9776; 
+        </button>
+        
+        <div class="nav-area" id="main-nav-area" data-include-html="../menu.html">
             <p style="margin: 0; color: #aaa;">Đang tải menu...</p>
         </div>
         
@@ -399,7 +530,7 @@
                     <h1>Bệnh viện Nhi đồng 1</h1>
                     <p>Địa chỉ: 341 Sư Vạn Hạnh, Phường Vườn Lài, TP. Hồ Chí Minh</p>
                     <div class="rating-box">
-                        <span class="rating-stars">⭐⭐⭐⭐⭐</span>
+                        <span class="rating-stars">★★★★★</span>
                         <span>4.8 (8,500 đánh giá)</span>
                         <a href="javascript:void(0)" class="btn-follow">Đặt Khám ngay</a>
                     </div>
@@ -486,14 +617,10 @@
 <script>
     /**
      * Hàm tải nội dung HTML từ một URL và chèn vào một Element
-     * @param {string} url - Đường dẫn đến file HTML (ví dụ: 'menu.html')
-     * @param {string} targetElementId - ID của element mục tiêu (ví dụ: 'menu-container')
      */
     function loadExternalHTML(url, targetElementId) {
-        // Sử dụng Fetch API để tải nội dung file
         fetch(url)
             .then(response => {
-                // Kiểm tra nếu request thành công
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
@@ -504,7 +631,6 @@
                 document.getElementById(targetElementId).innerHTML = html;
             })
             .catch(error => {
-                // Xử lý lỗi nếu việc tải thất bại
                 console.error('Lỗi tải menu:', error);
                 document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
             });
@@ -512,8 +638,22 @@
 
     // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
     document.addEventListener('DOMContentLoaded', function() {
-        // Thực hiện tải menu.html và chèn vào menu-container
-        loadExternalHTML('../menu.html', 'menu-container'); 
+        const menuToggle = document.getElementById('menu-toggle');
+        const navArea = document.getElementById('main-nav-area'); // Lấy element menu
+
+        // 1. TẢI NỘI DUNG MENU
+        // SỬA LỖI: Gọi ID đúng là 'main-nav-area'
+        loadExternalHTML('../menu.html', 'main-nav-area'); 
+
+        // 2. LOGIC HAMBURGER
+        if (menuToggle && navArea) {
+            menuToggle.addEventListener('click', () => {
+                // Thêm/Xóa class 'open' để bật/tắt menu
+                navArea.classList.toggle('open');
+                // Ngăn cuộn trang chính khi menu mở
+                document.body.classList.toggle('menu-open'); 
+            });
+        }
     });
 </script>
 <script src="../include.js"></script> 

@@ -38,7 +38,7 @@ body {
 /* ------------------------------------------------ */
 .hero-section {
     background: linear-gradient(180deg, #fff 52%, var(--light-bg) 100%); 
-    padding: 80px 0 100px; 
+    padding: 90px 0 90px; 
     position: relative;
     text-align: center;
 }
@@ -127,7 +127,7 @@ body {
 }
 
 .feature-item { 
-    padding: 10px 5px 20px; /* Đã cập nhật để đẩy icon lên trên */
+    padding: 0px 5px 20px; /* Đã cập nhật để đẩy icon lên trên */
     transition: all 0.3s;
     border-radius: 8px;
     text-align: center;
@@ -322,14 +322,76 @@ body {
 @media (max-width: 768px) {
     .hero-section { padding: 80px 0 60px; }
     .hero-section h1 { font-size: 2rem; }
-    .nav-links { display: none; }
-    .ai-search-box { flex-direction: column; padding: 10px; }
+    
+    /* 1. KHẮC PHỤC LỖI HIỂN THỊ HAMBURGER */
+    .hamburger-toggle {
+        display: block !important; /* Sử dụng !important để đảm bảo ghi đè mọi CSS desktop */
+        z-index: 1001; /* Đảm bảo nó nổi trên mọi thứ, kể cả menu đang trượt ra */
+        position: relative; /* Giúp z-index hoạt động tốt hơn */
+    }
+
+    /* 2. CHUYỂN .nav-area THÀNH OVERLAY MENU */
+    .nav-area {
+        position: fixed;
+        top: 0;
+        left: -100%; /* Ẩn menu ra ngoài màn hình */
+        width: 80%;
+        max-width: 300px;
+        height: 100%;
+        background-color: var(--off-white); 
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+        z-index: 999;
+        padding: 80px 20px 20px; 
+        transition: left 0.3s ease-in-out;
+        /* Ghi đè lại các thuộc tính display/flex của desktop */
+        display: block !important; 
+    }
+    
+    /* 3. MENU MỞ */
+    .nav-area.open {
+        left: 0; /* Trượt vào */
+    }
+
+    /* 4. Đảm bảo logo và hamburger nằm đúng vị trí */
+    .header-content {
+        padding: 0 15px; /* Giữ padding ngang */
+    }
+    
+    /* 5. Sắp xếp lại các liên kết menu theo chiều dọc */
+    /* Lưu ý: Các thẻ này nằm trong menu.html được nhúng vào */
+    .nav-area .nav-links {
+        list-style: none;
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        margin-bottom: 20px;
+    }
+    .nav-area .nav-links li {
+        border-bottom: 1px solid #eee;
+        width: 100%;
+    }
+    .nav-area .nav-links a {
+        padding: 15px 0;
+        font-size: 1.1rem;
+        font-weight: 500;
+        display: block;
+    }
+    .nav-area .btn-login {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .ai-search-box { flex-direction: column; padding: 20px; }
     .btn-ai-search { width: 100%; padding: 15px; }
-    .ai-search-box input { padding: 15px 10px; }
-    .feature-container { margin-top: 0px; margin-bottom: 40px; }
+    .ai-search-box input { padding: 25px 55px; }
+    .feature-container { margin-top: -30px; margin-bottom: 40px; }
     .feature-grid { grid-template-columns: repeat(4, 1fr); padding: 15px; gap: 5px; }
     .feature-item p { font-size: 0.75rem; }
-    .feature-item { padding: 10px 3px; }
+    .feature-item { padding: 5px 3px; }
     .section-title { font-size: 1.8rem; margin-bottom: 25px; }
     .slider-button { display: none; }
     .hospital-doctor-grid { margin: 0; padding-left: 0; padding-right: 0; }
@@ -356,6 +418,25 @@ body {
     margin: 0 auto 8px; 
     /* XÓA font-size: 1.2rem; */
 }
+
+/* BỔ SUNG: CSS cho Menu Mobile */
+/* NÚT HAMBURGER (Mới) */
+.hamburger-toggle {
+    display: none; /* Mặc định ẩn trên desktop */
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--dark-text);
+    padding: 0;
+    line-height: 1;
+    z-index: 1001; /* Đảm bảo nút nằm trên menu */
+}
+
+/* NGĂN CHẶN CUỘN TRANG KHI MENU MỞ */
+body.menu-open {
+    overflow: hidden;
+}
     </style>
 </head>
 <body>
@@ -364,7 +445,11 @@ body {
     <div class="container header-content">
         <div class="logo">HEALTH<span style="color: #666; font-weight: 500;">CARE</span></div>
         
-        <div class="nav-area" data-include-html="menu.html">
+        <button class="hamburger-toggle" id="menu-toggle" aria-label="Toggle Menu">
+            &#9776; 
+        </button>
+        
+        <div class="nav-area" id="main-nav-area" data-include-html="../menu.html">
             <p style="margin: 0; color: #aaa;">Đang tải menu...</p>
         </div>
         
@@ -396,31 +481,37 @@ body {
 <div class="feature-container">
     <div class="container">
         <div class="feature-grid">
-            
+
+        <a href="https://healthcare36.netlify.app#dat-kham" class="feature-item-link">
             <div class="feature-item">
                 <div class="feature-icon">
                     <img src="data/ICON/datlich.webp" alt="Đặt lịch khám" class="feature-img">
                 </div>
                 <p>Đặt lịch khám</p>
             </div>
+        </a>
             <div class="feature-item">
                 <div class="feature-icon">
                     <img src="data/ICON/sothutu.webp" alt="Lấy số thứ tự" class="feature-img">
                 </div>
                 <p>Lấy số thứ tự</p>
             </div>
+        <a href="https://healthcare36.netlify.app#bac-si" class="feature-item-link">
             <div class="feature-item">
                 <div class="feature-icon">
                     <img src="data/ICON/tuvantuxa.webp" alt="Tư vấn từ xa" class="feature-img">
                 </div>
                 <p>Tư vấn từ xa</p>
             </div>
+        </a>
+        <a href="https://healthcare36.netlify.app#goi-kham" class="feature-item-link">
             <div class="feature-item">
                 <div class="feature-icon">
                     <img src="data/ICON/goikham.webp" alt="Gói khám" class="feature-img">
                 </div>
                 <p>Gói khám</p>
             </div>
+        </a>
             <div class="feature-item">
                 <div class="feature-icon">
                     <img src="data/ICON/ytetainha.webp" alt="Y tế tại nhà" class="feature-img">
@@ -452,12 +543,12 @@ body {
     <div class="content-section" style="padding-top: 0;">
         <div class="container">
             <h2 class="section-title">Cơ sở y tế đặt khám được yêu thích</h2>
-            <div class="slider-wrapper">
+            <div class="slider-wrapper" id="dat-kham">
                 <div class="slider-button left" onclick="scrollSlider('hospital-slider', -1)"> &lt; </div>
                 
                 <div class="hospital-doctor-grid" id="hospital-slider">
                     
-                    <a href="benh-vien-dai-hoc-y-duoc-tp-hcm/index.html" class="special-card">
+                    <a href="benh-vien-dai-hoc-y-duoc-tp-hcm" class="special-card">
                         <img src="data/IMG/BENHVIEN/daihocytphcm.webp" alt="Bệnh viện">
                         <div class="card-text-content">
                             <h3>Bệnh viện ĐH Y Dược TPHCM</h3>
@@ -466,7 +557,7 @@ body {
                         <span class="btn-more">Đặt khám ngay</span>
                     </a>
                     
-                    <a href="benh-vien-nhi-dong-can-tho/index.html" class="special-card">
+                    <a href="benh-vien-nhi-dong-can-tho" class="special-card">
                         <img src="data/IMG/BENHVIEN/nhidongcantho.webp" alt="Bệnh viện">
                          <div class="card-text-content">
                             <h3>Bệnh viện Nhi đồng Cần Thơ</h3>
@@ -475,7 +566,7 @@ body {
                         <span class="btn-more">Đặt khám ngay</span>
                     </a>
                     
-                    <a href="benh-vien-tu-du/index.html" class="special-card">
+                    <a href="benh-vien-tu-du" class="special-card">
                         <img src="data/IMG/BENHVIEN/tudu.webp" alt="Bệnh viện">
                          <div class="card-text-content">
                             <h3>Bệnh viện Từ Dũ</h3>
@@ -484,7 +575,7 @@ body {
                         <span class="btn-more">Đặt khám ngay</span>
                     </a>
                     
-                    <a href="benh-vien-nhi-dong-1/index.html" class="special-card">
+                    <a href="benh-vien-nhi-dong-1" class="special-card">
                         <img src="data/IMG/BENHVIEN/nhidong1.webp" alt="Bệnh viện">
                          <div class="card-text-content">
                             <h3>Bệnh viện Nhi Đồng 1</h3>
@@ -493,7 +584,7 @@ body {
                         <span class="btn-more">Đặt khám ngay</span>
                     </a>
                     
-                    <a href="benh-vien-da-khoa-trung-uong-can-tho/index.html" class="special-card">
+                    <a href="benh-vien-da-khoa-trung-uong-can-tho" class="special-card">
                         <img src="data/IMG/BENHVIEN/dakhoatwct.webp" alt="Bệnh viện">
                          <div class="card-text-content">
                             <h3>Bệnh viện Đa khoa TW Cần thơ</h3>
@@ -510,14 +601,14 @@ body {
     </div>
 
     <div class="content-section" style="background-color: var(--off-white); padding-top: 80px; padding-bottom: 80px;">
-        <div class="container">
+        <div class="container" id="bac-si">
             <h2 class="section-title">Bác sĩ TƯ VẤN khám bệnh qua video</h2>
             <div class="slider-wrapper">
                 <div class="slider-button left" onclick="scrollSlider('doctor-slider', -1)"> &lt; </div>
                 
                 <div class="hospital-doctor-grid" id="doctor-slider">
                     
-                    <a href="bac-si/ths-bs-nguyen-tri-nhan/index.html" class="special-card">
+                    <a href="bac-si/ths-bs-nguyen-van-a" class="special-card">
                         <img src="data/IMG/BACSI/bacsi.webp" alt="Bác sĩ">
                          <div class="card-text-content">
                             <h3>ThS.BS. Nguyễn Trí Nhân</h3>
@@ -528,7 +619,7 @@ body {
                         <span class="btn-more">Tư vấn ngay</span>
                     </a>
                     
-                    <a href="bac-si/ths-bs-nguyen-tri-nhan/index.html" class="special-card">
+                    <a href="bac-si/ths-bs-nguyen-van-a" class="special-card">
                         <img src="data/IMG/BACSI/bacsi.webp" alt="Bác sĩ">
                          <div class="card-text-content">
                             <h3>BSCKII. Nguyễn Thị B</h3>
@@ -539,7 +630,7 @@ body {
                         <span class="btn-more">Tư vấn ngay</span>
                     </a>
                     
-                    <a href="bac-si/ths-bs-nguyen-tri-nhan/index.html" class="special-card">
+                    <a href="bac-si/ths-bs-nguyen-van-a" class="special-card">
                         <img src="data/IMG/BACSI/bacsi.webp" alt="Bác sĩ">
                          <div class="card-text-content">
                             <h3>ThS.BS. Trần Văn C</h3>
@@ -550,7 +641,7 @@ body {
                         <span class="btn-more">Tư vấn ngay</span>
                     </a>
                     
-                    <a href="bac-si/ths-bs-nguyen-tri-nhan/index.html" class="special-card">
+                    <a href="bac-si/ths-bs-nguyen-van-a" class="special-card">
                         <img src="data/IMG/BACSI/bacsi.webp" alt="Bác sĩ">
                          <div class="card-text-content">
                             <h3>TS.BS. Phan Thị D</h3>
@@ -569,7 +660,7 @@ body {
     </div>
 
     <div class="content-section">
-        <div class="container">
+        <div class="container" id="goi-kham">
             <h2 class="section-title">Chăm sóc sức khỏe toàn diện</h2>
             <div class="slider-wrapper">
                 <div class="slider-button left" onclick="scrollSlider('care-slider', -1)"> &lt; </div>
@@ -624,6 +715,8 @@ body {
     </div>
 
     <script>
+        
+
         
         // HÀM MỚI: TÍCH HỢP AI GEMINI
         // KHUYẾN NGHỊ: NÊN SỬ DỤNG BACK-END PROXY ĐỂ BẢO MẬT API KEY.
@@ -728,8 +821,24 @@ body {
                 behavior: 'smooth'
             });
         }
-    </script>
-<script src="include.js"></script> 
 
+// Hàm mới: Điều khiển Hamburger Menu
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menu-toggle');
+            const navArea = document.getElementById('main-nav-area');
+            
+            // Kiểm tra xem các phần tử có tồn tại không
+            if (menuToggle && navArea) {
+                menuToggle.addEventListener('click', () => {
+                    // Thêm/Xóa class 'open' để bật/tắt menu
+                    navArea.classList.toggle('open');
+                    // Thêm/Xóa class 'menu-open' để ngăn cuộn trang chính khi menu mở
+                    document.body.classList.toggle('menu-open'); 
+                });
+            }
+        });
+
+    </script>
+    <script src="include.js"></script> 
 </body>
 </html>

@@ -178,7 +178,8 @@
         
         .detail-card ul {
             list-style: none;
-            padding-left: 0;
+            /* FIX: Bổ sung padding-left để chứa dấu đầu dòng */
+            padding-left: 20px; 
             line-height: 2;
             font-size: 1rem;
         }
@@ -188,14 +189,15 @@
             padding: 5px 0;
             color: var(--dark-text);
         }
-        
+
         .detail-card ul li::before {
             content: "✦";
             color: var(--primary-blue);
             font-weight: 700;
             display: inline-block;
             width: 1em;
-            margin-left: -1em;
+            /* FIX: Kéo dấu đầu dòng lùi lại chính xác 20px (bằng giá trị padding-left) */
+            margin-left: -20px; 
         }
 
         /* ------------------------------------------------ */
@@ -317,6 +319,159 @@
             .detail-card { padding: 20px; }
             .detail-card h2 { font-size: 1.4rem; }
         }
+
+/* ------------------------------------------------ */
+/* FIX: Tối ưu Tablet và Mobile Lớn (max-width: 992px) */
+/* ĐÃ GIẢM KÍCH THƯỚC CÁC CARD XUỐNG CÒN 70% */
+/* ------------------------------------------------ */
+@media (max-width: 992px) {
+    .package-page-content {
+        flex-direction: column;
+        gap: 15px; 
+        padding: 15px 0; 
+    }
+    
+    .main-info-column {
+        flex: auto;
+        width: 100%; 
+        min-width: unset;
+    }
+
+    /* 1. Thu nhỏ và Căn giữa Sidebar Đặt lịch */
+    .sidebar-booking {
+        position: relative;
+        top: auto;
+        order: -1;
+        
+        /* Thu nhỏ: Giảm độ rộng 70% */
+        width: 80%; 
+        max-width: 350px; 
+        margin: 0 auto 15px auto; /* Căn giữa */
+        padding: 15px; 
+    }
+    
+    /* 2. Thu nhỏ và Căn giữa Card Tóm tắt Gói khám */
+    .package-summary-card {
+        
+        width: 80%; /* Thu nhỏ 70% */
+        max-width: 350px;
+        margin: 0 auto 15px auto; /* Căn giữa card */
+        
+        padding: 15px; 
+    }
+    
+    /* 3. Thu nhỏ và Căn giữa Card Chi tiết */
+    .detail-card { 
+        width: 80%; /* Thu nhỏ 70% */
+        max-width: 350px;
+        margin: 0 auto 15px auto; /* Căn giữa card */
+
+        padding: 15px; 
+        text-align: left; 
+    }
+
+    /* Tối ưu chữ để gọn gàng hơn */
+    .package-summary-card h1 { font-size: 1.6rem; } 
+    .package-summary-card .subtitle { font-size: 1.0rem; }
+    .detail-card h2 { font-size: 1.2rem; } 
+    .booking-form .btn-book { padding: 12px 0px; font-size: 0.9rem; }
+}
+        
+@media (max-width: 768px) {
+    .hero-section { padding: 80px 0 60px; }
+    .hero-section h1 { font-size: 2rem; }
+    
+/* 1. HIỂN THỊ NÚT HAMBURGER (Phải có !important để ghi đè display: none ở trên) */
+    .hamburger-toggle {
+        display: block !important; 
+        z-index: 1001; 
+        position: relative; 
+    }
+
+    /* 2. CHUYỂN .nav-area THÀNH OVERLAY MENU */
+    .nav-area {
+        position: fixed;
+        top: 0;
+        left: -100%; 
+        width: 80%;
+        max-width: 300px;
+        height: 100%;
+        background-color: var(--off-white); 
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+        z-index: 999;
+        padding: 80px 20px 20px; 
+        transition: left 0.3s ease-in-out;
+        display: block !important; /* Ghi đè display: flex desktop */
+    }
+    
+    /* 3. MENU MỞ */
+    .nav-area.open {
+        left: 0; 
+    }
+
+    /* 4. Đảm bảo logo và hamburger nằm đúng vị trí */
+    .header-content {
+        padding: 0 15px; /* Giữ padding ngang */
+    }
+    
+    /* 5. Sắp xếp lại các liên kết menu theo chiều dọc */
+    /* Lưu ý: Các thẻ này nằm trong menu.html được nhúng vào */
+    .nav-area .nav-links {
+        list-style: none;
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        margin-bottom: 20px;
+    }
+    .nav-area .nav-links li {
+        border-bottom: 1px solid #eee;
+        width: 100%;
+    }
+    .nav-area .nav-links a {
+        padding: 15px 0;
+        font-size: 1.1rem;
+        font-weight: 500;
+        display: block;
+    }
+    .nav-area .btn-login {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .ai-search-box { flex-direction: column; padding: 10px; }
+    .btn-ai-search { width: 100%; padding: 15px; }
+    .ai-search-box input { padding: 15px 10px; }
+    .feature-container { margin-top: 0px; margin-bottom: 40px; }
+    .feature-grid { grid-template-columns: repeat(4, 1fr); padding: 15px; gap: 5px; }
+    .feature-item p { font-size: 0.75rem; }
+    .feature-item { padding: 10px 3px; }
+    .section-title { font-size: 1.8rem; margin-bottom: 25px; }
+    .slider-button { display: none; }
+    .hospital-doctor-grid { margin: 0; padding-left: 0; padding-right: 0; }
+}   
+
+/* BỔ SUNG: CSS cho Menu Mobile (Đặt ở đây để ưu tiên xử lý cơ bản trước) */
+/* NÚT HAMBURGER (Mới) */
+.hamburger-toggle {
+    display: none; /* Mặc định ẩn trên desktop */
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--dark-text);
+    padding: 0;
+    line-height: 1;
+    z-index: 1001; /* Đảm bảo nút nằm trên menu */
+}
+
+/* NGĂN CHẶN CUỘN TRANG KHI MENU MỞ */
+body.menu-open {
+    overflow: hidden;
+}
     </style>
 </head>
 <body>
@@ -325,7 +480,11 @@
     <div class="container header-content">
         <div class="logo">HEALTH<span style="color: #666; font-weight: 500;">CARE</span></div>
         
-        <div class="nav-area" data-include-html="../menu.html">
+        <button class="hamburger-toggle" id="menu-toggle" aria-label="Toggle Menu">
+            &#9776; 
+        </button>
+        
+        <div class="nav-area" id="main-nav-area" data-include-html="../menu.html">
             <p style="margin: 0; color: #aaa;">Đang tải menu...</p>
         </div>
         
@@ -350,7 +509,7 @@
         <div class="main-info-column">
             
             <div class="package-summary-card">
-                <h1>Gói Khám Sức Khỏe Toàn Diện (Standard)</h1>
+                <h1>Gói Khám Sức Khỏe Toàn Diện</h1>
                 <div class="subtitle">Tầm soát sức khỏe tổng quát, phát hiện sớm bệnh lý nội khoa, ung thư.</div>
                 
                 <img src="../data/IMG/CHAMSOCSUCKHOETOANDIEN/khamtongquat.webp" alt="Gói Khám Sức Khỏe Toàn Diện" style="width: 100%; max-height: 400px; object-fit: cover;">
@@ -372,7 +531,7 @@
             
             <div class="detail-card">
                 <h2>Các hạng mục chính</h2>
-                <ul style="list-style: none; padding-left: 0;">
+                <ul style="list-style: none;">
                     <li>**Khám Lâm Sàng:** Nội Tổng Quát, Mắt, Răng Hàm Mặt, Tai Mũi Họng.</li>
                     <li>**Chẩn đoán Hình ảnh:** Siêu âm bụng tổng quát, X-Quang ngực thẳng.</li>
                     <li>**Xét nghiệm Máu:** Công thức máu, Chức năng gan (AST, ALT), Chức năng thận (Ure, Creatinine), Đường huyết.</li>
@@ -421,7 +580,48 @@
     </div>
 </section>
 
-<script src="../include.js"></script>
+<script>
+    /**
+     * Hàm tải nội dung HTML từ một URL và chèn vào một Element
+     */
+    function loadExternalHTML(url, targetElementId) {
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Chèn nội dung HTML đã tải vào element mục tiêu
+                document.getElementById(targetElementId).innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Lỗi tải menu:', error);
+                document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
+            });
+    }
 
+    // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const navArea = document.getElementById('main-nav-area'); // Lấy element menu
+
+        // 1. TẢI NỘI DUNG MENU
+        // SỬA LỖI: Gọi ID đúng là 'main-nav-area'
+        loadExternalHTML('../menu.html', 'main-nav-area'); 
+
+        // 2. LOGIC HAMBURGER
+        if (menuToggle && navArea) {
+            menuToggle.addEventListener('click', () => {
+                // Thêm/Xóa class 'open' để bật/tắt menu
+                navArea.classList.toggle('open');
+                // Ngăn cuộn trang chính khi menu mở
+                document.body.classList.toggle('menu-open'); 
+            });
+        }
+    });
+</script>
+<script src="../include.js"></script> 
 </body>
 </html>

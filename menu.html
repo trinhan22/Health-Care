@@ -68,15 +68,56 @@
     background: #0099cc;
     transform: translateY(-1px);
 }
+
+/* THÊM CSS CHO MOBILE MENU KHI ĐƯỢC MỞ */
+@media (max-width: 768px) {
+    
+    /* Đảm bảo menu con hiển thị dạng cột */
+    .nav-links {
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+    }
+    
+    /* Tạo khu vực nhấn lớn hơn cho các mục menu */
+    .nav-links li {
+        width: 100%;
+        border-bottom: 1px solid #eee; /* Đường kẻ phân cách */
+    }
+
+    .nav-links a {
+        padding: 15px 20px;
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--dark-text);
+    }
+    
+    .nav-links a:hover {
+        background-color: var(--light-bg);
+        color: var(--primary-blue);
+    }
+    
+    /* Nút Đăng nhập */
+    .btn-login {
+        display: block;
+        width: calc(100% - 40px);
+        text-align: center;
+        margin: 20px auto; 
+        padding: 12px 20px;
+        font-size: 1rem;
+        margin-left: auto; /* Bỏ margin-left cũ */
+    }
+}
 </style>
 <html>
                 <nav>
                 <ul class="nav-links">
-                    <li><a href="#">Trang Chủ</a></li>
-                    <li><a href="#">Đặt Khám</a></li>
-                    <li><a href="#">Tư Vấn Online</a></li>
-                    <li><a href="#">Gói Khám</a></li>
-                    <li><a href="#">Liên Hệ</a></li>
+                    <li><a href="https://healthcare36.netlify.app">Trang Chủ</a></li>
+                    <li><a href="https://healthcare36.netlify.app#dat-kham">Đặt Khám</a></li>
+                    <li><a href="https://healthcare36.netlify.app#bac-si">Tư Vấn Online</a></li>
+                    <li><a href="https://healthcare36.netlify.app#goi-kham">Gói Khám</a></li>
+                    <li><a href="https://healthcare36.netlify.app#lien-he">Liên Hệ</a></li>
                 </ul>
             </nav>
 
