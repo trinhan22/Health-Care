@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - Health Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+/* CSS VARIABLES (Màu sắc và khoảng cách theo Medpro Style) */
+:root {
+    --primary-blue: #00b5f1; /* Xanh chủ đạo của Medpro */
+    --dark-text: #003553; /* Màu chữ chính, tối và hiện đại */
+    --light-bg: #e8f4fd; /* Nền trắng sữa pha xanh nhạt, sạch sẽ */
+    --off-white: #ffffff; 
+    --card-radius: 16px; /* Bo góc lớn và mềm mại */
+    --button-radius: 30px; /* Nút tròn như style chuyên nghiệp */
+    --shadow-clean: 0 6px 16px 0 rgba(77, 88, 143, .1); /* Bóng đổ nhẹ, sạch */
+    --shadow-search: 0 10px 30px rgba(0, 0, 0, 0.08); /* Bóng đổ cho khung search */
+}
+
+/* RESET & TYPOGRAPHY */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--light-bg); /* Nền toàn trang có tone xanh nhẹ */
+    color: var(--dark-text);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* ------------------------------------------------ */
+/* 2. HERO SECTION */
+/* ------------------------------------------------ */
+.hero-section {
+    background: linear-gradient(180deg, #fff 52%, var(--light-bg) 100%); 
+    padding: 80px 0 100px; 
+    position: relative;
+    text-align: center;
+}
+
+.hero-section h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900; 
+    font-size: 3.2rem; 
+    color: var(--dark-text); 
+    margin-bottom: 10px;
+    line-height: 1.2;
+}
+
+.hero-section p {
+    font-size: 1.2rem; 
+    color: #666; 
+    margin-bottom: 40px; 
+    font-weight: 400;
+}
+
+/* KHUNG TÌM KIẾM - Nổi bật */
+.ai-search-box {
+    position: relative; 
+    max-width: 900px; 
+    margin: 0 auto; 
+    background-color: var(--off-white);
+    border-radius: var(--card-radius); 
+    box-shadow: var(--shadow-search); 
+    padding: 10px; 
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #eee;
+}
+
+.ai-search-box input {
+    flex-grow: 1;
+    padding: 18px 25px; 
+    border: none;
+    border-radius: 12px;
+    font-size: 1.15rem;
+    background-color: var(--light-bg); 
+    color: var(--dark-text);
+}
+
+.ai-search-box input::placeholder {
+    color: #999;
+}
+
+.btn-ai-search {
+    background-color: var(--primary-blue);
+    color: white;
+    padding: 16px 30px;
+    border: none;
+    border-radius: var(--card-radius); 
+    font-weight: 700; 
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-transform: uppercase;
+}
+
+.btn-ai-search:hover {
+    background-color: #0099cc;
+}
+
+/* ------------------------------------------------ */
+/* 3. KHỐI CHỨC NĂNG (FEATURES) */
+/* ------------------------------------------------ */
+.feature-container { 
+    position: relative; 
+    z-index: 10; 
+    margin-top: -50px; 
+    margin-bottom: 80px; 
+}
+
+.feature-grid { 
+    background-color: var(--off-white); 
+    border-radius: var(--card-radius); 
+    box-shadow: var(--shadow-clean); 
+    padding: 20px; 
+    display: grid; 
+    grid-template-columns: repeat(8, 1fr); 
+    gap: 5px; 
+    border: 1px solid #eee; 
+}
+
+.feature-item { 
+    padding: 10px 5px 20px; /* Đã cập nhật để đẩy icon lên trên */
+    transition: all 0.3s;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.feature-item:hover { 
+    transform: scale(1.05); /* Hiệu ứng phóng to nhẹ */
+}
+
+.feature-icon { 
+    width: 40px; 
+    height: 40px; 
+    background-color: var(--primary-blue);
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin: 0 auto 8px; 
+    font-size: 1.2rem;
+}
+
+.feature-item p { 
+    font-weight: 400; 
+    color: var(--dark-text); 
+    font-size: 0.8rem; 
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* ------------------------------------------------ */
+/* CÁC SECTION KHÁC (Sliders) */
+/* ------------------------------------------------ */
+#ai-result-panel {
+    margin-top: 40px;
+    margin-bottom: 100px; 
+    padding: 30px;
+    background-color: var(--off-white);
+    border-radius: var(--card-radius);
+    display: none; 
+    text-align: left;
+    border: 1px solid var(--primary-blue);
+    box-shadow: var(--shadow-search);
+}
+
+.content-section { 
+    padding-top: 50px; /* Giữ padding trên */
+    padding-bottom: 30px; /* GIẢM padding dưới xuống 30px hoặc 0 */
+    position: relative; 
+}
+
+.section-title { 
+    font-family: 'Montserrat', sans-serif; 
+    text-align: center; 
+    font-weight: 700; 
+    font-size: 2.5rem; 
+    margin-bottom: 40px;
+    /* Gradient Text Title */
+    background: linear-gradient(84deg, var(--primary-blue) 33.34%, #00e0ff 113.91%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.slider-wrapper {
+    position: relative;
+    max-width: 100%;
+}
+
+.hospital-doctor-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 20px;
+    gap: 20px;
+    margin: 0 -15px; 
+    padding-left: 15px;
+    padding-right: 15px;
+    /* Ẩn thanh cuộn trên webkit browsers */
+    &::-webkit-scrollbar {
+        height: 8px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+}
+
+.special-card {
+    min-width: 320px; 
+    max-width: 320px;
+    background-color: var(--off-white);
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-clean);
+    text-decoration: none;
+    color: var(--dark-text);
+    /* Giữ nguyên transition cho hiệu ứng hover */
+    transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+    border: 1px solid #f0f0f0;
+}
+
+.special-card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* Bóng đổ nổi bật hơn */
+}
+
+.special-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+}
+
+.special-card h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 15px 15px 5px;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.special-card .sub-title {
+    display: block;
+    font-size: 0.9rem;
+    color: #666;
+    padding: 0 15px 10px;
+}
+
+.special-card .btn-more { 
+     display: block;
+     text-align: center;
+     background: var(--primary-blue);
+     color: white;
+     padding: 10px 15px;
+     margin-top: 10px;
+     font-weight: 500;
+     text-decoration: none;
+     transition: background-color 0.2s;
+}
+
+.special-card .btn-more:hover {
+    background-color: #0099cc;
+}
+
+
+.slider-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-blue);
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 20;
+    border: 1px solid var(--primary-blue);
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.slider-button:hover {
+    background-color: #f0f7ff;
+}
+
+.slider-button.left { left: -5px; }
+.slider-button.right { right: -5px; }
+
+@media (max-width: 1200px) {
+    .slider-button.left { left: 15px; }
+    .slider-button.right { right: 15px; }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .hero-section h1 { font-size: 2.5rem; }
+    .feature-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+}
+
+@media (max-width: 768px) {
+    .hero-section { padding: 80px 0 60px; }
+    .hero-section h1 { font-size: 2rem; }
+    .nav-links { display: none; }
+    .ai-search-box { flex-direction: column; padding: 10px; }
+    .btn-ai-search { width: 100%; padding: 15px; }
+    .ai-search-box input { padding: 15px 10px; }
+    .feature-container { margin-top: 0px; margin-bottom: 40px; }
+    .feature-grid { grid-template-columns: repeat(4, 1fr); padding: 15px; gap: 5px; }
+    .feature-item p { font-size: 0.75rem; }
+    .feature-item { padding: 10px 3px; }
+    .section-title { font-size: 1.8rem; margin-bottom: 25px; }
+    .slider-button { display: none; }
+    .hospital-doctor-grid { margin: 0; padding-left: 0; padding-right: 0; }
+}
+
+/* Thêm CSS cho ảnh icon */
+.feature-icon .feature-img {
+    width: 55px; /* Bắt buộc ảnh có kích thước 40px */
+    height: 55px;
+    object-fit: contain; /* Đảm bảo ảnh hiển thị đầy đủ, không bị cắt */
+    display: block;
+}
+
+/* Cập nhật .feature-icon để loại bỏ màu nền và text cũ */
+.feature-icon { 
+    width: 70px; 
+    height: 70px; 
+    /* ĐÃ XÓA background-color VÀ font-size cũ vì giờ dùng ảnh */
+    background-color: transparent; /* Đảm bảo không còn màu nền xanh */
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin: 0 auto 8px; 
+    /* XÓA font-size: 1.2rem; */
+}
+    </style>
+</head>
+<body>
+    
+<header class="main-header">
+    <div class="container header-content">
+        <div class="logo">HEALTH<span style="color: #666; font-weight: 500;">CARE</span></div>
+        
+        <div class="nav-area" data-include-html="menu.html">
+            <p style="margin: 0; color: #aaa;">Đang tải menu...</p>
+        </div>
+        
+    </div>
+</header>
+
+
+    <div class="hero-section">
+        <div class="container hero-content">
+            <h1>Kết nối Người Dân với Cơ sở & Dịch vụ Y tế hàng đầu</h1>
+            <p>Đặt khám nhanh tại 100+ bệnh viện và 1000+ phòng khám hàng đầu Việt Nam</p>
+            
+            <div class="ai-search-box">
+                <input type="text" id="symptom-input" placeholder="AI hỗ trợ tìm kiếm, tra cứu triệu chứng bệnh...">
+                <button class="btn-ai-search" onclick="simulateAIChat()">
+                    <span style="font-size: 1.1rem; margin-right: 5px;"></span> TRA CỨU
+                </button>
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="container">
+        <div id="ai-result-panel">
+            </div>
+    </div>
+
+
+<div class="feature-container">
+    <div class="container">
+        <div class="feature-grid">
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="data/ICON/datlich.webp" alt="Đặt lịch khám" class="feature-img">
+                </div>
+                <p>Đặt lịch khám</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="data/ICON/sothutu.webp" alt="Lấy số thứ tự" class="feature-img">
+                </div>
+                <p>Lấy số thứ tự</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="data/ICON/tuvantuxa.webp" alt="Tư vấn từ xa" class="feature-img">
+                </div>
+                <p>Tư vấn từ xa</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="data/ICON/goikham.webp" alt="Gói khám" class="feature-img">
+                </div>
+                <p>Gói khám</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="data/ICON/ytetainha.webp" alt="Y tế tại nhà" class="feature-img">
+                </div>
+                <p>Y tế tại nhà</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="data/ICON/tiemchung.webp" alt="Tiêm chủng" class="feature-img">
+                </div>
+                <p>Tiêm chủng</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="data/ICON/xetnghiem.webp" alt="Xét nghiệm" class="feature-img">
+                </div>
+                <p>Xét nghiệm</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <img src="data/ICON/thanhtoan.webp" alt="Thanh toán viện phí" class="feature-img">
+                </div>
+                <p>Thanh toán viện phí</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="content-section" style="padding-top: 0;">
+        <div class="container">
+            <h2 class="section-title">Cơ sở y tế đặt khám được yêu thích</h2>
+            <div class="slider-wrapper">
+                <div class="slider-button left" onclick="scrollSlider('hospital-slider', -1)"> &lt; </div>
+                
+                <div class="hospital-doctor-grid" id="hospital-slider">
+                    
+                    <a href="benh-vien-dai-hoc-y-duoc-tp-hcm/index.html" class="special-card">
+                        <img src="data/IMG/BENHVIEN/daihocytphcm.webp" alt="Bệnh viện">
+                        <div class="card-text-content">
+                            <h3>Bệnh viện ĐH Y Dược TPHCM</h3>
+                            <span class="sub-title">20-22 Dương Quang Trung, Phường Hòa Hưng, TP. Hồ Chí Minh</span>
+                        </div>
+                        <span class="btn-more">Đặt khám ngay</span>
+                    </a>
+                    
+                    <a href="benh-vien-nhi-dong-can-tho/index.html" class="special-card">
+                        <img src="data/IMG/BENHVIEN/nhidongcantho.webp" alt="Bệnh viện">
+                         <div class="card-text-content">
+                            <h3>Bệnh viện Nhi đồng Cần Thơ</h3>
+                            <span class="sub-title">Số 345 Nguyễn Văn Cừ, P. An Bình, TP. Cần Thơ</span>
+                        </div>
+                        <span class="btn-more">Đặt khám ngay</span>
+                    </a>
+                    
+                    <a href="benh-vien-tu-du/index.html" class="special-card">
+                        <img src="data/IMG/BENHVIEN/tudu.webp" alt="Bệnh viện">
+                         <div class="card-text-content">
+                            <h3>Bệnh viện Từ Dũ</h3>
+                            <span class="sub-title">284 Cống Quỳnh, P. Bến Thành, TP. Hồ Chí Minh</span>
+                        </div>
+                        <span class="btn-more">Đặt khám ngay</span>
+                    </a>
+                    
+                    <a href="benh-vien-nhi-dong-1/index.html" class="special-card">
+                        <img src="data/IMG/BENHVIEN/nhidong1.webp" alt="Bệnh viện">
+                         <div class="card-text-content">
+                            <h3>Bệnh viện Nhi Đồng 1</h3>
+                            <span class="sub-title">341 Sư Vạn Hạnh, Phường Vườn Lài, TP. Hồ Chí Minh</span>
+                        </div>
+                        <span class="btn-more">Đặt khám ngay</span>
+                    </a>
+                    
+                    <a href="benh-vien-da-khoa-trung-uong-can-tho/index.html" class="special-card">
+                        <img src="data/IMG/BENHVIEN/dakhoatwct.webp" alt="Bệnh viện">
+                         <div class="card-text-content">
+                            <h3>Bệnh viện Đa khoa TW Cần thơ</h3>
+                            <span class="sub-title">315 Nguyễn Văn Linh, Phường Tân An, TP Cần Thơ</span>
+                        </div>
+                        <span class="btn-more">Đặt khám ngay</span>
+                    </a>
+                    
+                </div>
+                
+                <div class="slider-button right" onclick="scrollSlider('hospital-slider', 1)"> &gt; </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section" style="background-color: var(--off-white); padding-top: 80px; padding-bottom: 80px;">
+        <div class="container">
+            <h2 class="section-title">Bác sĩ TƯ VẤN khám bệnh qua video</h2>
+            <div class="slider-wrapper">
+                <div class="slider-button left" onclick="scrollSlider('doctor-slider', -1)"> &lt; </div>
+                
+                <div class="hospital-doctor-grid" id="doctor-slider">
+                    
+                    <a href="bac-si/ths-bs-nguyen-tri-nhan/index.html" class="special-card">
+                        <img src="data/IMG/BACSI/bacsi.webp" alt="Bác sĩ">
+                         <div class="card-text-content">
+                            <h3>ThS.BS. Nguyễn Trí Nhân</h3>
+                            <span class="sub-title">Chuyên khoa: Da liễu, Thẩm mỹ</span>
+                            <span class="sub-title">150.000đ</span>
+                            <span class="sub-title">Bác sĩ Chuyên Khoa</span>
+                        </div>
+                        <span class="btn-more">Tư vấn ngay</span>
+                    </a>
+                    
+                    <a href="bac-si/ths-bs-nguyen-tri-nhan/index.html" class="special-card">
+                        <img src="data/IMG/BACSI/bacsi.webp" alt="Bác sĩ">
+                         <div class="card-text-content">
+                            <h3>BSCKII. Nguyễn Thị B</h3>
+                            <span class="sub-title">Chuyên khoa: Da Liễu, Thẩm mỹ</span>
+                            <span class="sub-title">150.000đ</span>
+                            <span class="sub-title">Bác sĩ Chuyên Khoa</span>
+                        </div>
+                        <span class="btn-more">Tư vấn ngay</span>
+                    </a>
+                    
+                    <a href="bac-si/ths-bs-nguyen-tri-nhan/index.html" class="special-card">
+                        <img src="data/IMG/BACSI/bacsi.webp" alt="Bác sĩ">
+                         <div class="card-text-content">
+                            <h3>ThS.BS. Trần Văn C</h3>
+                            <span class="sub-title">Chuyên khoa: Nhi Khoa, Dinh dưỡng</span>
+                            <span class="sub-title">150.000đ</span>
+                            <span class="sub-title">Bác sĩ Chuyên Khoa</span>
+                        </div>
+                        <span class="btn-more">Tư vấn ngay</span>
+                    </a>
+                    
+                    <a href="bac-si/ths-bs-nguyen-tri-nhan/index.html" class="special-card">
+                        <img src="data/IMG/BACSI/bacsi.webp" alt="Bác sĩ">
+                         <div class="card-text-content">
+                            <h3>TS.BS. Phan Thị D</h3>
+                            <span class="sub-title">Chuyên khoa: Tiêu hóa, Gan mật</span>
+                            <span class="sub-title">150.000đ</span>
+                            <span class="sub-title">Bác sĩ Chuyên Khoa</span>
+                        </div>
+                        <span class="btn-more">Tư vấn ngay</span>
+                    </a>
+                    
+                </div>
+                
+                <div class="slider-button right" onclick="scrollSlider('doctor-slider', 1)"> &gt; </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="container">
+            <h2 class="section-title">Chăm sóc sức khỏe toàn diện</h2>
+            <div class="slider-wrapper">
+                <div class="slider-button left" onclick="scrollSlider('care-slider', -1)"> &lt; </div>
+                
+                <div class="hospital-doctor-grid" id="care-slider">
+                    
+                    <a href="goi-kham-suc-khoe/khamtongquat.html" class="special-card">
+                        <img src="data/IMG/CHAMSOCSUCKHOETOANDIEN/khamtongquat.webp" alt="Gói khám">
+                         <div class="card-text-content">
+                            <h3>Gói khám Tổng quát Tiêu chuẩn</h3>
+                            <span class="sub-title">Bệnh viện Đa khoa Trung ương Cần Thơ</span>
+                            <span class="sub-title"><span style="color: #ffb700; font-weight: 500;">1.990.000đ</span></span>
+                        </div>
+                        <span class="btn-more">Đặt khám ngay</span>
+                    </a>
+                    
+                    <a href="goi-kham-suc-khoe/khamtongquat.html" class="special-card">
+                        <img src="data/IMG/CHAMSOCSUCKHOETOANDIEN/tiemchung.webp" alt="Gói khám">
+                         <div class="card-text-content">
+                            <h3>Tiêm chủng & Xét nghiệm tại nhà</h3>
+                            <span class="sub-title">Bệnh viện Đa khoa Trung ương Cần Thơ</span>
+                            <span class="sub-title"><span style="color: #ffb700; font-weight: 500;">1.990.000đ</span></span>
+                        </div>
+                        <span class="btn-more">Đặt khám ngay</span>
+                    </a>
+                    
+                    <a href="goi-kham-suc-khoe/khamtongquat.html" class="special-card">
+                        <img src="data/IMG/CHAMSOCSUCKHOETOANDIEN/tamsoatungthu.webp" alt="Gói khám">
+                         <div class="card-text-content">
+                            <h3>Tầm soát Ung thư chuyên sâu</h3>
+                            <span class="sub-title">Bệnh viện Đa khoa Trung ương Cần Thơ</span>
+                            <span class="sub-title"><span style="color: #ffb700; font-weight: 500;">1.990.000đ</span></span>
+                        </div>
+                        <span class="btn-more">Đặt khám ngay</span>
+                    </a>
+                    
+                    <a href="goi-kham-suc-khoe/khamtongquat.html" class="special-card">
+                        <img src="data/IMG/CHAMSOCSUCKHOETOANDIEN/doanhnghiep.webp" alt="Gói khám">
+                         <div class="card-text-content">
+                            <h3>Gói khám Sức khỏe Doanh nghiệp</h3>
+                            <span class="sub-title">Bệnh viện Đa khoa Trung ương Cần Thơ</span>
+                            <span class="sub-title"><span style="color: #ffb700; font-weight: 500;">1.990.000đ</span></span>
+                        </div>
+                        <span class="btn-more">Đặt khám ngay</span>
+                    </a>
+                    
+                </div>
+                
+                <div class="slider-button right" onclick="scrollSlider('care-slider', 1)"> &gt; </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        // HÀM MỚI: TÍCH HỢP AI GEMINI
+        // KHUYẾN NGHỊ: NÊN SỬ DỤNG BACK-END PROXY ĐỂ BẢO MẬT API KEY.
+        window.simulateAIChat = async function() {
+            const inputElement = document.getElementById('symptom-input');
+            const resultPanel = document.getElementById('ai-result-panel');
+            const symptoms = inputElement.value.trim();
+
+            if (symptoms === "") {
+                resultPanel.style.display = 'none';
+                return;
+            }
+
+            // ⚠️ CẦN THAY THẾ 'YOUR_GEMINI_API_KEY_HERE' BẰNG KHÓA API CỦA BẠN
+            const GEMINI_API_KEY = "AIzaSyDj5hRnm0UMq8W_-pk-c9yzam2wrg4JSBM"; 
+            const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            
+            // 1. Hiển thị trạng thái đang tải
+            resultPanel.innerHTML = `
+                <div style="text-align: center; padding: 30px;">
+                    <p style="color: var(--primary-blue); font-weight: 700; font-size: 1.1rem;">Hệ thống AI Health Care đang tra cứu...</p>
+                    <div class="loader" style="border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-blue); border-radius: 50%; width: 20px; height: 20px; animation: spin 2s linear infinite; margin: 10px auto;"></div>
+                </div>
+                <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+            `;
+            resultPanel.style.display = 'block';
+            resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            try {
+                // Thiết lập prompt chuyên biệt cho y tế
+                const prompt = `Bạn là một trợ lý y tế AI (Healthy Care AI) chuyên phân tích triệu chứng. Vui lòng phân tích triệu chứng sau: "${symptoms}".
+                
+                Trả lời bằng tiếng Việt và tuân thủ định dạng sau:
+                1. BẮT BUỘC bắt đầu bằng khuyến cáo này: "⚠️ **KHUYẾN CÁO:** Kết quả AI chỉ mang tính chất tham khảo. Bạn cần đến cơ sở y tế để được chẩn đoán chính xác."
+                2. Sau đó, cung cấp một tiêu đề: "💡 Phân tích từ Hệ thống Healthy Care:"
+                3. Phân tích triệu chứng (tối đa 3 câu).
+                4. Đưa ra 2-3 gạch đầu dòng về chuyên khoa nên khám và mức độ khẩn cấp.
+                5. Đảm bảo toàn bộ nội dung được định dạng bằng Markdown thích hợp (ví dụ: dùng **in đậm**, dấu * cho danh sách).`;
+                
+                const response = await fetch(GEMINI_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Lỗi HTTP: ${response.status} - ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                let geminiText = "Không có kết quả từ AI.";
+                if (data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+                     geminiText = data.candidates[0].content.parts[0].text;
+                }
+
+                // CHuyển đổi Markdown cơ bản sang HTML để phù hợp với style hiện tại
+                // LƯU Ý: Đây là phương pháp chuyển đổi Markdown thủ công, nên dùng thư viện nếu cần phức tạp hơn.
+                let finalResponseHTML = geminiText
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // In đậm
+                    .replace(/\n\n/g, '<p></p>') // Đoạn mới
+                    .replace(/\n/g, '<br>') // Xuống dòng
+                    .replace(/⚠️(.*?)(<br>)?/g, '<div class="ai-disclaimer" style="font-weight: 500; color: var(--dark-text); margin-bottom: 15px;">⚠️ $1</div>')
+                    .replace(/💡(.*?):(<br>)?/g, '<h3 style="color: var(--primary-blue); margin-bottom: 15px; font-size: 1.4rem; font-weight: 700;">💡 $1:</h3>')
+                    .replace(/<li>/g, '<li style="margin-left: -15px;">'); // Chỉnh list style
+
+                // Bổ sung nút hành động (Button)
+                finalResponseHTML += `
+                    <div style="margin-top: 25px; text-align: center;">
+                        <a href="#" style="background: var(--primary-blue); color: white; padding: 12px 25px; border-radius: var(--button-radius); font-weight: 700; display: inline-block; box-shadow: 0 4px 10px rgba(0, 181, 241, 0.4); text-decoration: none;">
+                            Xem Danh sách Bác sĩ Chuyên khoa
+                        </a>
+                    </div>
+                `;
+                
+                resultPanel.innerHTML = finalResponseHTML;
+
+            } catch (error) {
+                console.error("Lỗi khi gọi API Health Care:", error);
+                resultPanel.innerHTML = `
+                    <h3 style="color: #ff3860; font-size: 1.4rem;">❌ Lỗi Tra Cứu:</h3>
+                    <p>Không thể kết nối với hệ thống AI Health Care. Vui lòng kiểm tra API Key và đảm bảo bạn đang sử dụng một **Back-end Proxy** để bảo mật khóa API. Chi tiết lỗi: ${error.message}</p>
+                `;
+            }
+        }
+        
+        // Hàm JavaScript để điều hướng Slider (Giữ nguyên)
+        window.scrollSlider = function(sliderId, direction) {
+            const slider = document.getElementById(sliderId);
+            if (!slider) return;
+
+            const cardWidth = 320; 
+            const gap = 20;
+            const scrollAmount = (cardWidth + gap) * direction; 
+
+            slider.scrollBy({
+                left: scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+<script src="include.js"></script> 
+
+</body>
+</html>

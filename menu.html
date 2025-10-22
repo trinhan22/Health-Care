@@ -1,0 +1,84 @@
+<style>/* ------------------------------------------------ */
+/* 1. THANH MENU (HEADER) */
+/* ------------------------------------------------ */
+.main-header {
+    background-color: var(--off-white);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); 
+    padding: 15px 0; 
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.nav-area {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    gap: 25px;
+    font-weight: 500;
+}
+
+.nav-links a {
+    color: var(--dark-text);
+    transition: color 0.2s;
+    text-decoration: none;
+}
+
+.nav-links a:hover {
+    color: var(--primary-blue);
+}
+
+.logo {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8rem; 
+    font-weight: 900; 
+    color: var(--primary-blue);
+}
+
+/* NÚT ĐĂNG NHẬP */
+.btn-login {
+    background: var(--primary-blue);
+    color: var(--off-white) !important; 
+    padding: 8px 20px;
+    border-radius: var(--button-radius); /* Bo tròn mềm mại */
+    font-weight: 700;
+    margin-left: 30px;
+    box-shadow: 0 4px 10px rgba(0, 181, 241, 0.4); 
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.btn-login:hover {
+    background: #0099cc;
+    transform: translateY(-1px);
+}
+</style>
+<html>
+                <nav>
+                <ul class="nav-links">
+                    <li><a href="#">Trang Chủ</a></li>
+                    <li><a href="#">Đặt Khám</a></li>
+                    <li><a href="#">Tư Vấn Online</a></li>
+                    <li><a href="#">Gói Khám</a></li>
+                    <li><a href="#">Liên Hệ</a></li>
+                </ul>
+            </nav>
+
+            <a href="javascript:void(0)" class="btn-login" onclick="alert('Đang chuyển đến trang Đăng nhập...')">Đăng nhập</a>
+            </html>

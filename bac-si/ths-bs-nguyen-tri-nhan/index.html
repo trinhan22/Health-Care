@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ths. BS. Nguyễn Trí Nhân</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS VARIABLES (Đảm bảo đồng nhất với index.html) */
+        :root {
+            --primary-blue: #00b5f1;
+            --dark-text: #003553;
+            --light-bg: #e8f4fd;
+            --off-white: #ffffff; 
+            --card-radius: 16px;
+            --button-radius: 30px;
+            --shadow-clean: 0 6px 16px 0 rgba(77, 88, 143, .1);
+            --shadow-search: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        /* ------------------------------------------------ */
+        /* RESET & TYPOGRAPHY */
+        /* ------------------------------------------------ */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--off-white); 
+            color: var(--dark-text);
+        }
+        
+        a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* ------------------------------------------------ */
+        /* HEADER (GIỮ NGUYÊN CSS TỪ index.html) */
+        /* ------------------------------------------------ */
+        .main-header {
+            background-color: var(--off-white);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); 
+            padding: 15px 0; 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 30px; 
+        }
+
+        .btn-login {
+            background: var(--primary-blue);
+            color: var(--off-white) !important; 
+            padding: 8px 20px;
+            border-radius: var(--button-radius); 
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 10px rgba(0, 181, 241, 0.4); 
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        /* ------------------------------------------------ */
+        /* BREADCRUMB (THANH ĐIỀU HƯỚNG) */
+        /* ------------------------------------------------ */
+        .breadcrumb-section {
+            padding: 20px 0 10px;
+            background-color: var(--off-white);
+            border-bottom: 1px solid var(--border-gray);
+        }
+        .breadcrumb a {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .breadcrumb span {
+            margin: 0 5px;
+            color: #ccc;
+        }
+
+        /* ------------------------------------------------ */
+        /* KHỐI NỘI DUNG CHÍNH */
+        /* ------------------------------------------------ */
+        .doctor-page-content {
+            display: flex;
+            gap: 30px;
+            padding: 30px 0;
+            align-items: flex-start;
+        }
+        
+        .main-info-column {
+            flex: 3;
+            min-width: 0; 
+        }
+        
+        /* ------------------------------------------------ */
+        /* THÔNG TIN CHUNG BÁC SĨ */
+        /* ------------------------------------------------ */
+        .doctor-profile-card {
+            background-color: var(--off-white);
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+            padding: 30px;
+            display: flex;
+            gap: 25px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-gray);
+        }
+        
+        .doctor-avatar {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid var(--primary-blue);
+        }
+        
+        .doctor-details h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            margin: 0 0 5px;
+            color: var(--dark-text);
+            font-weight: 700;
+        }
+        
+        .doctor-details .specialty {
+            font-size: 1.2rem;
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .doctor-details p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 10px;
+        }
+        
+        /* ------------------------------------------------ */
+        /* CHI TIẾT CHUYÊN MÔN */
+        /* ------------------------------------------------ */
+        .detail-card {
+            background-color: var(--off-white);
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-gray);
+        }
+
+        .detail-card h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.6rem;
+            color: var(--primary-blue); /* ĐÃ THAY ĐỔI: Màu xanh chủ đạo */
+            border-bottom: 2px solid var(--light-bg);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-card ul {
+            list-style: none;
+            padding-left: 0;
+            line-height: 2;
+            font-size: 1rem;
+        }
+
+        .detail-card ul li {
+            border-bottom: 1px dashed #f0f0f0;
+            padding: 5px 0;
+        }
+        
+        .detail-card ul li::before {
+            content: "✓";
+            color: var(--primary-blue);
+            font-weight: 700;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+
+        /* ------------------------------------------------ */
+        /* SIDEBAR ĐẶT LỊCH (ĐÃ CHỈNH KÍCH THƯỚC NÚT) */
+        /* ------------------------------------------------ */
+        .sidebar-booking {
+            flex: 2;
+            position: sticky;
+            top: 80px;
+            background-color: var(--off-white);
+            border-radius: var(--card-radius);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            border: 1px solid var(--primary-blue);
+        }
+
+        .sidebar-booking h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: center;
+            border-bottom: 2px solid var(--light-bg);
+            padding-bottom: 10px;
+        }
+        
+        .price-info {
+            background-color: var(--light-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 1px solid var(--border-gray);
+        }
+        
+        .price-info strong {
+            display: block;
+            font-size: 2.2rem;
+            color: #ff8c00;
+            font-weight: 900;
+        }
+        
+        .price-info span {
+            font-size: 1rem;
+            color: var(--dark-text);
+            font-weight: 500;
+        }
+
+        .booking-form .btn-book {
+            display: block;
+            width: 100%;
+            background-color: var(--primary-blue);
+            color: white;
+            /* Tăng padding dọc (độ dài) và giảm padding ngang (độ rộng) */
+            padding: 15px 0px; 
+            
+            /* Giảm bo góc để phù hợp với hình dáng thon */
+            border-radius: 10px; 
+            
+            font-weight: 700;
+            font-size: 1.0rem;
+            text-align: center;
+            box-shadow: 0 6px 15px rgba(0, 181, 241, 0.5);
+            transition: all 0.2s;
+            margin-top: 20px;
+        }
+        
+        .booking-form .btn-book:hover {
+             background-color: #0099cc;
+             transform: translateY(-2px);
+        }
+
+        .booking-form select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-gray);
+            background-color: #fff;
+            font-size: 1rem;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23999%22%20d%3D%22M287%2069.9%20146.2%20208.7%205.4%2069.9z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .doctor-page-content {
+                flex-direction: column;
+            }
+            .sidebar-booking {
+                position: relative;
+                top: auto;
+                width: 100%;
+                order: -1;
+            }
+            .doctor-profile-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+            .doctor-avatar {
+                margin: 0 auto;
+            }
+            .doctor-details h1 { font-size: 1.6rem; }
+            .detail-card { padding: 20px; }
+            .detail-card h2 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="main-header">
+    <div class="container header-content">
+        <div class="logo">HEALTH<span style="color: #666; font-weight: 500;">CARE</span></div>
+        
+        <div class="nav-area" data-include-html="../../menu.html">
+            <p style="margin: 0; color: #aaa;">Đang tải menu...</p>
+        </div>
+        
+    </div>
+</header>
+
+<section class="breadcrumb-section">
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="../../index.html">Trang chủ</a>
+            <span>/</span>
+            <a href="#">Tư vấn từ xa</a>
+            <span>/</span>
+            <span>Ths. BS. Lê Hoàng Thiên</span>
+        </div>
+    </div>
+</section>
+
+<section class="main-content-section">
+    <div class="container doctor-page-content">
+        
+        <div class="main-info-column">
+            
+            <div class="doctor-profile-card">
+                <img src="../../data/IMG/BACSI/bacsi.webp" alt="Ths. BS. Lê Hoàng Thiên" class="doctor-avatar">
+                <div class="doctor-details">
+                    <h1>Thạc sĩ, Bác sĩ Nguyễn Trí Nhân</h1>
+                    <div class="specialty">Chuyên khoa: Da liễu</div>
+                    <p>Bác sĩ Nhân là một chuyên gia có hơn 10 năm kinh nghiệm trong lĩnh vực khám và điều trị các bệnh lý về Da Liễu, đặc biệt là các vấn đề về mụn trứng cá, nám da và bệnh ngoài da phức tạp.</p>
+                    <p>Bác sĩ hiện đang công tác tại **Bệnh viện Da Liễu TP. Hồ Chí Minh** và đã hoàn thành chương trình Thạc sĩ tại Đại học Y Dược TP. Hồ Chí Minh.</p>
+                </div>
+            </div>
+            
+            <div class="detail-card">
+                <h2>Lĩnh vực chuyên môn</h2>
+                <p style="font-style: italic; color: #555; margin-bottom: 10px;">Các vấn đề Bác sĩ Thiên có thể tư vấn trực tuyến:</p>
+                <ul>
+                    <li>Điều trị mụn trứng cá nặng, mụn nội tiết, và sẹo mụn.</li>
+                    <li>Chẩn đoán và điều trị các bệnh da liễu như nấm, chàm, vảy nến, viêm da cơ địa.</li>
+                    <li>Tư vấn và điều trị các vấn đề về thẩm mỹ da: nám, tàn nhang, lão hóa da.</li>
+                    <li>Sử dụng laser và các liệu pháp ánh sáng trong điều trị da.</li>
+                </ul>
+            </div>
+            
+            <div class="detail-card">
+                <h2>Quá trình đào tạo & Công tác</h2>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li style="border-bottom: 1px dashed #f0f0f0; padding: 5px 0;">**2015 - Hiện tại:** Bác sĩ điều trị tại Bệnh viện Da Liễu TP. Hồ Chí Minh.</li>
+                    <li style="border-bottom: 1px dashed #f0f0f0; padding: 5px 0;">**2013 - 2015:** Hoàn thành chương trình Thạc sĩ Da Liễu, Đại học Y Dược TP. Hồ Chí Minh.</li>
+                    <li style="padding: 5px 0;">**2010 - 2013:** Bác sĩ nội trú tại Bệnh viện Chợ Rẫy, Khoa Da Liễu.</li>
+                </ul>
+            </div>
+            
+        </div>
+        
+        <div class="sidebar-booking">
+            <h2>Đặt Lịch Tư Vấn Trực Tuyến</h2>
+            
+            <div class="price-info">
+                <span>Phí Tư Vấn Qua Video (Mỗi lần)</span>
+                <strong>150.000 VNĐ</strong>
+            </div>
+            
+            <div class="booking-form">
+                <p style="font-weight: 500; margin-bottom: 10px;">Chọn ngày và giờ khám:</p>
+                
+                <select name="date">
+                    <option value="">-- Chọn ngày khám --</option>
+                    <option value="2025-10-15">Thứ Ba, 15/10/2025</option>
+                    <option value="2025-10-16">Thứ Tư, 16/10/2025</option>
+                </select>
+                
+                <select name="time">
+                    <option value="">-- Chọn giờ khám --</option>
+                    <option value="08:00">08:00 - 08:30 (Còn 2 slot)</option>
+                    <option value="09:00">09:00 - 09:30 (Còn 1 slot)</option>
+                    <option value="15:00">15:00 - 15:30 (Mới)</option>
+                </select>
+                
+                <a href="#" class="btn-book">ĐẶT LỊCH NGAY</a>
+                
+                <p style="font-size: 0.85rem; color: #999; text-align: center; margin-top: 15px;">Thời gian tư vấn dự kiến: 15 - 20 phút</p>
+            </div>
+        </div>
+        
+    </div>
+</section>
+
+<script src="../../include.js"></script>
+
+</body>
+</html>

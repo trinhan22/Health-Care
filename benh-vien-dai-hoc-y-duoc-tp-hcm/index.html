@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đặt lịch - Bệnh viện Đại học Y Dược TP.HCM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* [TOÀN BỘ CSS SẼ ĐƯỢC CUNG CẤP Ở MỤC 2] */
+        :root {
+            --primary-blue: #00b5f1;
+            --dark-text: #003553;
+            --light-bg: #e8f4fd;
+            --off-white: #ffffff; 
+            --card-radius: 16px;
+            --button-radius: 30px;
+            --shadow-clean: 0 6px 16px 0 rgba(77, 88, 143, .1);
+            --shadow-search: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        /* ------------------------------------------------ */
+        /* BASE & TYPOGRAPHY */
+        /* ------------------------------------------------ */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            min-height: 200vh; /* Để test hiệu ứng sticky */
+        }
+        a {
+            text-decoration: none;
+            color: var(--primary-blue);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* ------------------------------------------------ */
+        /* HEADER (REUSE) */
+        /* ------------------------------------------------ */
+        .main-header {
+            background-color: var(--off-white);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); 
+            padding: 15px 0; 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem; 
+            font-weight: 900; 
+            color: var(--primary-blue);
+        }
+        /* ------------------------------------------------ */
+        /* BREADCRUMB */
+        /* ------------------------------------------------ */
+        .page-hospital {
+            background-color: var(--off-white);
+            padding-bottom: 50px;
+        }
+        .breadcrumb-section {
+            padding: 20px 0 10px;
+            background-color: var(--off-white);
+            border-bottom: 1px solid var(--border-gray);
+        }
+        .breadcrumb a {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .breadcrumb span {
+            margin: 0 5px;
+            color: #ccc;
+        }
+        /* ------------------------------------------------ */
+        /* HOSPITAL HEADER / BANNER */
+        /* ------------------------------------------------ */
+        .hospital-header {
+            display: flex;
+            gap: 30px;
+            padding: 40px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .hospital-logo {
+            flex-shrink: 0;
+        }
+        .hospital-logo img {
+            width: 100px;
+            height: 100px;
+            border-radius: var(--card-radius);
+            object-fit: cover;
+            box-shadow: var(--shadow-clean);
+        }
+        .hospital-info-text h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin: 0 0 10px 0;
+            color: var(--dark-text);
+        }
+        .hospital-info-text p {
+            font-size: 1rem;
+            color: #555;
+            margin: 0 0 15px 0;
+        }
+        .rating-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .rating-stars {
+            color: #ffc107;
+        }
+        .btn-follow {
+            background: #f0f7ff;
+            color: var(--primary-blue);
+            padding: 8px 15px;
+            border-radius: var(--button-radius);
+            font-weight: 700;
+            transition: background-color 0.2s;
+            border: 1px solid var(--primary-blue);
+        }
+        .btn-follow:hover {
+            background: var(--primary-blue);
+            color: var(--off-white);
+        }
+
+        /* ------------------------------------------------ */
+        /* MAIN CONTENT LAYOUT (STICKY SIDEBAR) */
+        /* ------------------------------------------------ */
+        .content-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr; /* Sidebar 300px, Nội dung chính 1 phần */
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .sidebar-nav {
+            /* Hiệu ứng Sticky */
+            position: sticky;
+            top: 100px; /* Cố định cách header một khoảng */
+            height: fit-content;
+            
+            /* Box Styling */
+            background-color: var(--off-white);
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+            padding: 20px 0;
+            border: 1px solid #eee;
+        }
+        
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-nav li a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--dark-text);
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav li a:hover {
+            background-color: #f0f7ff;
+            color: var(--primary-blue);
+        }
+
+        .sidebar-nav li.active a {
+            background-color: #f0f7ff;
+            color: var(--primary-blue);
+            border-left: 3px solid var(--primary-blue);
+        }
+
+        /* ------------------------------------------------ */
+        /* HOSPITAL INFO SECTIONS */
+        /* ------------------------------------------------ */
+        .hospital-info .section-block {
+            background-color: var(--off-white);
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+            border: 1px solid #eee;
+        }
+        .hospital-info .section-block h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: var(--primary-blue);
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f7ff;
+        }
+        .hospital-info .section-block p {
+            line-height: 1.8;
+            color: #333;
+        }
+
+        /* Department Grid */
+        .department-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .department-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .department-item:hover {
+            background-color: #f0f7ff;
+            border-color: var(--primary-blue);
+        }
+
+        /* Doctor Card (Simple) */
+        .doctor-card {
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            align-items: center;
+            transition: box-shadow 0.2s;
+        }
+        .doctor-card:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        .doctor-avatar img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .doctor-details h3 {
+            font-size: 1.2rem;
+            margin: 0 0 5px 0;
+            color: var(--dark-text);
+        }
+        .doctor-details p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .doctor-details .btn-book {
+            display: inline-block;
+            background: var(--primary-blue);
+            color: white;
+            padding: 5px 15px;
+            border-radius: var(--button-radius);
+            margin-top: 10px;
+            font-weight: 700;
+        }
+
+        /* ------------------------------------------------ */
+        /* STICKY BOOKING CTA */
+        /* ------------------------------------------------ */
+        .sticky-booking-cta {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--off-white);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 900;
+            padding: 15px 0;
+            display: none; /* Ẩn trên desktop, chỉ hiện trên mobile/tablet */
+        }
+        .sticky-booking-cta .container {
+            display: flex;
+            justify-content: center;
+        }
+        .btn-sticky-book {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            background: var(--primary-blue);
+            color: white;
+            padding: 12px 25px;
+            border-radius: var(--button-radius);
+            font-weight: 700;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* ------------------------------------------------ */
+        /* RESPONSIVE */
+        /* ------------------------------------------------ */
+        @media (max-width: 992px) {
+            .content-layout {
+                grid-template-columns: 1fr; /* Chuyển sang bố cục một cột */
+                gap: 20px;
+            }
+            .sidebar-nav {
+                position: static; /* Bỏ sticky trên mobile */
+                top: auto;
+                padding: 15px;
+                order: -1; /* Đưa sidebar lên đầu (trên breadcrumb) */
+            }
+            .sidebar-nav ul {
+                display: flex;
+                overflow-x: auto; /* Cho phép cuộn ngang */
+                gap: 10px;
+                padding-bottom: 5px;
+            }
+            .sidebar-nav li {
+                flex-shrink: 0;
+            }
+            .sidebar-nav li a {
+                padding: 8px 15px;
+                border-left: none;
+                border-radius: var(--button-radius);
+                border: 1px solid #ddd;
+            }
+            .sidebar-nav li.active a {
+                border-left: none;
+                border: 1px solid var(--primary-blue);
+            }
+            
+            .hospital-header {
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px 0;
+                text-align: center;
+                align-items: center;
+            }
+
+            .hospital-info-text h1 {
+                font-size: 1.6rem;
+            }
+            
+            .department-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sticky-booking-cta {
+                display: block; /* Hiển thị CTA booking ở cuối trang mobile */
+            }
+            
+            .hospital-info {
+                padding-bottom: 80px; /* Thêm khoảng đệm cho CTA cố định */
+            }
+        }
+
+        
+    </style>
+</head>
+<body>
+    
+<header class="main-header">
+    <div class="container header-content">
+        <div class="logo">HEALTH<span style="color: #666; font-weight: 500;">CARE</span></div>
+        
+        <div class="nav-area" data-include-html="../menu.html">
+            <p style="margin: 0; color: #aaa;">Đang tải menu...</p>
+        </div>
+        
+    </div>
+</header>
+
+<section class="breadcrumb-section">
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="../../index.html">Trang chủ</a>
+            <span>/</span>
+            <a href="#">Đặt khám</a>
+            <span>/</span>
+            <span>Bệnh viện Đại học Y Dược TP.HCM</span>
+        </div>
+    </div>
+</section>
+
+    <div class="page-hospital">
+        <div class="container">
+            
+            <div class="hospital-header">
+                <div class="hospital-logo">
+                    <img src="../benh-vien-dai-hoc-y-duoc-tp-hcm/logo.webp" alt="Logo Bệnh viện">
+                </div>
+                <div class="hospital-info-text">
+                    <h1>Bệnh viện Đại học Y Dược TP.HCM - Cơ sở 1</h1>
+                    <p>Địa chỉ: 215 Hồng Bàng, Phường 11, Quận 5, TP. HCM</p>
+                    <div class="rating-box">
+                        <span class="rating-stars">⭐⭐⭐⭐⭐</span>
+                        <span>4.8 (8,500 đánh giá)</span>
+                        <a href="javascript:void(0)" class="btn-follow">Đặt Khám ngay</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-layout">
+                
+                <div class="sidebar-nav">
+                    <ul>
+                        <li class="active"><a href="#gioi-thieu">Giới thiệu</a></li>
+                        <li><a href="#chuyen-khoa">Các Chuyên khoa</a></li>
+                        <li><a href="#bac-si">Đội ngũ Bác sĩ</a></li>
+                        <li><a href="#danh-gia">Đánh giá</a></li>
+                        <li><a href="#lien-he">Liên hệ & Bản đồ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="hospital-info">
+                    
+                    <div id="gioi-thieu" class="section-block">
+                        <h2>Giới thiệu về Bệnh viện</h2>
+                        <p>Bệnh viện Đại học Y Dược TP.HCM là một trong những cơ sở y tế hàng đầu tại Việt Nam, kết hợp giữa khám chữa bệnh và đào tạo y khoa. Bệnh viện luôn đi đầu trong việc áp dụng các kỹ thuật y tế tiên tiến nhất, mang đến chất lượng dịch vụ tốt nhất cho người bệnh.</p>
+                        <p>Đội ngũ y bác sĩ tại Bệnh viện đều là những chuyên gia đầu ngành, có trình độ chuyên môn cao và kinh nghiệm lâu năm. Cơ sở vật chất hiện đại, môi trường thân thiện, chuyên nghiệp.</p>
+                    </div>
+
+                    <div id="chuyen-khoa" class="section-block">
+                        <h2>Các Chuyên khoa nổi bật</h2>
+                        <div class="department-grid">
+                            <a href="#" class="department-item">Khoa Nội Tổng Quát</a>
+                            <a href="#" class="department-item">Khoa Tim Mạch</a>
+                            <a href="#" class="department-item">Khoa Tiêu Hóa</a>
+                            <a href="#" class="department-item">Khoa Ngoại Thần Kinh</a>
+                            <a href="#" class="department-item">Khoa Mắt</a>
+                            <a href="#" class="department-item">Khoa Sản Phụ khoa</a>
+                        </div>
+                    </div>
+
+                    <div id="bac-si" class="section-block">
+                        <h2>Đội ngũ Bác sĩ tiêu biểu</h2>
+                        <div class="doctor-list">
+                            <div class="doctor-card">
+                                <div class="doctor-avatar">
+                                    <img src="https://via.placeholder.com/80x80?text=BS1" alt="Bác sĩ A">
+                                </div>
+                                <div class="doctor-details">
+                                    <h3>PGS.TS.BS. Nguyễn Văn A</h3>
+                                    <p>Trưởng khoa Nội Tiết, chuyên gia về Tiểu đường và các bệnh chuyển hóa.</p>
+                                    <a href="#" class="btn-book">Đặt lịch khám</a>
+                                </div>
+                            </div>
+                            <div class="doctor-card">
+                                <div class="doctor-avatar">
+                                    <img src="https://via.placeholder.com/80x80?text=BS2" alt="Bác sĩ B">
+                                </div>
+                                <div class="doctor-details">
+                                    <h3>ThS.BSCKII. Trần Thị B</h3>
+                                    <p>Phó khoa Tim Mạch, chuyên về Bệnh van tim và Can thiệp mạch.</p>
+                                    <a href="#" class="btn-book">Đặt lịch khám</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="danh-gia" class="section-block">
+                        <h2>Đánh giá từ người dùng (8,500)</h2>
+                        <p>Phần này sẽ hiển thị các đánh giá chi tiết, bộ lọc và biểu đồ xếp hạng sao (cần JS và dữ liệu thực tế).</p>
+                        <a href="javascript:void(0)">Xem tất cả đánh giá</a>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="sticky-booking-cta">
+        <div class="container">
+             <a href="javascript:void(0)" class="btn-sticky-book">ĐẶT LỊCH KHÁM NGAY</a>
+        </div>
+    </div>
+
+</body>
+<script>
+    /**
+     * Hàm tải nội dung HTML từ một URL và chèn vào một Element
+     * @param {string} url - Đường dẫn đến file HTML (ví dụ: 'menu.html')
+     * @param {string} targetElementId - ID của element mục tiêu (ví dụ: 'menu-container')
+     */
+    function loadExternalHTML(url, targetElementId) {
+        // Sử dụng Fetch API để tải nội dung file
+        fetch(url)
+            .then(response => {
+                // Kiểm tra nếu request thành công
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Chèn nội dung HTML đã tải vào element mục tiêu
+                document.getElementById(targetElementId).innerHTML = html;
+            })
+            .catch(error => {
+                // Xử lý lỗi nếu việc tải thất bại
+                console.error('Lỗi tải menu:', error);
+                document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
+            });
+    }
+
+    // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
+    document.addEventListener('DOMContentLoaded', function() {
+        // Thực hiện tải menu.html và chèn vào menu-container
+        loadExternalHTML('../menu.html', 'menu-container'); 
+    });
+</script>
+<script src="../include.js"></script> 
+</body>
+</html>

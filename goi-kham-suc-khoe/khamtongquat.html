@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gói Khám Sức Khỏe Toàn Diện | HEALTH CARE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS VARIABLES (Đảm bảo đồng nhất với index.html) */
+        :root {
+            --primary-blue: #00b5f1;
+            --dark-text: #003553;
+            --light-bg: #e8f4fd;
+            --off-white: #ffffff;
+            --card-radius: 16px;
+            --button-radius: 30px;
+            --shadow-clean: 0 6px 16px 0 rgba(77, 88, 143, .1);
+            --border-gray: #e0e0e0;
+            --green-success: #28a745;
+        }
+
+        /* ------------------------------------------------ */
+        /* RESET & TYPOGRAPHY */
+        /* ------------------------------------------------ */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--off-white); 
+            color: var(--dark-text);
+        }
+        
+        a {
+            color: var(--primary-blue);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* ------------------------------------------------ */
+        /* HEADER (GIỮ NGUYÊN) */
+        /* ------------------------------------------------ */
+        .main-header {
+            background-color: var(--off-white);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); 
+            padding: 15px 0; 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 30px; 
+        }
+
+        .btn-login {
+            background: var(--primary-blue);
+            color: var(--off-white) !important; 
+            padding: 8px 20px;
+            border-radius: var(--button-radius); 
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 10px rgba(0, 181, 241, 0.4); 
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        /* ------------------------------------------------ */
+        /* BREADCRUMB (THANH ĐIỀU HƯỚNG) */
+        /* ------------------------------------------------ */
+        .breadcrumb-section {
+            padding: 20px 0 10px;
+            background-color: var(--off-white);
+            border-bottom: 1px solid var(--border-gray);
+        }
+        .breadcrumb a {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        .breadcrumb span {
+            margin: 0 5px;
+            color: #ccc;
+        }
+
+        /* ------------------------------------------------ */
+        /* KHỐI NỘI DUNG CHÍNH */
+        /* ------------------------------------------------ */
+        .main-content-section {
+            padding-bottom: 30px;
+        }
+        .package-page-content {
+            display: flex;
+            gap: 30px;
+            padding: 30px 0;
+            align-items: flex-start;
+        }
+        
+        .main-info-column {
+            flex: 3;
+            min-width: 0; 
+        }
+        
+        /* ------------------------------------------------ */
+        /* THÔNG TIN CHUNG GÓI KHÁM (Thay thế Profile BS) */
+        /* ------------------------------------------------ */
+        .package-summary-card {
+            background-color: var(--light-bg); /* Nền xanh nhạt nổi bật hơn */
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--primary-blue); /* Viền màu chủ đạo */
+        }
+        
+        .package-summary-card h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            margin: 0 0 10px;
+            color: var(--dark-text);
+            font-weight: 900;
+        }
+
+        .package-summary-card .subtitle {
+            font-size: 1.2rem;
+            color: var(--primary-blue);
+            font-weight: 700;
+            margin-bottom: 15px;
+            border-left: 5px solid var(--primary-blue);
+            padding-left: 10px;
+        }
+        
+        .package-summary-card p {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #444;
+            margin-bottom: 10px;
+        }
+        .package-summary-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--card-radius);
+            margin-bottom: 20px;
+        }
+        
+        /* ------------------------------------------------ */
+        /* CHI TIẾT GÓI KHÁM (Đã đổi màu tiêu đề sang Xanh) */
+        /* ------------------------------------------------ */
+        .detail-card {
+            background-color: var(--off-white);
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-gray);
+        }
+        
+        .detail-card h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.6rem;
+            color: var(--primary-blue); /* ĐÃ CẬP NHẬT MÀU XANH */
+            border-bottom: 2px solid var(--light-bg);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .detail-card ul {
+            list-style: none;
+            padding-left: 0;
+            line-height: 2;
+            font-size: 1rem;
+        }
+
+        .detail-card ul li {
+            border-bottom: 1px dashed #f0f0f0;
+            padding: 5px 0;
+            color: var(--dark-text);
+        }
+        
+        .detail-card ul li::before {
+            content: "✦";
+            color: var(--primary-blue);
+            font-weight: 700;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+
+        /* ------------------------------------------------ */
+        /* SIDEBAR ĐẶT GÓI KHÁM */
+        /* ------------------------------------------------ */
+        .sidebar-booking {
+            flex: 2;
+            position: sticky;
+            top: 80px;
+            background-color: var(--off-white);
+            border-radius: var(--card-radius);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            border: 1px solid var(--primary-blue);
+        }
+
+        .sidebar-booking h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: center;
+            border-bottom: 2px solid var(--light-bg);
+            padding-bottom: 10px;
+        }
+        
+        .price-info {
+            background-color: var(--light-bg); 
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            border: 1px solid var(--border-gray);
+        }
+        
+        .price-info strong {
+            display: block;
+            font-size: 2.2rem;
+            color: var(--green-success); /* Màu xanh lá cho giá để nổi bật */
+            font-weight: 900;
+        }
+        
+        .price-info span {
+            font-size: 1rem;
+            color: var(--dark-text);
+            font-weight: 500;
+        }
+
+        /* Nút ĐẶT LỊCH NGAY */
+        .booking-form .btn-book {
+            display: block;
+            width: 100%;
+            background-color: var(--primary-blue);
+            color: white;
+            /* Tăng padding dọc (độ dài) và giảm padding ngang (độ rộng) */
+            padding: 15px 0px; 
+            
+            /* Giảm bo góc để phù hợp với hình dáng thon */
+            border-radius: 10px; 
+            
+            font-weight: 700;
+            font-size: 1.0rem;
+            text-align: center;
+            box-shadow: 0 6px 15px rgba(0, 181, 241, 0.5);
+            transition: all 0.2s;
+            margin-top: 20px;
+        }
+        
+        .booking-form .btn-book:hover {
+             background-color: #0099cc;
+             transform: translateY(-2px);
+        }
+
+        .booking-form select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-gray);
+            background-color: #fff;
+            font-size: 1rem;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23999%22%20d%3D%22M287%2069.9%20146.2%20208.7%205.4%2069.9z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px auto;
+        }
+        
+        .promo-list {
+            margin-top: 15px;
+            font-size: 0.95rem;
+            color: #555;
+        }
+        .promo-list li {
+            list-style-type: none;
+            margin-bottom: 8px;
+        }
+        .promo-list li::before {
+            content: "⭐";
+            margin-right: 8px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .package-page-content {
+                flex-direction: column;
+            }
+            .sidebar-booking {
+                position: relative;
+                top: auto;
+                width: 100%;
+                order: -1;
+            }
+            .package-summary-card {
+                padding: 20px;
+            }
+            .package-summary-card h1 { font-size: 1.8rem; }
+            .detail-card { padding: 20px; }
+            .detail-card h2 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="main-header">
+    <div class="container header-content">
+        <div class="logo">HEALTH<span style="color: #666; font-weight: 500;">CARE</span></div>
+        
+        <div class="nav-area" data-include-html="../menu.html">
+            <p style="margin: 0; color: #aaa;">Đang tải menu...</p>
+        </div>
+        
+    </div>
+</header>
+
+<section class="breadcrumb-section">
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="../index.html">Trang chủ</a>
+            <span>/</span>
+            <a href="#">Gói khám sức khỏe</a>
+            <span>/</span>
+            <span>Gói Khám Sức Khỏe Toàn Diện</span>
+        </div>
+    </div>
+</section>
+
+<section class="main-content-section">
+    <div class="container package-page-content">
+        
+        <div class="main-info-column">
+            
+            <div class="package-summary-card">
+                <h1>Gói Khám Sức Khỏe Toàn Diện (Standard)</h1>
+                <div class="subtitle">Tầm soát sức khỏe tổng quát, phát hiện sớm bệnh lý nội khoa, ung thư.</div>
+                
+                <img src="../data/IMG/CHAMSOCSUCKHOETOANDIEN/khamtongquat.webp" alt="Gói Khám Sức Khỏe Toàn Diện" style="width: 100%; max-height: 400px; object-fit: cover;">
+                
+                <p>Gói khám sức khỏe toàn diện Standard được thiết kế để cung cấp cái nhìn tổng quan về tình trạng sức khỏe hiện tại của bạn. Gói bao gồm các xét nghiệm cơ bản và chuyên sâu, giúp phát hiện sớm các bệnh lý tiềm ẩn như tiểu đường, bệnh tim mạch, gan, thận, và một số dấu hiệu ung thư ban đầu.</p>
+                <p>Nên thực hiện gói khám này định kỳ 6-12 tháng/lần, đặc biệt với những người trên 30 tuổi hoặc có tiền sử gia đình mắc bệnh mạn tính.</p>
+            </div>
+            
+            <div class="detail-card">
+                <h2>Mục tiêu của Gói khám</h2>
+                <p style="font-style: italic; color: #555; margin-bottom: 10px;">Gói khám Standard giúp bạn đạt được các mục tiêu sau:</p>
+                <ul>
+                    <li>Đánh giá chức năng hoạt động của các cơ quan chính: Gan, thận, tim mạch, hô hấp.</li>
+                    <li>Phát hiện sớm các rối loạn chuyển hóa như tiểu đường, mỡ máu, gout.</li>
+                    <li>Tầm soát các bệnh lý truyền nhiễm qua đường máu (Viêm gan B, C).</li>
+                    <li>Kiểm tra hệ thống huyết học, phát hiện thiếu máu và các bất thường khác.</li>
+                </ul>
+            </div>
+            
+            <div class="detail-card">
+                <h2>Các hạng mục chính</h2>
+                <ul style="list-style: none; padding-left: 0;">
+                    <li>**Khám Lâm Sàng:** Nội Tổng Quát, Mắt, Răng Hàm Mặt, Tai Mũi Họng.</li>
+                    <li>**Chẩn đoán Hình ảnh:** Siêu âm bụng tổng quát, X-Quang ngực thẳng.</li>
+                    <li>**Xét nghiệm Máu:** Công thức máu, Chức năng gan (AST, ALT), Chức năng thận (Ure, Creatinine), Đường huyết.</li>
+                    <li>**Xét nghiệm Nước Tiểu:** Tổng phân tích nước tiểu 10 thông số.</li>
+                </ul>
+            </div>
+            
+        </div>
+        
+        <div class="sidebar-booking">
+            <h2>ĐĂNG KÝ GÓI KHÁM NGAY</h2>
+            
+            <div class="price-info">
+                <span>Giá Niêm Yết</span>
+                <strong>2.500.000 VNĐ</strong>
+                <p style="color: #ff3860; font-weight: 700; font-size: 1.1rem; margin-top: 10px;">GIẢM CÒN 1.990.000 VNĐ (Tiết kiệm 20%)</p>
+            </div>
+            
+            <div class="booking-form">
+                <p style="font-weight: 500; margin-bottom: 10px;">Nơi đăng ký khám:</p>
+                
+                <select name="location">
+                    <option value="">-- Bệnh viện Đa khoa Trung ương Cần Thơ --</option>
+                </select>
+                
+                <p style="font-weight: 500; margin-bottom: 10px;">Chọn ngày khám dự kiến:</p>
+                
+                <select name="date">
+                    <option value="">-- Chọn ngày khám --</option>
+                    <option value="2025-10-14">Thứ Hai, 14/10/2025</option>
+                    <option value="2025-10-15">Thứ Ba, 15/10/2025</option>
+                    <option value="2025-10-16">Thứ Tư, 16/10/2025</option>
+                    <option value="2025-10-17">Thứ Năm, 17/10/2025</option>
+                    <option value="2025-10-18">Thứ Sáu, 18/10/2025</option>
+                </select>
+                
+                <a href="#" class="btn-book">ĐẶT GÓI KHÁM NGAY</a>
+                
+                <ul class="promo-list">
+                    <li>Miễn phí tư vấn kết quả với bác sĩ chuyên khoa.</li>
+                    <li>Hỗ trợ sắp xếp lịch khám nhanh chóng, không chờ đợi.</li>
+                </ul>
+            </div>
+        </div>
+        
+    </div>
+</section>
+
+<script src="../include.js"></script>
+
+</body>
+</html>
