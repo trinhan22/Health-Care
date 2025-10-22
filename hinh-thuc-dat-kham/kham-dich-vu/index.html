@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta name="google-site-verification" content="73dRIdwl0wADm4SOV2_fm4zWOu8ZbaaJQbfiFdVc09g" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chọn Thông Tin Khám</title>
+    <meta property="og:title" content="Health Care - Nền tảng đặt khám, bốc số bệnh viện, phòng khám online" />
+    <meta property="og:description" content="Health Care - Bước 2: Chọn thông tin khám" />
+    <meta property="og:image" content="https://healthcare36.netlify.app/img.webp" />
+    <meta property="og:url" content="https://healthcare36.netlify.app" />
+    <meta property="og:type" content="article" />
+    <!-- Favicon -->
+    <link href="../../data/IMG/LOGO/logo.webp" rel="icon" type="logo"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Thêm Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+/* CSS VARIABLES (Màu sắc và khoảng cách) - GIỮ NGUYÊN TỪ BƯỚC 1 */
+:root {
+    --primary-blue: #00b5f1; /* Xanh chủ đạo */
+    --dark-text: #003553; /* Màu chữ chính */
+    --light-bg: #e8f4fd; /* Nền trắng sữa pha xanh nhạt */
+    --off-white: #ffffff; 
+    --card-radius: 16px; /* Bo góc lớn và mềm mại */
+    --button-radius: 30px; /* Nút tròn */
+    --shadow-clean: 0 6px 16px 0 rgba(77, 88, 143, .1); /* Bóng đổ nhẹ, sạch */
+    --border-light: #ddd;
+    --success-green: #4CAF50;
+    --warning-orange: #ff9800;
+}
+
+/* RESET & TYPOGRAPHY */
+body {
+    font-family: 'Roboto', sans-serif;
+    color: var(--dark-text);
+    background-color: var(--light-bg);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+a {
+    text-decoration: none;
+    color: var(--primary-blue);
+}
+h1, h2, h3, h4 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    margin-top: 0;
+}
+
+/* ------------------------------------------------ */
+/* 1. THANH MENU (HEADER) */
+/* ------------------------------------------------ */
+.main-header {
+    background-color: var(--off-white);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); 
+    padding: 15px 0; 
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.logo {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8rem; 
+    font-weight: 900; 
+    color: var(--primary-blue);
+}
+.nav-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.nav-area a {
+    color: var(--dark-text);
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* ------------------------------------------------ */
+/* 2. LAYOUT TRANG CHÍNH (SIDEBAR + CONTENT) */
+/* ------------------------------------------------ */
+.page-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px 15px;
+    display: flex;
+    gap: 30px;
+}
+
+/* Sidebar chứa Vertical Steps */
+.sidebar-steps {
+    flex-shrink: 0; 
+    width: 250px;
+    position: sticky; 
+    top: 95px; 
+    height: fit-content;
+    padding-top: 25px; 
+}
+
+/* Content chính chứa Header và Lựa chọn */
+.main-content-area {
+    flex-grow: 1; 
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ------------------------------------------------ */
+/* 3. THANH TIẾN TRÌNH DỌC (PROGRESS STEPS) */
+/* ------------------------------------------------ */
+.vertical-steps {
+    display: flex;
+    flex-direction: column;
+    padding-left: 10px;
+    gap: 0;
+}
+.vertical-step {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px 0;
+    position: relative;
+    color: #666;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+.vertical-step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: 35px;
+    bottom: -15px;
+    width: 2px;
+    background-color: #eee;
+    z-index: 1;
+}
+
+.step-icon {
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+    line-height: 25px;
+    border-radius: 50%;
+    background-color: #eee;
+    color: #fff;
+    font-size: 0.8rem;
+    text-align: center;
+    margin-right: 15px;
+    position: relative;
+    z-index: 2;
+    transition: background-color 0.3s, border 0.3s;
+}
+
+/* Trạng thái COMPLETED */
+.vertical-step.completed {
+    color: #999;
+}
+.vertical-step.completed .step-icon {
+    background-color: var(--success-green);
+    color: var(--off-white);
+    font-size: 0.7rem;
+    line-height: 25px;
+}
+.vertical-step.completed:not(:last-child)::before {
+    background-color: var(--success-green);
+}
+
+/* Trạng thái CURRENT */
+.vertical-step.current {
+    color: var(--dark-text);
+    font-weight: 700;
+}
+.vertical-step.current .step-icon {
+    background-color: var(--primary-blue);
+    border: 3px solid #b3e0ff;
+    color: var(--off-white);
+}
+
+/* ------------------------------------------------ */
+/* 4. BREADCRUMB & CONTENT HEADER */
+/* ------------------------------------------------ */
+.breadcrumb-section {
+    padding: 10px 0 0; 
+    font-size: 0.9rem;
+    color: #999;
+}
+.breadcrumb a {
+    color: var(--primary-blue);
+    font-weight: 500;
+}
+.breadcrumb span {
+    margin: 0 5px;
+    color: #ccc;
+}
+
+.content-header {
+    background-color: var(--off-white);
+    padding: 25px 30px; 
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-clean);
+}
+.content-header p:first-child {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+.content-header h1 {
+    font-size: 1.8rem;
+    color: var(--dark-text);
+    margin-bottom: 10px;
+}
+.content-header p:last-child {
+    color: var(--dark-text); 
+    font-weight: 500;
+    margin: 0;
+}
+
+
+/* ------------------------------------------------ */
+/* 5. FORM CHỌN THÔNG TIN KHÁM (CONSULTATION INFO) */
+/* ------------------------------------------------ */
+.selection-card {
+    background-color: var(--off-white);
+    padding: 30px;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow-clean);
+    margin-bottom: 20px;
+    border-left: 5px solid var(--primary-blue); /* THAY ĐỔI: Thêm viền xanh bên trái để làm đẹp */
+    transition: all 0.3s ease;
+}
+.selection-card:hover { /* THAY ĐỔI: Thêm hiệu ứng hover */
+    box-shadow: 0 8px 25px rgba(0, 181, 241, 0.15); 
+}
+.selection-card h2 {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+    color: var(--primary-blue); /* THAY ĐỔI: Đổi màu chữ sang xanh dương chủ đạo */
+    border-bottom: 1px solid #e8f4fd; /* THAY ĐỔI: Làm đường kẻ nhẹ hơn (sử dụng light-bg) */
+    padding-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 0; /* Đã có gap 20px ở grid */
+}
+.form-label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-size: 1rem;
+    color: var(--dark-text);
+}
+.form-control, .form-select {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    font-size: 1rem;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background-color: var(--off-white);
+    -webkit-appearance: none; 
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 181, 241, 0.2);
+    outline: none;
+}
+
+/* Custom styling for Select */
+.select-wrapper {
+    position: relative;
+}
+.select-wrapper::after {
+    content: "\f078"; /* Chevron down icon */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    color: #666;
+    pointer-events: none;
+}
+
+/* Time Slot Grid */
+.time-slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    margin-top: 15px;
+}
+.time-slot {
+    background-color: var(--light-bg);
+    padding: 10px 5px;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    color: var(--dark-text);
+}
+.time-slot:hover {
+    border-color: #b3e0ff;
+    background-color: #d8f0ff;
+}
+.time-slot.selected {
+    background-color: var(--primary-blue);
+    color: var(--off-white);
+    border-color: var(--primary-blue);
+    box-shadow: 0 4px 10px rgba(0, 181, 241, 0.3);
+}
+.time-slot.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background-color: #f0f0f0;
+    color: #999;
+    border-color: #ccc;
+}
+.time-slot.disabled:hover {
+    border-color: #ccc;
+    background-color: #f0f0f0;
+}
+
+
+/* NÚT TIẾP TỤC */
+.main-content-area .form-actions {
+    margin-top: 10px;
+    text-align: right;
+    padding-bottom: 50px;
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: var(--button-radius);
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 181, 241, 0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+    opacity: 0.6; /* Mặc định mờ */
+    pointer-events: none; /* Mặc định không click được */
+}
+.btn-primary.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+.btn-primary.active:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 181, 241, 0.6);
+}
+
+
+/* ------------------------------------------------ */
+/* RESPONSIVE (Mobile/Tablet) */
+/* ------------------------------------------------ */
+@media (max-width: 992px) {
+    .sidebar-steps {
+        display: none; 
+    }
+    
+    .page-wrapper {
+        display: block;
+        padding: 15px;
+    }
+    
+    .content-header {
+        margin-bottom: 20px;
+        padding: 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .selection-card {
+        padding: 20px;
+    }
+
+    .time-slot-grid {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    }
+    
+    .main-content-area .form-actions {
+        text-align: center;
+        padding-bottom: 20px;
+    }
+    
+    .btn-primary {
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+    }
+}
+
+
+@media (max-width: 768px) {
+    .hero-section { padding: 80px 0 60px; }
+    .hero-section h1 { font-size: 2rem; }
+    
+    /* 1. KHẮC PHỤC LỖI HIỂN THỊ HAMBURGER */
+    .hamburger-toggle {
+        display: block !important; /* Sử dụng !important để đảm bảo ghi đè mọi CSS desktop */
+        z-index: 1001; /* Đảm bảo nó nổi trên mọi thứ, kể cả menu đang trượt ra */
+        position: relative; /* Giúp z-index hoạt động tốt hơn */
+    }
+
+    /* 2. CHUYỂN .nav-area THÀNH OVERLAY MENU */
+    .nav-area {
+        position: fixed;
+        top: 0;
+        left: -100%; /* Ẩn menu ra ngoài màn hình */
+        width: 80%;
+        max-width: 300px;
+        height: 100%;
+        background-color: var(--off-white); 
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+        z-index: 999;
+        padding: 80px 20px 20px; 
+        transition: left 0.3s ease-in-out;
+        /* Ghi đè lại các thuộc tính display/flex của desktop */
+        display: block !important; 
+    }
+    
+    /* 3. MENU MỞ */
+    .nav-area.open {
+        left: 0; /* Trượt vào */
+    }
+
+    /* 4. Đảm bảo logo và hamburger nằm đúng vị trí */
+    .header-content {
+        padding: 0 15px; /* Giữ padding ngang */
+    }
+    
+    /* 5. Sắp xếp lại các liên kết menu theo chiều dọc */
+    /* Lưu ý: Các thẻ này nằm trong menu.html được nhúng vào */
+    .nav-area .nav-links {
+        list-style: none;
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        margin-bottom: 20px;
+    }
+    .nav-area .nav-links li {
+        border-bottom: 1px solid #eee;
+        width: 100%;
+    }
+    .nav-area .nav-links a {
+        padding: 15px 0;
+        font-size: 1.1rem;
+        font-weight: 500;
+        display: block;
+    }
+    .nav-area .btn-login {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .ai-search-box { flex-direction: column; padding: 20px; }
+    .btn-ai-search { width: 100%; padding: 15px; }
+    .ai-search-box input { padding: 25px 55px; }
+    .feature-container { margin-top: -30px; margin-bottom: 40px; }
+    .feature-grid { grid-template-columns: repeat(4, 1fr); padding: 15px; gap: 5px; }
+    .feature-item p { font-size: 0.75rem; }
+    .feature-item { padding: 5px 3px; }
+    .section-title { font-size: 1.8rem; margin-bottom: 25px; }
+    .slider-button { display: none; }
+    .hospital-doctor-grid { margin: 0; padding-left: 0; padding-right: 0; }
+}
+
+/* Thêm CSS cho ảnh icon */
+.feature-icon .feature-img {
+    width: 55px; /* Bắt buộc ảnh có kích thước 40px */
+    height: 55px;
+    object-fit: contain; /* Đảm bảo ảnh hiển thị đầy đủ, không bị cắt */
+    display: block;
+}
+
+/* Cập nhật .feature-icon để loại bỏ màu nền và text cũ */
+.feature-icon { 
+    width: 70px; 
+    height: 70px; 
+    /* ĐÃ XÓA background-color VÀ font-size cũ vì giờ dùng ảnh */
+    background-color: transparent; /* Đảm bảo không còn màu nền xanh */
+    border-radius: 12px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    margin: 0 auto 8px; 
+    /* XÓA font-size: 1.2rem; */
+}
+
+/* BỔ SUNG: CSS cho Menu Mobile */
+/* NÚT HAMBURGER (Mới) */
+.hamburger-toggle {
+    display: none; /* Mặc định ẩn trên desktop */
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--dark-text);
+    padding: 0;
+    line-height: 1;
+    z-index: 1001; /* Đảm bảo nút nằm trên menu */
+}
+
+/* NGĂN CHẶN CUỘN TRANG KHI MENU MỞ */
+body.menu-open {
+    overflow: hidden;
+}
+    </style>
+</head>
+<body>
+
+    <!-- THANH MENU (HEADER) -->
+<header class="main-header">
+    <div class="container header-content">
+        <div class="logo">HEALTH<span style="color: #666; font-weight: 500;">CARE</span></div>
+        
+        <button class="hamburger-toggle" id="menu-toggle" aria-label="Toggle Menu">
+            &#9776; 
+        </button>
+        
+        <div class="nav-area" id="main-nav-area" data-include-html="../../menu.html">
+            <p style="margin: 0; color: #aaa;">Đang tải menu...</p>
+        </div>
+        
+    </div>
+</header>
+
+    <div class="page-wrapper">
+        
+        <!-- SIDEBAR (CỘT TRÁI) - PROGRESS STEPS -->
+        <div class="sidebar-steps">
+            <div class="vertical-steps">
+                <div class="vertical-step completed">
+                    <div class="step-icon"><i class="fas fa-check"></i></div>
+                    <span>Chọn hình thức khám</span>
+                </div>
+                <div class="vertical-step current">
+                    <div class="step-icon">2</div>
+                    <span>Chọn thông tin khám</span>
+                </div>
+                <div class="vertical-step">
+                    <div class="step-icon">3</div>
+                    <span>Thông tin cá nhân</span>
+                </div>
+                <div class="vertical-step">
+                    <div class="step-icon">4</div>
+                    <span>Hoàn tất</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MAIN CONTENT (CHỌN THÔNG TIN KHÁM) -->
+        <div class="main-content-area">
+            
+            <!-- Breadcrumb -->
+            <section class="breadcrumb-section">
+                <div class="breadcrumb">
+                    <a href="https://healthcare36.netlify.app">Trang chủ</a>
+                    <span>/</span>
+                    <a href="https://healthcare36.netlify.app#hinh-thuc-dat-kham">Hình thức đặt khám</a>
+                    <span>/</span>
+                    <a href="https://healthcare36.netlify.app#kham-dich-vu">Thông tin khám</a>
+                </div>
+            </section>
+
+            <!-- Content Header -->
+            <div class="content-header">
+                <p>Bước 2/4</p>
+                <h1>Chọn Bệnh Viện, Chuyên Khoa & Lịch Khám</h1>
+                <p>Vui lòng cung cấp các thông tin cần thiết để chúng tôi tìm lịch khám phù hợp nhất.</p>
+            </div>
+
+
+            <!-- CARD: LỰA CHỌN BỆNH VIỆN VÀ CHUYÊN KHOA -->
+            <div class="selection-card">
+                <h2><i class="fas fa-clinic-medical"></i> Địa điểm & Chuyên khoa</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="hospitalSelect" class="form-label">1. Chọn Bệnh Viện/Phòng Khám</label>
+                        <div class="select-wrapper">
+                            <select id="hospitalSelect" class="form-select">
+                                <option value="" disabled selected>--- Chọn cơ sở y tế ---</option>
+                                <option value="dhydtphcm">Bệnh viện Đại học Y dược TP.HCM</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="specialtySelect" class="form-label">2. Chọn Chuyên Khoa</label>
+                        <div class="select-wrapper">
+                            <select id="specialtySelect" class="form-select">
+                                <option value="" disabled selected>--- Chọn chuyên khoa ---</option>
+                                <option value="tim_mach">Tim mạch</option>
+                                <option value="co_xuong_khop">Cơ Xương Khớp</option>
+                                <option value="da_lieu">Da Liễu</option>
+                                <option value="tieu_hoa">Tiêu Hóa</option>
+                                <option value="phu_san">Sản Phụ Khoa</option>
+                                <option value="mat">Mắt</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- /.selection-card -->
+            
+            <!-- CARD: LỊCH KHÁM VÀ KHUNG GIỜ -->
+            <div class="selection-card">
+                <h2><i class="fas fa-calendar-alt"></i> Ngày & Giờ Khám</h2>
+                <div class="form-grid" style="grid-template-columns: 1fr;">
+                    <div class="form-group" style="max-width: 300px;">
+                        <label for="dateSelect" class="form-label">3. Chọn Ngày Khám</label>
+                        <input type="date" id="dateSelect" class="form-control" min="">
+                    </div>
+                </div>
+
+                <h3 style="font-size: 1.1rem; font-weight: 500; margin-top: 25px; margin-bottom: 10px;">4. Chọn Khung Giờ Khám:</h3>
+                <p id="slotMessage" style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">Vui lòng chọn Ngày khám để xem các khung giờ khả dụng.</p>
+
+                <div class="time-slot-grid" id="timeSlotGrid">
+                    <!-- Time slots sẽ được thêm bằng JavaScript -->
+                </div>
+            </div> <!-- /.selection-card -->
+
+            <!-- NÚT HÀNH ĐỘNG -->
+            <div class="form-actions">
+                <button type="button" class="btn-primary" id="btnContinue">Tiếp tục <i class="fas fa-arrow-right"></i></button>
+            </div>
+            
+        </div> <!-- /.main-content-area -->
+
+    </div> <!-- /.page-wrapper -->
+    
+
+    <script>
+        // Data mẫu (Thực tế sẽ gọi API)
+        const dummyTimeSlots = [
+            '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', 
+            '10:00', '10:30', '11:00', '11:30', 
+            '13:00', '13:30', '14:00', '14:30', '15:00', 
+            '15:30', '16:00', '16:30', 
+            '17:00' // Giả sử 17:00 là giờ cuối
+        ];
+        
+        let selectedHospital = null;
+        let selectedSpecialty = null;
+        let selectedDate = null;
+        let selectedTime = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const hospitalSelect = document.getElementById('hospitalSelect');
+            const specialtySelect = document.getElementById('specialtySelect');
+            const dateSelect = document.getElementById('dateSelect');
+            const timeSlotGrid = document.getElementById('timeSlotGrid');
+            const btnContinue = document.getElementById('btnContinue');
+            const slotMessage = document.getElementById('slotMessage');
+
+            // Thiết lập ngày tối thiểu là ngày hôm nay
+            const today = new Date().toISOString().split('T')[0];
+            dateSelect.setAttribute('min', today);
+
+            // --- 1. VALIDATION VÀ KIỂM TRA TRẠNG THÁI NÚT TIẾP TỤC ---
+            const checkFormStatus = () => {
+                const allSelected = selectedHospital && selectedSpecialty && selectedDate && selectedTime;
+                if (allSelected) {
+                    btnContinue.classList.add('active');
+                } else {
+                    btnContinue.classList.remove('active');
+                }
+            };
+
+            // --- 2. XỬ LÝ SỰ KIỆN CHỌN (HOSPITAL/SPECIALTY/DATE) ---
+            hospitalSelect.addEventListener('change', (e) => {
+                selectedHospital = e.target.value;
+                selectedTime = null; // Reset time slot khi thay đổi bệnh viện
+                renderTimeSlots();
+                checkFormStatus();
+            });
+
+            specialtySelect.addEventListener('change', (e) => {
+                selectedSpecialty = e.target.value;
+                selectedTime = null; // Reset time slot khi thay đổi chuyên khoa
+                renderTimeSlots();
+                checkFormStatus();
+            });
+
+            dateSelect.addEventListener('change', (e) => {
+                selectedDate = e.target.value;
+                selectedTime = null; // Reset time slot khi thay đổi ngày
+                renderTimeSlots();
+                checkFormStatus();
+            });
+
+
+            // --- 3. HIỂN THỊ KHUNG GIỜ ---
+            const renderTimeSlots = () => {
+                timeSlotGrid.innerHTML = '';
+                
+                if (!selectedHospital || !selectedSpecialty || !selectedDate) {
+                    slotMessage.textContent = 'Vui lòng chọn Bệnh viện, Chuyên khoa và Ngày khám để xem các khung giờ khả dụng.';
+                    return;
+                }
+
+                // Giả lập logic tìm kiếm và trạng thái bận/trống (VD: 10:00, 14:30 bận)
+                slotMessage.textContent = 'Chọn một khung giờ trống:';
+                
+                dummyTimeSlots.forEach(slot => {
+                    const slotElement = document.createElement('div');
+                    slotElement.className = 'time-slot';
+                    slotElement.textContent = slot;
+                    slotElement.setAttribute('data-time', slot);
+
+                    // Logic giả lập: Khung giờ 10:00 và 14:30 bị khóa/đã đầy
+                    if (slot === '10:00' || slot === '14:30') {
+                         slotElement.classList.add('disabled');
+                    } else {
+                        slotElement.addEventListener('click', handleTimeSlotClick);
+                    }
+
+                    // Nếu đây là khung giờ đã chọn trước đó, highlight lại
+                    if (selectedTime === slot) {
+                         slotElement.classList.add('selected');
+                    }
+
+                    timeSlotGrid.appendChild(slotElement);
+                });
+            };
+
+            // --- 4. XỬ LÝ SỰ KIỆN CHỌN KHUNG GIỜ ---
+            const handleTimeSlotClick = (e) => {
+                const clickedSlot = e.target;
+                
+                // Bỏ chọn tất cả các slot khác
+                document.querySelectorAll('.time-slot').forEach(slot => {
+                    slot.classList.remove('selected');
+                });
+
+                // Chọn slot hiện tại
+                clickedSlot.classList.add('selected');
+                selectedTime = clickedSlot.getAttribute('data-time');
+                checkFormStatus();
+            };
+
+            // --- 5. NÚT TIẾP TỤC ---
+            btnContinue.addEventListener('click', () => {
+                if (btnContinue.classList.contains('active')) {
+                    const bookingDetails = {
+                        hospital: selectedHospital,
+                        specialty: selectedSpecialty,
+                        date: selectedDate,
+                        time: selectedTime
+                    };
+                    console.log('Thông tin đặt khám:', bookingDetails);
+                    // Ở môi trường thực tế, dòng này sẽ chuyển hướng sang trang Thông tin cá nhân (Bước 3)
+                    alertMessage('Đã chọn thành công! Chuyển sang Bước 3.', 'success');
+                } else {
+                    alertMessage('Vui lòng chọn đầy đủ Bệnh viện, Chuyên khoa, Ngày và Giờ Khám.', 'warning');
+                }
+            });
+
+            // Gọi hàm render ban đầu để hiển thị thông báo yêu cầu chọn
+            renderTimeSlots();
+
+
+            // ------------------------------------------------------------------
+            // HÀM TÁI SỬ DỤNG TỪ BƯỚC 1 (CUSTOM ALERT/TẢI MENU)
+            // ------------------------------------------------------------------
+
+            // Hàm tùy chỉnh hiển thị thông báo thay cho alert()
+            function alertMessage(message, type) {
+                const existingBox = document.querySelector('.custom-alert');
+                if (existingBox) existingBox.remove();
+                
+                const box = document.createElement('div');
+                box.className = `custom-alert alert-${type}`;
+                box.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 25px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    font-weight: 500;
+                    z-index: 2000;
+                    animation: slideIn 0.5s forwards;
+                    color: white;
+                `;
+                box.innerHTML = `<i class="fas fa-info-circle" style="margin-right: 10px;"></i> ${message}`;
+
+                if (type === 'success') {
+                    box.style.backgroundColor = 'var(--success-green)';
+                } else if (type === 'warning') {
+                    box.style.backgroundColor = 'var(--warning-orange)';
+                    box.innerHTML = `<i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i> ${message}`;
+                }
+
+                document.body.appendChild(box);
+
+                // CSS cho animation (được thêm vào trong style block)
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+
+
+                setTimeout(() => {
+                    box.style.animation = 'slideOut 0.5s forwards';
+                    setTimeout(() => box.remove(), 500);
+                }, 3000);
+            }
+            // ------------------------------------------------------------------
+            
+            // LOGIC HAMBURGER MENU (GIỮ NGUYÊN)
+            const menuToggle = document.getElementById('menu-toggle');
+            const navArea = document.getElementById('main-nav-area');
+            
+            if (menuToggle && navArea) {
+                menuToggle.addEventListener('click', () => {
+                    navArea.classList.toggle('open');
+                    document.body.classList.toggle('menu-open'); 
+                });
+            }
+        });
+
+        // Hàm tải nội dung HTML từ một URL (GIỮ NGUYÊN)
+        function loadExternalHTML(url, targetElementId) {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    document.getElementById(targetElementId).innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Lỗi tải menu:', error);
+                    document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
+                });
+        }
+
+        // TẢI NỘI DUNG MENU (GIỮ NGUYÊN)
+        document.addEventListener('DOMContentLoaded', function() {
+            loadExternalHTML('../menu.html', 'main-nav-area'); 
+        });
+    </script>
+<script src="../../include.js"></script> 
+</body>
+</html>

@@ -13,6 +13,8 @@
     <!-- Favicon -->
     <link href="../../data/IMG/LOGO/logo.webp" rel="icon" type="logo"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Thêm Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
 /* CSS VARIABLES (Màu sắc và khoảng cách) */
 :root {
@@ -171,15 +173,29 @@ h1, h2, h3, h4 {
 }
 
 /* ------------------------------------------------ */
-/* 4. CONTENT HEADER */
+/* 4. BREADCRUMB & CONTENT HEADER */
 /* ------------------------------------------------ */
+.breadcrumb-section {
+    padding: 10px 0 0; /* Giảm padding trên để gần header hơn */
+    font-size: 0.9rem;
+    color: #999;
+}
+.breadcrumb a {
+    color: var(--primary-blue);
+    font-weight: 500;
+}
+.breadcrumb span {
+    margin: 0 5px;
+    color: #ccc;
+}
+
 .content-header {
     background-color: var(--off-white);
-    padding: 20px 30px;
+    padding: 25px 30px; /* Tăng padding nhẹ */
     border-radius: var(--card-radius);
     box-shadow: var(--shadow-clean);
 }
-.content-header p {
+.content-header p:first-child {
     font-size: 0.9rem;
     color: #666;
     margin-bottom: 5px;
@@ -187,7 +203,14 @@ h1, h2, h3, h4 {
 .content-header h1 {
     font-size: 1.8rem;
     color: var(--dark-text);
+    margin-bottom: 10px;
 }
+.content-header p:last-child {
+    color: var(--dark-text); 
+    font-weight: 500;
+    margin: 0;
+}
+
 
 /* ------------------------------------------------ */
 /* 5. FORM CHỌN HÌNH THỨC KHÁM (BOOKING TYPES) */
@@ -511,15 +534,22 @@ body.menu-open {
         <!-- MAIN CONTENT (CHỌN HÌNH THỨC) -->
         <div class="main-content-area">
             
-        <section class="breadcrumb-section">
-            <div class="container">
+            <!-- Breadcrumb -->
+            <section class="breadcrumb-section">
                 <div class="breadcrumb">
                     <a href="https://healthcare36.netlify.app">Trang chủ</a>
                     <span>/</span>
-                    <a href="#">Hình thức đặt khám</span>
+                    <a href="https://healthcare36.netlify.app#hinh-thuc-dat-kham">Hình thức đặt khám</a>
                 </div>
+            </section>
+
+            <!-- Thêm Content Header để hiển thị tiêu đề chính -->
+            <div class="content-header">
+                <p>Bước 1/4</p>
+                <h1>Chọn Hình Thức Đặt Khám</h1>
+                <p>Vui lòng chọn hình thức khám phù hợp với nhu cầu của bạn để tiếp tục.</p>
             </div>
-        </section>
+
 
             <!-- CONTAINER CÁC CARD LỰA CHỌN -->
             <div class="booking-types-container" id="bookingTypesContainer">
@@ -608,8 +638,135 @@ body.menu-open {
 
     </div> <!-- /.page-wrapper -->
     
+    <!-- KHỐI SCRIPT CẦN THIẾT CHO FIREBASE VÀ LOGIC CHUYỂN HƯỚNG -->
+    <script type="module">
+        // Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, collection, query, where, getDocs, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // Cấu hình Firebase (LẤY TỪ BIẾN MÔI TRƯỜNG CỦA CANVAS)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-    <script>
+        let db = null;
+        let auth = null;
+        let currentUserId = null;
+        let currentBookingRef = null; // Tham chiếu đến tài liệu đặt khám hiện tại
+
+        if (firebaseConfig) {
+            setLogLevel('debug');
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            // Hàm khởi tạo và xác thực
+            async function initializeAuth() {
+                try {
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("Đăng nhập bằng Custom Token thành công.");
+                    } else {
+                        await signInAnonymously(auth);
+                        console.log("Đăng nhập ẩn danh thành công.");
+                    }
+                } catch (error) {
+                    console.error("Lỗi xác thực Firebase:", error);
+                }
+            }
+            initializeAuth();
+
+            // Lắng nghe trạng thái xác thực để lấy userId
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    // Khi có userId, tìm hoặc tạo tài liệu đặt khám tạm thời
+                    findOrCreateTemporaryBooking(); 
+                } else {
+                    currentUserId = null;
+                }
+            });
+        } else {
+            console.error("Firebase config không khả dụng. Chức năng lưu dữ liệu sẽ bị vô hiệu hóa.");
+        }
+
+        /**
+         * Tìm tài liệu đặt khám tạm thời (đang dở) hoặc tạo mới.
+         */
+        async function findOrCreateTemporaryBooking() {
+            if (!db || !currentUserId) return;
+
+            const collectionPath = `/artifacts/${appId}/users/${currentUserId}/bookings`;
+            const bookingsRef = collection(db, collectionPath);
+            
+            // Tìm tài liệu đang có trạng thái 'draft' (nháp)
+            const q = query(bookingsRef, where("status", "==", "draft"));
+
+            try {
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
+                    // Nếu tìm thấy tài liệu đang nháp
+                    const docSnapshot = querySnapshot.docs[0];
+                    currentBookingRef = docSnapshot.ref;
+                    console.log("Tìm thấy đặt khám nháp:", docSnapshot.id);
+                    // Có thể tải dữ liệu cũ (ví dụ: selectedType) để chọn lại trên giao diện
+                    // const currentData = docSnapshot.data();
+                    // if (currentData.bookingType) { /* Cập nhật giao diện */ }
+
+                } else {
+                    // Nếu không tìm thấy, tạo tài liệu nháp mới
+                    const newDocRef = doc(bookingsRef);
+                    await setDoc(newDocRef, {
+                        userId: currentUserId,
+                        status: "draft",
+                        createdAt: new Date(),
+                        currentStep: 1,
+                    });
+                    currentBookingRef = newDocRef;
+                    console.log("Tạo đặt khám nháp mới:", newDocRef.id);
+                }
+            } catch (error) {
+                console.error("Lỗi khi tìm/tạo đặt khám nháp:", error);
+            }
+        }
+
+        /**
+         * Lưu loại hình khám đã chọn vào Firestore và tiến hành chuyển trang.
+         * @param {string} type - Loại hình khám đã chọn.
+         * @param {string} nextPage - Trang tiếp theo để chuyển đến.
+         */
+        async function saveBookingTypeAndRedirect(type, nextPage) {
+            if (!currentBookingRef) {
+                console.error("Chưa có tham chiếu đặt khám. Chuyển hướng không lưu dữ liệu.");
+                window.location.href = nextPage;
+                return;
+            }
+            
+            // Bắt đầu giao dịch để đảm bảo tính toàn vẹn (ví dụ: tránh ghi đè)
+            try {
+                await runTransaction(db, async (transaction) => {
+                    // Cập nhật thông tin lên tài liệu đặt khám hiện tại
+                    transaction.set(currentBookingRef, {
+                        bookingType: type,
+                        lastUpdated: new Date(),
+                        currentStep: 2, // Chuyển sang bước 2
+                    }, { merge: true });
+                });
+                
+                console.log(`Đã lưu loại khám: ${type}. Chuyển hướng đến ${nextPage}`);
+                window.location.href = nextPage;
+
+            } catch (error) {
+                console.error("Lỗi khi lưu loại khám vào Firestore:", error);
+                // Dù có lỗi lưu, vẫn nên cho người dùng tiếp tục (trong trường hợp thực tế, cần hiển thị lỗi)
+                window.location.href = nextPage; 
+            }
+        }
+
+
+        // LOGIC XỬ LÝ SỰ KIỆN GIAO DIỆN CŨ
         document.addEventListener('DOMContentLoaded', () => {
             const cards = document.querySelectorAll('.type-card');
             const btnContinue = document.getElementById('btnContinue');
@@ -631,73 +788,37 @@ body.menu-open {
 
             btnContinue.addEventListener('click', () => {
                 if (selectedType) {
-                    // Thay thế alert bằng một thông báo trong giao diện thực tế
-                    console.log('Đã chọn hình thức: ' + selectedType);
-                    // Ở môi trường thực tế, dòng này sẽ chuyển hướng sang trang đặt khám chi tiết (booking.html)
-                    // window.location.href = 'booking.html?type=' + selectedType;
-                    // Tạm thời hiển thị thông báo
-                    alertMessage(`Bạn đã chọn: "${selectedType.replace('_', ' ').toUpperCase()}"`, 'success');
+                    let nextPage = '';
+                    switch (selectedType) {
+                        case 'dich_vu':
+                            nextPage = 'kham-dich-vu';
+                            break;
+                        case 'theo_bac_si':
+                            nextPage = 'dat-kham-theo-bac-si.html';
+                            break;
+                        case 'khám_thường':
+                            nextPage = 'dat-kham-thuong.html';
+                            break;
+                        case 'ngoai_gio':
+                            nextPage = 'dat-kham-ngoai-gio.html';
+                            break;
+                        case 'tai_khám':
+                            nextPage = 'dat-kham-tai-kham.html';
+                            break;
+                        default:
+                            console.error("Loại hình khám không hợp lệ.");
+                            return;
+                    }
+
+                    // *** BƯỚC QUAN TRỌNG: GỌI HÀM LƯU TRƯỚC KHI CHUYỂN HƯỚNG ***
+                    saveBookingTypeAndRedirect(selectedType, nextPage);
                 }
             });
-
-            // Hàm tùy chỉnh hiển thị thông báo thay cho alert()
-            function alertMessage(message, type) {
-                const existingBox = document.querySelector('.custom-alert');
-                if (existingBox) existingBox.remove();
-                
-                const box = document.createElement('div');
-                box.className = `custom-alert alert-${type}`;
-                box.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 15px 25px;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                    font-weight: 500;
-                    z-index: 2000;
-                    animation: slideIn 0.5s forwards;
-                `;
-                box.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 10px;"></i> ${message}`;
-
-                if (type === 'success') {
-                    box.style.backgroundColor = 'var(--success-green)';
-                    box.style.color = 'white';
-                }
-
-                document.body.appendChild(box);
-
-                // CSS cho animation (được thêm vào trong style block)
-                const style = document.createElement('style');
-                style.innerHTML = `
-                    @keyframes slideIn {
-                        from { transform: translateX(100%); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                `;
-                document.head.appendChild(style);
-
-
-                setTimeout(() => {
-                    box.style.animation = 'slideOut 0.5s forwards';
-                    const styleOut = document.createElement('style');
-                    styleOut.innerHTML = `
-                        @keyframes slideOut {
-                            from { transform: translateX(0); opacity: 1; }
-                            to { transform: translateX(100%); opacity: 0; }
-                        }
-                    `;
-                    document.head.appendChild(styleOut);
-                    setTimeout(() => box.remove(), 500);
-                }, 3000);
-            }
         });
     </script>
 
 <script>
-    /**
-     * Hàm tải nội dung HTML từ một URL và chèn vào một Element
-     */
+    // Logic tải menu và Hamburger Menu (Giữ nguyên)
     function loadExternalHTML(url, targetElementId) {
         fetch(url)
             .then(response => {
@@ -707,7 +828,6 @@ body.menu-open {
                 return response.text();
             })
             .then(html => {
-                // Chèn nội dung HTML đã tải vào element mục tiêu
                 document.getElementById(targetElementId).innerHTML = html;
             })
             .catch(error => {
@@ -716,21 +836,15 @@ body.menu-open {
             });
     }
 
-    // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
     document.addEventListener('DOMContentLoaded', function() {
         const menuToggle = document.getElementById('menu-toggle');
-        const navArea = document.getElementById('main-nav-area'); // Lấy element menu
+        const navArea = document.getElementById('main-nav-area'); 
 
-        // 1. TẢI NỘI DUNG MENU
-        // SỬA LỖI: Gọi ID đúng là 'main-nav-area'
         loadExternalHTML('../menu.html', 'main-nav-area'); 
 
-        // 2. LOGIC HAMBURGER
         if (menuToggle && navArea) {
             menuToggle.addEventListener('click', () => {
-                // Thêm/Xóa class 'open' để bật/tắt menu
                 navArea.classList.toggle('open');
-                // Ngăn cuộn trang chính khi menu mở
                 document.body.classList.toggle('menu-open'); 
             });
         }
