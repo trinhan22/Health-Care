@@ -391,7 +391,6 @@
             max-width: 450px;
             text-align: left;
             margin-top: 15px;
-            min-height: 150px; /* Thêm min-height để tránh CLS khi load data */
         }
 
         .booking-details-summary div {
@@ -410,12 +409,6 @@
         }
         .booking-details-summary span {
             color: #666;
-            font-weight: 500;
-        }
-        .loading-text {
-            color: var(--primary-blue);
-            font-style: italic;
-            text-align: center;
         }
 
 
@@ -459,112 +452,112 @@
                 font-size: 1rem;
             }
         }
-        @media (max-width: 768px) {
-            .hero-section { padding: 80px 0 60px; }
-            .hero-section h1 { font-size: 2rem; }
-            
-            /* 1. KHẮC PHỤC LỖI HIỂN THỊ HAMBURGER */
-            /* 1. HIỂN THỊ NÚT HAMBURGER (Phải có !important để ghi đè display: none ở trên) */
-            .hamburger-toggle {
-                display: block !important; 
-                z-index: 1001; 
-                position: relative; 
-            }
+@media (max-width: 768px) {
+    .hero-section { padding: 80px 0 60px; }
+    .hero-section h1 { font-size: 2rem; }
+    
+    /* 1. KHẮC PHỤC LỖI HIỂN THỊ HAMBURGER */
+/* 1. HIỂN THỊ NÚT HAMBURGER (Phải có !important để ghi đè display: none ở trên) */
+    .hamburger-toggle {
+        display: block !important; 
+        z-index: 1001; 
+        position: relative; 
+    }
 
-            /* 2. CHUYỂN .nav-area THÀNH OVERLAY MENU */
-            .nav-area {
-                position: fixed;
-                top: 0;
-                left: -100%; 
-                width: 80%;
-                max-width: 300px;
-                height: 100%;
-                background-color: var(--off-white); 
-                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
-                z-index: 999;
-                padding: 80px 20px 20px; 
-                transition: left 0.3s ease-in-out;
-                display: block !important; /* Ghi đè display: flex desktop */
-            }
-            
-            /* 3. MENU MỞ */
-            .nav-area.open {
-                left: 0; 
-            }
+    /* 2. CHUYỂN .nav-area THÀNH OVERLAY MENU */
+    .nav-area {
+        position: fixed;
+        top: 0;
+        left: -100%; 
+        width: 80%;
+        max-width: 300px;
+        height: 100%;
+        background-color: var(--off-white); 
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+        z-index: 999;
+        padding: 80px 20px 20px; 
+        transition: left 0.3s ease-in-out;
+        display: block !important; /* Ghi đè display: flex desktop */
+    }
+    
+    /* 3. MENU MỞ */
+    .nav-area.open {
+        left: 0; 
+    }
 
-            /* 4. Đảm bảo logo và hamburger nằm đúng vị trí */
-            .header-content {
-                padding: 0 15px; /* Giữ padding ngang */
-            }
-            
-            /* 5. Sắp xếp lại các liên kết menu theo chiều dọc */
-            /* Lưu ý: Các thẻ này nằm trong menu.html được nhúng vào */
-            .nav-area .nav-links {
-                list-style: none;
-                flex-direction: column;
-                width: 100%;
-                gap: 0;
-                border-top: 1px solid #eee;
-                padding-top: 10px;
-                margin-bottom: 20px;
-            }
-            .nav-area .nav-links li {
-                border-bottom: 1px solid #eee;
-                width: 100%;
-            }
-            .nav-area .nav-links a {
-                padding: 15px 0;
-                font-size: 1.1rem;
-                font-weight: 500;
-                display: block;
-            }
-            .nav-area .btn-login {
-                margin-left: 0;
-                width: 100%;
-                text-align: center;
-                padding: 10px;
-            }
+    /* 4. Đảm bảo logo và hamburger nằm đúng vị trí */
+    .header-content {
+        padding: 0 15px; /* Giữ padding ngang */
+    }
+    
+    /* 5. Sắp xếp lại các liên kết menu theo chiều dọc */
+    /* Lưu ý: Các thẻ này nằm trong menu.html được nhúng vào */
+    .nav-area .nav-links {
+        list-style: none;
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        margin-bottom: 20px;
+    }
+    .nav-area .nav-links li {
+        border-bottom: 1px solid #eee;
+        width: 100%;
+    }
+    .nav-area .nav-links a {
+        padding: 15px 0;
+        font-size: 1.1rem;
+        font-weight: 500;
+        display: block;
+    }
+    .nav-area .btn-login {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+    }
 
-            .ai-search-box { flex-direction: column; padding: 10px; }
-            .btn-ai-search { width: 100%; padding: 15px; }
-            .ai-search-box input { padding: 15px 10px; }
-            .feature-container { margin-top: 0px; margin-bottom: 40px; }
-            .feature-grid { grid-template-columns: repeat(4, 1fr); padding: 15px; gap: 5px; }
-            .feature-item p { font-size: 0.75rem; }
-            .feature-item { padding: 10px 3px; }
-            .section-title { font-size: 1.8rem; margin-bottom: 25px; }
-            .slider-button { display: none; }
-            .hospital-doctor-grid { margin: 0; padding-left: 0; padding-right: 0; }
-        }
+    .ai-search-box { flex-direction: column; padding: 10px; }
+    .btn-ai-search { width: 100%; padding: 15px; }
+    .ai-search-box input { padding: 15px 10px; }
+    .feature-container { margin-top: 0px; margin-bottom: 40px; }
+    .feature-grid { grid-template-columns: repeat(4, 1fr); padding: 15px; gap: 5px; }
+    .feature-item p { font-size: 0.75rem; }
+    .feature-item { padding: 10px 3px; }
+    .section-title { font-size: 1.8rem; margin-bottom: 25px; }
+    .slider-button { display: none; }
+    .hospital-doctor-grid { margin: 0; padding-left: 0; padding-right: 0; }
+}
 
-        /* BỔ SUNG: CSS cho Menu Mobile (Đặt ở đây để ưu tiên xử lý cơ bản trước) */
-        /* NÚT HAMBURGER (Mới) */
-        .hamburger-toggle {
-            display: none; /* Mặc định ẩn trên desktop */
-            background: none;
-            border: none;
-            font-size: 2rem;
-            cursor: pointer;
-            color: var(--dark-text);
-            padding: 0;
-            line-height: 1;
-            z-index: 1001; /* Đảm bảo nút nằm trên menu */
-        }
+/* BỔ SUNG: CSS cho Menu Mobile (Đặt ở đây để ưu tiên xử lý cơ bản trước) */
+/* NÚT HAMBURGER (Mới) */
+.hamburger-toggle {
+    display: none; /* Mặc định ẩn trên desktop */
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--dark-text);
+    padding: 0;
+    line-height: 1;
+    z-index: 1001; /* Đảm bảo nút nằm trên menu */
+}
 
-        /* NGĂN CHẶN CUỘN TRANG KHI MENU MỞ */
-        body.menu-open {
-            overflow: hidden;
-        }
+/* NGĂN CHẶN CUỘN TRANG KHI MENU MỞ */
+body.menu-open {
+    overflow: hidden;
+}
 
-        /* Quy tắc này phải được thêm vào phần CSS chung (ngoài @media) */
-        .map-container {
-            /* Bo góc cho khối bọc map ở cả PC và Mobile */
-            border-radius: var(--card-radius); 
-        }
-        .map-container iframe {
-            /* Đảm bảo iframe bên trong cũng bo góc để khớp */
-            border-radius: var(--card-radius); 
-        }
+/* Quy tắc này phải được thêm vào phần CSS chung (ngoài @media) */
+.map-container {
+    /* Bo góc cho khối bọc map ở cả PC và Mobile */
+    border-radius: var(--card-radius); 
+}
+.map-container iframe {
+    /* Đảm bảo iframe bên trong cũng bo góc để khớp */
+    border-radius: var(--card-radius); 
+}
 
     </style>
 </head>
@@ -645,20 +638,18 @@
                     Hồ sơ đặt khám của quý khách đã được ghi nhận. Vui lòng kiểm tra email và tin nhắn điện thoại để xem chi tiết mã số khám, giờ khám và hướng dẫn cần thiết.
                 </p>
 
-                <div class="booking-details-summary" id="booking-summary-details">
-                    <!-- Dữ liệu sẽ được tải từ Firebase tại đây -->
-                    <p class="loading-text">Đang tải thông tin hồ sơ...</p>
+                <div class="booking-details-summary">
                     <div>
-                        <strong>Mã hồ sơ:</strong> <span id="summary-booking-code">Đang tải...</span>
+                        <strong>Mã hồ sơ:</strong> <span>#HCBKG-20250923001</span>
                     </div>
                     <div>
-                        <strong>Hình thức khám:</strong> <span id="summary-booking-type">Đang tải...</span>
+                        <strong>Hình thức khám:</strong> <span id="summary-booking-type">Khám tại cơ sở</span>
                     </div>
                     <div>
-                        <strong>Người đặt:</strong> <span id="summary-name">Đang tải...</span>
+                        <strong>Người đặt:</strong> <span id="summary-name">Nguyễn Văn A</span>
                     </div>
                     <div>
-                        <strong>Ngày khám dự kiến:</strong> <span id="summary-date">Đang tải...</span>
+                        <strong>Ngày khám dự kiến:</strong> <span id="summary-date">25/10/2025</span>
                     </div>
                 </div>
 
@@ -685,24 +676,13 @@
         </div>
     </div>
 
-    <!-- FIREBASE AND MAIN JAVASCRIPT LOGIC -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Global Firebase instances
-        let app, db, auth, userId = null;
-        let isAuthReady = false;
-
-        // Global variables provided by the Canvas environment
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
+    <script>
         // ------------------------------------------------
+        // JAVASCRIPT LOGIC
+        // ------------------------------------------------
+
         // 1. Logic Custom Alert Modal (thay thế alert())
-        // ------------------------------------------------
         const modalOverlay = document.getElementById('custom-alert-modal');
         const modalTitle = document.getElementById('modal-title');
         const modalMessage = document.getElementById('modal-message');
@@ -735,128 +715,9 @@
                 modalOverlay.style.display = 'none';
             });
         }
-
-
-        // ------------------------------------------------
-        // 2. Firebase Initialization and Data Handling
-        // ------------------------------------------------
-
-        async function setupFirebase() {
-            if (!firebaseConfig) {
-                console.error("Lỗi: Firebase config không tồn tại.");
-                return;
-            }
-
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                // Authentication
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        isAuthReady = true;
-                        console.log("Firebase Auth Ready. User ID:", userId);
-                        // Bắt đầu quy trình lưu và tải dữ liệu đặt khám
-                        saveAndLoadBookingData(); 
-                    } else {
-                        // User logged out or sign-in failed. Use fallback unique ID.
-                        userId = localStorage.getItem('anonUserId') || crypto.randomUUID();
-                        localStorage.setItem('anonUserId', userId);
-                        isAuthReady = true;
-                        console.log("Firebase Auth failed or anonymous sign-in. Using unique ID:", userId);
-                        saveAndLoadBookingData(); 
-                    }
-                });
-            } catch (error) {
-                console.error("Lỗi khởi tạo hoặc xác thực Firebase:", error);
-                showCustomAlert(`Không thể kết nối dịch vụ Firebase: ${error.message}`, 'error');
-            }
-        }
         
-        /**
-         * Giả lập lưu dữ liệu đặt khám và sau đó lắng nghe dữ liệu đó.
-         * Trong ứng dụng thực tế, bước setDoc này sẽ diễn ra ở trang Thông tin cá nhân (trước trang Hoàn tất).
-         */
-        function saveAndLoadBookingData() {
-            if (!db || !userId) {
-                console.error("Firestore hoặc User ID chưa sẵn sàng.");
-                return;
-            }
-            
-            // Sử dụng một ID tĩnh cho demo để chúng ta biết nên fetch gì.
-            // Trong thực tế, ID này phải được tạo và truyền từ bước trước.
-            const BOOKING_DOC_ID = "HCBKG-DEMO-FINAL"; 
-            
-            const bookingRef = doc(db, `artifacts/${appId}/users/${userId}/bookings`, BOOKING_DOC_ID);
-
-            // 1. Giả lập lưu dữ liệu (Chỉ chạy một lần đầu tiên)
-            const mockBookingData = {
-                bookingId: `HCBKG-${Date.now()}-001`,
-                bookingType: "Khám chuyên khoa",
-                patientName: "Nguyễn Văn Demo (Từ Firestore)",
-                appointmentDate: new Date().toLocaleDateString('vi-VN', { 
-                    day: '2-digit', 
-                    month: '2-digit', 
-                    year: 'numeric' 
-                }),
-                timestamp: Date.now()
-            };
-
-            setDoc(bookingRef, mockBookingData)
-                .then(() => {
-                    console.log("Giả lập hồ sơ đặt khám đã được lưu thành công.");
-                })
-                .catch(error => {
-                    console.error("Lỗi khi lưu giả lập hồ sơ:", error);
-                });
-
-
-            // 2. Lắng nghe dữ liệu (Real-time update)
-            const summaryBookingCode = document.getElementById('summary-booking-code');
-            const summaryBookingType = document.getElementById('summary-booking-type');
-            const summaryName = document.getElementById('summary-name');
-            const summaryDate = document.getElementById('summary-date');
-            const loadingText = document.querySelector('.loading-text');
-
-            if (loadingText) loadingText.style.display = 'block';
-
-            onSnapshot(bookingRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    console.log("Dữ liệu hồ sơ đặt khám được tải từ Firestore:", data);
-
-                    // Cập nhật giao diện
-                    if (summaryBookingCode) summaryBookingCode.textContent = data.bookingId || 'N/A';
-                    if (summaryBookingType) summaryBookingType.textContent = data.bookingType || 'N/A';
-                    if (summaryName) summaryName.textContent = data.patientName || 'N/A';
-                    if (summaryDate) summaryDate.textContent = data.appointmentDate || 'N/A';
-                    
-                    if (loadingText) loadingText.style.display = 'none';
-
-                } else {
-                    if (loadingText) loadingText.textContent = "Không tìm thấy hồ sơ đặt khám.";
-                    if (summaryBookingCode) summaryBookingCode.textContent = 'Không có dữ liệu';
-                }
-            }, (error) => {
-                console.error("Lỗi khi lắng nghe dữ liệu đặt khám:", error);
-                if (loadingText) loadingText.textContent = "Lỗi tải dữ liệu.";
-                showCustomAlert(`Lỗi tải dữ liệu thời gian thực: ${error.message}`, 'error');
-            });
-        }
-
-
-        // ------------------------------------------------
-        // 3. Hamburger Menu Logic
-        // ------------------------------------------------
-        function setupMenuLogic() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // 2. Logic cho Hamburger Menu
             const menuToggle = document.getElementById('menu-toggle');
             const navArea = document.getElementById('main-nav-area');
             
@@ -866,40 +727,84 @@
                     document.body.classList.toggle('menu-open'); 
                 });
             }
-        }
 
-
-        // ------------------------------------------------
-        // 4. Load External Menu HTML (Retained from original code)
-        // ------------------------------------------------
-        function loadExternalHTML(url, targetElementId) {
-            // Note: In this environment, fetching external files might not work as expected.
-            // I'm keeping the function structure but focusing on the main app logic (Firebase).
-             fetch(url)
-                .then(response => {
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    return response.text();
-                })
-                .then(html => {
-                    document.getElementById(targetElementId).innerHTML = html;
-                })
-                .catch(error => {
-                    console.error('Lỗi tải menu:', error);
-                    document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
-                });
-        }
-
-
-        // Khởi động ứng dụng
-        document.addEventListener('DOMContentLoaded', function() {
-            setupFirebase();
-            setupMenuLogic();
+            // 3. Logic Hiển thị Tóm tắt Đặt Khám (Mock data or get from Session Storage)
+            // Trong môi trường thực tế, bạn sẽ lấy dữ liệu từ Firebase/Session Storage.
             
-            // Tải nội dung menu (Giữ lại từ code gốc, giả định có file menu.html)
-            loadExternalHTML('../menu.html', 'main-nav-area'); 
-        });
+            const summaryBookingType = document.getElementById('summary-booking-type');
+            const summaryName = document.getElementById('summary-name');
+            const summaryDate = document.getElementById('summary-date');
 
+            // --- Lấy dữ liệu từ Session Storage (Giả lập) ---
+            // Giữ lại logic này để thể hiện cách lấy dữ liệu đặt khám
+            const storedTypeName = sessionStorage.getItem('booking_type_name') || 'Khám tại cơ sở (Mặc định)';
+            const storedFullName = sessionStorage.getItem('full_name') || 'Nguyễn Văn A';
+            const storedDob = sessionStorage.getItem('date_of_birth') || '2025-10-23'; // Sử dụng định dạng YYYY-MM-DD
+
+            // Định dạng lại ngày sinh thành ngày khám dự kiến (cho mục đích demo)
+            let displayDate = '25/10/2025';
+            try {
+                const dob = new Date(storedDob);
+                // Giả định ngày khám là 2 ngày sau ngày sinh
+                dob.setDate(dob.getDate() + 2); 
+                const dd = String(dob.getDate()).padStart(2, '0');
+                const mm = String(dob.getMonth() + 1).padStart(2, '0'); 
+                const yyyy = dob.getFullYear();
+                displayDate = `${dd}/${mm}/${yyyy}`;
+            } catch (e) {
+                console.error("Lỗi xử lý ngày:", e);
+            }
+
+            // --- Cập nhật UI ---
+            if (summaryBookingType) summaryBookingType.textContent = storedTypeName;
+            if (summaryName) summaryName.textContent = storedFullName;
+            if (summaryDate) summaryDate.textContent = displayDate;
+            
+            console.log("Trang Hoàn tất đã tải và hiển thị dữ liệu giả lập.");
+        });
     </script>
-    <script src="../include.js"></script> 
+<script>
+    /**
+     * Hàm tải nội dung HTML từ một URL và chèn vào một Element
+     */
+    function loadExternalHTML(url, targetElementId) {
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Chèn nội dung HTML đã tải vào element mục tiêu
+                document.getElementById(targetElementId).innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Lỗi tải menu:', error);
+                document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
+            });
+    }
+
+    // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const navArea = document.getElementById('main-nav-area'); // Lấy element menu
+
+        // 1. TẢI NỘI DUNG MENU
+        // SỬA LỖI: Gọi ID đúng là 'main-nav-area'
+        loadExternalHTML('../menu.html', 'main-nav-area'); 
+
+        // 2. LOGIC HAMBURGER
+        if (menuToggle && navArea) {
+            menuToggle.addEventListener('click', () => {
+                // Thêm/Xóa class 'open' để bật/tắt menu
+                navArea.classList.toggle('open');
+                // Ngăn cuộn trang chính khi menu mở
+                document.body.classList.toggle('menu-open'); 
+            });
+        }
+    });
+</script>
+<script src="../include.js"></script> 
 </body>
 </html>
