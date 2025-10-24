@@ -427,17 +427,18 @@ h1, h2, h3, h4 {
     .hero-section h1 { font-size: 2rem; }
     
     /* 1. KHẮC PHỤC LỖI HIỂN THỊ HAMBURGER */
+/* 1. HIỂN THỊ NÚT HAMBURGER (Phải có !important để ghi đè display: none ở trên) */
     .hamburger-toggle {
-        display: block !important; /* Sử dụng !important để đảm bảo ghi đè mọi CSS desktop */
-        z-index: 1001; /* Đảm bảo nó nổi trên mọi thứ, kể cả menu đang trượt ra */
-        position: relative; /* Giúp z-index hoạt động tốt hơn */
+        display: block !important; 
+        z-index: 1001; 
+        position: relative; 
     }
 
     /* 2. CHUYỂN .nav-area THÀNH OVERLAY MENU */
     .nav-area {
         position: fixed;
         top: 0;
-        left: -100%; /* Ẩn menu ra ngoài màn hình */
+        left: -100%; 
         width: 80%;
         max-width: 300px;
         height: 100%;
@@ -446,13 +447,12 @@ h1, h2, h3, h4 {
         z-index: 999;
         padding: 80px 20px 20px; 
         transition: left 0.3s ease-in-out;
-        /* Ghi đè lại các thuộc tính display/flex của desktop */
-        display: block !important; 
+        display: block !important; /* Ghi đè display: flex desktop */
     }
     
     /* 3. MENU MỞ */
     .nav-area.open {
-        left: 0; /* Trượt vào */
+        left: 0; 
     }
 
     /* 4. Đảm bảo logo và hamburger nằm đúng vị trí */
@@ -488,41 +488,19 @@ h1, h2, h3, h4 {
         padding: 10px;
     }
 
-    .ai-search-box { flex-direction: column; padding: 20px; }
+    .ai-search-box { flex-direction: column; padding: 10px; }
     .btn-ai-search { width: 100%; padding: 15px; }
-    .ai-search-box input { padding: 25px 55px; }
-    .feature-container { margin-top: -30px; margin-bottom: 40px; }
+    .ai-search-box input { padding: 15px 10px; }
+    .feature-container { margin-top: 0px; margin-bottom: 40px; }
     .feature-grid { grid-template-columns: repeat(4, 1fr); padding: 15px; gap: 5px; }
     .feature-item p { font-size: 0.75rem; }
-    .feature-item { padding: 5px 3px; }
+    .feature-item { padding: 10px 3px; }
     .section-title { font-size: 1.8rem; margin-bottom: 25px; }
     .slider-button { display: none; }
     .hospital-doctor-grid { margin: 0; padding-left: 0; padding-right: 0; }
 }
 
-/* Thêm CSS cho ảnh icon */
-.feature-icon .feature-img {
-    width: 55px; /* Bắt buộc ảnh có kích thước 40px */
-    height: 55px;
-    object-fit: contain; /* Đảm bảo ảnh hiển thị đầy đủ, không bị cắt */
-    display: block;
-}
-
-/* Cập nhật .feature-icon để loại bỏ màu nền và text cũ */
-.feature-icon { 
-    width: 70px; 
-    height: 70px; 
-    /* ĐÃ XÓA background-color VÀ font-size cũ vì giờ dùng ảnh */
-    background-color: transparent; /* Đảm bảo không còn màu nền xanh */
-    border-radius: 12px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    margin: 0 auto 8px; 
-    /* XÓA font-size: 1.2rem; */
-}
-
-/* BỔ SUNG: CSS cho Menu Mobile */
+/* BỔ SUNG: CSS cho Menu Mobile (Đặt ở đây để ưu tiên xử lý cơ bản trước) */
 /* NÚT HAMBURGER (Mới) */
 .hamburger-toggle {
     display: none; /* Mặc định ẩn trên desktop */
@@ -540,6 +518,16 @@ h1, h2, h3, h4 {
 body.menu-open {
     overflow: hidden;
 }
+
+/* Quy tắc này phải được thêm vào phần CSS chung (ngoài @media) */
+.map-container {
+    /* Bo góc cho khối bọc map ở cả PC và Mobile */
+    border-radius: var(--card-radius); 
+}
+.map-container iframe {
+    /* Đảm bảo iframe bên trong cũng bo góc để khớp */
+    border-radius: var(--card-radius); 
+}
     </style>
 </head>
 <body>
@@ -553,7 +541,7 @@ body.menu-open {
             &#9776; 
         </button>
         
-        <div class="nav-area" id="main-nav-area" data-include-html="../../../menu.html">
+        <div class="nav-area" id="main-nav-area" data-include-html="../menu.html">
             <p style="margin: 0; color: #aaa;">Đang tải menu...</p>
         </div>
         
@@ -594,7 +582,7 @@ body.menu-open {
                     <span>/</span>
                     <a href="https://healthcare36.netlify.app/hinh-thuc-dat-kham">Hình thức đặt khám</a>
                     <span>/</span>
-                    <a href="https://healthcare36.netlify.app/hinh-thuc-dat-kham/kham-dich-vu">Thông tin khám</a>
+                    <span>Thông tin khám</span>
                 </div>
             </section>
 
@@ -616,6 +604,8 @@ body.menu-open {
                             <select id="hospitalSelect" class="form-select">
                                 <option value="" disabled selected>--- Chọn cơ sở y tế ---</option>
                                 <option value="dhydtphcm">Bệnh viện Đại học Y dược TP.HCM</option>
+                                <option value="bvcr">Bệnh viện Chợ Rẫy</option>
+                                <option value="bvh">Bệnh viện Hoàn Mỹ</option>
                             </select>
                         </div>
                     </div>
@@ -648,7 +638,7 @@ body.menu-open {
                 </div>
 
                 <h3 style="font-size: 1.1rem; font-weight: 500; margin-top: 25px; margin-bottom: 10px;">4. Chọn Khung Giờ Khám:</h3>
-                <p id="slotMessage" style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">Vui lòng chọn Ngày khám để xem các khung giờ khả dụng.</p>
+                <p id="slotMessage" style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">Vui lòng chọn Bệnh viện, Chuyên khoa và Ngày khám để xem các khung giờ khả dụng.</p>
 
                 <div class="time-slot-grid" id="timeSlotGrid">
                     <!-- Time slots sẽ được thêm bằng JavaScript -->
@@ -665,14 +655,77 @@ body.menu-open {
     </div> <!-- /.page-wrapper -->
     
 
-    <script>
-        // Data mẫu (Thực tế sẽ gọi API)
+    <!-- Script Module của bạn -->
+    <script type="module">
+        // Import các hàm cần thiết từ Firebase Modular SDK v11
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        // QUAN TRỌNG: Thêm serverTimestamp để ghi thời gian đúng chuẩn Firestore
+        import { getFirestore, setDoc, doc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- CẤU HÌNH FIREBASE (Sử dụng cấu hình bạn cung cấp làm mặc định) ---
+        const userProvidedConfig = {
+            apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
+            authDomain: "health-care-5ba62.firebaseapp.com",
+            projectId: "health-care-5ba62",
+            storageBucket: "health-care-5ba62.firebasestorage.app",
+            messagingSenderId: "564100851159",
+            appId: "1:564100851159:web:34d7d787474edff1abd792",
+            measurementId: "G-2GWB86PCBT"
+        };
+        
+        // Ưu tiên biến môi trường Canvas, nếu không có thì dùng cấu hình mặc định
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : userProvidedConfig;
+            
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        const NEXT_PAGE_URL = '../thong-tin-ca-nhan'; 
+
+        let db, auth, userId = null;
+        let isFirebaseReady = false;
+
+        const initializeFirebase = async () => {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setLogLevel('debug'); 
+
+                if (initialAuthToken) {
+                    console.log("Attempting sign-in with Custom Token...");
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    console.log("Attempting Anonymous sign-in...");
+                    await signInAnonymously(auth); 
+                }
+                
+                // Lấy User ID sau khi xác thực thành công
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                isFirebaseReady = true;
+                console.log("Firebase initialized successfully. User ID:", userId);
+
+                // Hiển thị User ID trên giao diện
+                const displayUserId = document.getElementById('displayUserId');
+                if (displayUserId) {
+                    displayUserId.textContent = userId;
+                }
+
+            } catch (error) {
+                console.error("LỖI KHỞI TẠO HOẶC XÁC THỰC FIREBASE. Vui lòng kiểm tra Console.", error);
+                alertMessage(`Lỗi kết nối Firebase: ${error.code || 'Unknown'}. Kiểm tra API Key và bật Anonymous Auth.`, "error");
+            }
+        };
+
+        // --- LOGIC LƯU TRỮ VÀ XỬ LÝ DỮ LIỆU ---
+
         const dummyTimeSlots = [
             '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', 
             '10:00', '10:30', '11:00', '11:30', 
             '13:00', '13:30', '14:00', '14:30', '15:00', 
             '15:30', '16:00', '16:30', 
-            '17:00' // Giả sử 17:00 là giờ cuối
+            '17:00' 
         ];
         
         let selectedHospital = null;
@@ -680,18 +733,112 @@ body.menu-open {
         let selectedDate = null;
         let selectedTime = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const hospitalSelect = document.getElementById('hospitalSelect');
-            const specialtySelect = document.getElementById('specialtySelect');
-            const dateSelect = document.getElementById('dateSelect');
-            const timeSlotGrid = document.getElementById('timeSlotGrid');
-            const btnContinue = document.getElementById('btnContinue');
-            const slotMessage = document.getElementById('slotMessage');
+        // Lấy các phần tử DOM
+        const hospitalSelect = document.getElementById('hospitalSelect');
+        const specialtySelect = document.getElementById('specialtySelect');
+        const dateSelect = document.getElementById('dateSelect');
+        const timeSlotGrid = document.getElementById('timeSlotGrid');
+        const btnContinue = document.getElementById('btnContinue');
+        const slotMessage = document.getElementById('slotMessage');
+
+        
+        // Hàm lưu thông tin đặt khám vào Firestore (CẬP NHẬT thông tin)
+        const saveBookingToFirestore = async (data) => {
+            if (!db || !userId) throw new new Error("Firestore hoặc User ID not available.");
+            
+            // Lấy ID booking đã lưu từ Bước 1, nếu chưa có thì tạo mới
+            const currentBookingId = sessionStorage.getItem('current_booking_id') || ('BOOKING_' + new Date().getTime());
+            
+            // 🚨 SỬA LỖI QUAN TRỌNG: Dùng đường dẫn private/multi-user bắt buộc cho Canvas
+            // /artifacts/{appId}/users/{userId}/bookings/{id}
+            const bookingDocPath = `artifacts/${appId}/users/${userId}/bookings/${currentBookingId}`;
+            const bookingDocRef = doc(db, bookingDocPath); 
+
+            const dataToUpdate = {
+                // Bước 2: Thông tin chi tiết lịch khám
+                step: 2, 
+                hospitalId: data.hospitalId,
+                hospitalName: data.hospitalName,
+                specialtyId: data.specialtyId,
+                specialtyName: data.specialtyName,
+                date: data.date,
+                time: data.time,
+                status: "step_2_completed",
+                
+                userId: userId, 
+                lastUpdated: serverTimestamp(), // Dùng serverTimestamp để chuẩn hóa thời gian
+                
+                // Dữ liệu từ bước 1 (nếu có)
+                typeId: sessionStorage.getItem('booking_type_id') || 'N/A',
+                typeName: sessionStorage.getItem('booking_type_name') || 'N/A',
+            };
+
+            try {
+                // setDoc với { merge: true } để cập nhật các trường mới mà không xóa dữ liệu cũ
+                await setDoc(bookingDocRef, dataToUpdate, { merge: true });
+                sessionStorage.setItem('current_booking_id', currentBookingId); 
+                console.log("Booking successfully updated with ID: ", currentBookingId);
+                return currentBookingId;
+            } catch (e) {
+                console.error("Lỗi khi lưu dữ liệu lên Firestore: ", e);
+                // Ném lỗi để khối try/catch bên ngoài có thể bắt được và hiển thị thông báo
+                if (e.code === 'permission-denied') {
+                    throw new Error("Lỗi Quyền Truy Cập (Permission Denied). Vui lòng kiểm tra lại Firestore Security Rules!");
+                }
+                throw new Error(`Lỗi Firebase: ${e.message || "Unknown error"}`);
+            }
+        };
+        
+        // Hàm tùy chỉnh hiển thị thông báo thay cho alert()
+        function alertMessage(message, type) {
+            const existingBox = document.querySelector('.custom-alert');
+            if (existingBox) existingBox.remove();
+            
+            const box = document.createElement('div');
+            box.className = `custom-alert alert-${type}`;
+            box.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                font-weight: 500;
+                z-index: 2000;
+                animation: slideIn 0.5s forwards;
+                color: white;
+                min-width: 250px;
+            `;
+            box.innerHTML = `<i class="fas fa-info-circle" style="margin-right: 10px;"></i> ${message}`;
+
+            if (type === 'success') {
+                box.style.backgroundColor = '#4CAF50';
+                box.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 10px;"></i> ${message}`;
+            } else if (type === 'warning') {
+                box.style.backgroundColor = '#ff9800';
+                box.innerHTML = `<i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i> ${message}`;
+            } else if (type === 'error') {
+                box.style.backgroundColor = '#dc3545';
+                box.innerHTML = `<i class="fas fa-times-circle" style="margin-right: 10px;"></i> ${message}`;
+            }
+
+            document.body.appendChild(box);
+
+            setTimeout(() => {
+                box.style.animation = 'slideOut 0.5s forwards';
+                setTimeout(() => box.remove(), 500);
+            }, 3000);
+        }
+
+        // --- HÀM MAIN LOGIC ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Khởi tạo Firebase
+            await initializeFirebase();
 
             // Thiết lập ngày tối thiểu là ngày hôm nay
             const today = new Date().toISOString().split('T')[0];
             dateSelect.setAttribute('min', today);
-
+            
             // --- 1. VALIDATION VÀ KIỂM TRA TRẠNG THÁI NÚT TIẾP TỤC ---
             const checkFormStatus = () => {
                 const allSelected = selectedHospital && selectedSpecialty && selectedDate && selectedTime;
@@ -703,26 +850,26 @@ body.menu-open {
             };
 
             // --- 2. XỬ LÝ SỰ KIỆN CHỌN (HOSPITAL/SPECIALTY/DATE) ---
-            hospitalSelect.addEventListener('change', (e) => {
-                selectedHospital = e.target.value;
-                selectedTime = null; // Reset time slot khi thay đổi bệnh viện
+            const handleSelectionChange = (e) => {
+                const targetId = e.target.id;
+                
+                if (targetId === 'hospitalSelect') {
+                    selectedHospital = e.target.value;
+                } else if (targetId === 'specialtySelect') {
+                    selectedSpecialty = e.target.value;
+                } else if (targetId === 'dateSelect') {
+                    selectedDate = e.target.value;
+                }
+                
+                // Reset time slot 
+                selectedTime = null; 
                 renderTimeSlots();
                 checkFormStatus();
-            });
+            };
 
-            specialtySelect.addEventListener('change', (e) => {
-                selectedSpecialty = e.target.value;
-                selectedTime = null; // Reset time slot khi thay đổi chuyên khoa
-                renderTimeSlots();
-                checkFormStatus();
-            });
-
-            dateSelect.addEventListener('change', (e) => {
-                selectedDate = e.target.value;
-                selectedTime = null; // Reset time slot khi thay đổi ngày
-                renderTimeSlots();
-                checkFormStatus();
-            });
+            hospitalSelect.addEventListener('change', handleSelectionChange);
+            specialtySelect.addEventListener('change', handleSelectionChange);
+            dateSelect.addEventListener('change', handleSelectionChange);
 
 
             // --- 3. HIỂN THỊ KHUNG GIỜ ---
@@ -734,8 +881,12 @@ body.menu-open {
                     return;
                 }
 
-                // Giả lập logic tìm kiếm và trạng thái bận/trống (VD: 10:00, 14:30 bận)
                 slotMessage.textContent = 'Chọn một khung giờ trống:';
+                
+                // Xóa các trạng thái đã chọn trước khi render lại
+                document.querySelectorAll('.time-slot').forEach(slot => {
+                    slot.classList.remove('selected');
+                });
                 
                 dummyTimeSlots.forEach(slot => {
                     const slotElement = document.createElement('div');
@@ -745,14 +896,14 @@ body.menu-open {
 
                     // Logic giả lập: Khung giờ 10:00 và 14:30 bị khóa/đã đầy
                     if (slot === '10:00' || slot === '14:30') {
-                         slotElement.classList.add('disabled');
+                        slotElement.classList.add('disabled');
                     } else {
                         slotElement.addEventListener('click', handleTimeSlotClick);
                     }
 
                     // Nếu đây là khung giờ đã chọn trước đó, highlight lại
                     if (selectedTime === slot) {
-                         slotElement.classList.add('selected');
+                        slotElement.classList.add('selected');
                     }
 
                     timeSlotGrid.appendChild(slotElement);
@@ -763,129 +914,93 @@ body.menu-open {
             const handleTimeSlotClick = (e) => {
                 const clickedSlot = e.target;
                 
-                // Bỏ chọn tất cả các slot khác
                 document.querySelectorAll('.time-slot').forEach(slot => {
                     slot.classList.remove('selected');
                 });
 
-                // Chọn slot hiện tại
                 clickedSlot.classList.add('selected');
                 selectedTime = clickedSlot.getAttribute('data-time');
                 checkFormStatus();
             };
 
-            // --- 5. NÚT TIẾP TỤC ---
-            btnContinue.addEventListener('click', () => {
-                if (btnContinue.classList.contains('active')) {
-                    const bookingDetails = {
-                        hospital: selectedHospital,
-                        specialty: selectedSpecialty,
-                        date: selectedDate,
-                        time: selectedTime
+            // --- 5. NÚT TIẾP TỤC (LƯU VÀ CHUYỂN TRANG) ---
+            btnContinue.addEventListener('click', async () => {
+                if (!isFirebaseReady || !btnContinue.classList.contains('active')) {
+                    alertMessage('Vui lòng chọn đầy đủ thông tin trước.', 'warning');
+                    return;
+                }
+                
+                // Vô hiệu hóa nút trong khi xử lý
+                btnContinue.classList.remove('active');
+                
+                const bookingDetails = {
+                    hospitalId: selectedHospital,
+                    specialtyId: selectedSpecialty,
+                    date: selectedDate,
+                    time: selectedTime,
+                };
+                
+                try {
+                    // Lấy tên hiển thị từ option đã chọn
+                    const hospitalName = hospitalSelect.options[hospitalSelect.selectedIndex].text;
+                    const specialtyName = specialtySelect.options[specialtySelect.selectedIndex].text;
+
+                    const dataToSave = {
+                        ...bookingDetails,
+                        hospitalName: hospitalName,
+                        specialtyName: specialtyName,
                     };
-                    console.log('Thông tin đặt khám:', bookingDetails);
-                    // Ở môi trường thực tế, dòng này sẽ chuyển hướng sang trang Thông tin cá nhân (Bước 3)
-                    alertMessage('Đã chọn thành công! Chuyển sang Bước 3.', 'success');
-                } else {
-                    alertMessage('Vui lòng chọn đầy đủ Bệnh viện, Chuyên khoa, Ngày và Giờ Khám.', 'warning');
+
+                    // 1. GỌI HÀM LƯU/CẬP NHẬT LÊN FIRESTORE (Đã sửa đường dẫn)
+                    const bookingId = await saveBookingToFirestore(dataToSave);
+                    
+                    // 2. LƯU THÔNG TIN ĐÃ CHỌN VÀO SESSION STORAGE
+                    sessionStorage.setItem('current_booking_id', bookingId);
+                    sessionStorage.setItem('booking_hospital_name', hospitalName);
+                    sessionStorage.setItem('booking_specialty_name', specialtyName);
+                    sessionStorage.setItem('booking_date', selectedDate);
+                    sessionStorage.setItem('booking_time', selectedTime);
+
+                    alertMessage('Đã chọn thành công! Đang chuyển sang Bước 3...', 'success');
+                    
+                    // 3. CHUYỂN HƯỚNG SAU KHI LƯU THÀNH CÔNG
+                    setTimeout(() => {
+                        window.location.href = NEXT_PAGE_URL;
+                    }, 500);
+
+                } catch (error) {
+                    console.error("Lỗi khi lưu thông tin đặt khám:", error);
+                    alertMessage(`Lỗi: ${error.message || 'Không xác định'}. Hãy kiểm tra Firebase Console.`, 'error');
+                    // Kích hoạt lại nút khi có lỗi
+                    checkFormStatus(); // Re-check status which should re-add 'active' class
                 }
             });
 
             // Gọi hàm render ban đầu để hiển thị thông báo yêu cầu chọn
             renderTimeSlots();
-
-
-            // ------------------------------------------------------------------
-            // HÀM TÁI SỬ DỤNG TỪ BƯỚC 1 (CUSTOM ALERT/TẢI MENU)
-            // ------------------------------------------------------------------
-
-            // Hàm tùy chỉnh hiển thị thông báo thay cho alert()
-            function alertMessage(message, type) {
-                const existingBox = document.querySelector('.custom-alert');
-                if (existingBox) existingBox.remove();
-                
-                const box = document.createElement('div');
-                box.className = `custom-alert alert-${type}`;
-                box.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 15px 25px;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                    font-weight: 500;
-                    z-index: 2000;
-                    animation: slideIn 0.5s forwards;
-                    color: white;
-                `;
-                box.innerHTML = `<i class="fas fa-info-circle" style="margin-right: 10px;"></i> ${message}`;
-
-                if (type === 'success') {
-                    box.style.backgroundColor = 'var(--success-green)';
-                } else if (type === 'warning') {
-                    box.style.backgroundColor = 'var(--warning-orange)';
-                    box.innerHTML = `<i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i> ${message}`;
-                }
-
-                document.body.appendChild(box);
-
-                // CSS cho animation (được thêm vào trong style block)
-                const style = document.createElement('style');
-                style.innerHTML = `
-                    @keyframes slideIn {
-                        from { transform: translateX(100%); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                    @keyframes slideOut {
-                        from { transform: translateX(0); opacity: 1; }
-                        to { transform: translateX(100%); opacity: 0; }
-                    }
-                `;
-                document.head.appendChild(style);
-
-
-                setTimeout(() => {
-                    box.style.animation = 'slideOut 0.5s forwards';
-                    setTimeout(() => box.remove(), 500);
-                }, 3000);
-            }
-            // ------------------------------------------------------------------
+            checkFormStatus(); 
             
-            // LOGIC HAMBURGER MENU (GIỮ NGUYÊN)
-            const menuToggle = document.getElementById('menu-toggle');
-            const navArea = document.getElementById('main-nav-area');
-            
-            if (menuToggle && navArea) {
-                menuToggle.addEventListener('click', () => {
-                    navArea.classList.toggle('open');
-                    document.body.classList.toggle('menu-open'); 
-                });
+            // Hàm tải nội dung HTML (Giữ nguyên)
+            function loadExternalHTML(url, targetElementId) {
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(html => {
+                        document.getElementById(targetElementId).innerHTML = html;
+                    })
+                    .catch(error => {
+                        console.error('Lỗi tải menu:', error);
+                        document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
+                    });
             }
-        });
 
-        // Hàm tải nội dung HTML từ một URL (GIỮ NGUYÊN)
-        function loadExternalHTML(url, targetElementId) {
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.text();
-                })
-                .then(html => {
-                    document.getElementById(targetElementId).innerHTML = html;
-                })
-                .catch(error => {
-                    console.error('Lỗi tải menu:', error);
-                    document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
-                });
-        }
-
-        // TẢI NỘI DUNG MENU (GIỮ NGUYÊN)
-        document.addEventListener('DOMContentLoaded', function() {
+            // TẢI MENU NGAY KHI TẢI TRANG (Giữ nguyên)
             loadExternalHTML('../menu.html', 'main-nav-area'); 
         });
     </script>
-<script src="../../include.js"></script> 
 </body>
 </html>

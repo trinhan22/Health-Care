@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta name="google-site-verification" content="73dRIdwl0wADm4SOV2_fm4zWOu8ZbaaJQbfiFdVc09g" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thông tin cá nhân</title>
+    <meta property="og:title" content="Health Care - Nền tảng đặt khám, bốc số bệnh viện, phòng khám online" />
+    <meta property="og:description" content="Health Care - Nền tảng đặt khám, bốc số bệnh viện, phòng khám online" />
+    <meta property="og:image" content="https://healthcare36.netlify.app/img.webp" />
+    <meta property="og:url" content="https://healthcare36.netlify.app" />
+    <meta property="og:type" content="article" />
+    <link href="../../data/IMG/LOGO/logo.webp" rel="icon" type="logo"/>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <style>
+        /* ... CSS CỦA BẠN GIỮ NGUYÊN ... */
+        :root {
+            --primary-blue: #00b5f1; /* Xanh chủ đạo */
+            --dark-text: #003553; /* Màu chữ chính */
+            --light-bg: #e8f4fd; /* Nền trắng sữa pha xanh nhạt */
+            --off-white: #ffffff; 
+            --card-radius: 16px; /* Bo góc lớn và mềm mại */
+            --button-radius: 30px; /* Nút tròn */
+            --shadow-clean: 0 6px 16px 0 rgba(77, 88, 143, .1); /* Bóng đổ nhẹ, sạch */
+            --border-light: #ddd;
+            --success-green: #4CAF50;
+            --warning-orange: #ff9800;
+        }
+
+        /* RESET & TYPOGRAPHY */
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--dark-text);
+            background-color: var(--light-bg);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            transition: margin-left 0.3s;
+        }
+        a {
+            text-decoration: none;
+            color: var(--primary-blue);
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            margin-top: 0;
+        }
+
+        /* 1. THANH MENU (HEADER) */
+        .main-header {
+            background-color: var(--off-white);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); 
+            padding: 15px 0; 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .logo {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem; 
+            font-weight: 900; 
+            color: var(--primary-blue);
+        }
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .nav-area .nav-links {
+            list-style: none;
+            display: flex;
+            padding: 0;
+            margin: 0;
+            gap: 20px;
+        }
+        .nav-area .nav-links a {
+            color: var(--dark-text);
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 5px 0;
+            position: relative;
+        }
+        .btn-login {
+            background-color: var(--primary-blue);
+            color: var(--off-white) !important;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            transition: background-color 0.2s;
+        }
+        /* Bổ sung Hamburger Toggle */
+        .hamburger-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--dark-text);
+            padding: 0;
+            line-height: 1;
+            z-index: 1001;
+        }
+
+        /* 2. LAYOUT TRANG CHÍNH (SIDEBAR + CONTENT) */
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 15px;
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Sidebar chứa Vertical Steps */
+        .sidebar-steps {
+            flex-shrink: 0; 
+            width: 250px;
+            position: sticky; 
+            top: 95px; 
+            height: fit-content;
+            padding-top: 25px; 
+        }
+
+        /* Content chính chứa Header và Lựa chọn */
+        .main-content-area {
+            flex-grow: 1; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 3. THANH TIẾN TRÌNH DỌC (PROGRESS STEPS) */
+        .vertical-steps {
+            display: flex;
+            flex-direction: column;
+            padding-left: 10px;
+            gap: 0;
+        }
+        .vertical-step {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px 0;
+            position: relative;
+            color: #666;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .vertical-step:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 35px;
+            bottom: -15px;
+            width: 2px;
+            background-color: #eee;
+            z-index: 1;
+        }
+
+        .step-icon {
+            width: 25px;
+            height: 25px;
+            min-width: 25px;
+            line-height: 25px;
+            border-radius: 50%;
+            background-color: #eee;
+            color: #fff;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-right: 15px;
+            position: relative;
+            z-index: 2;
+            transition: background-color 0.3s, border 0.3s;
+        }
+
+        /* Trạng thái CURRENT */
+        .vertical-step.current {
+            color: var(--dark-text);
+            font-weight: 700;
+        }
+        .vertical-step.current .step-icon {
+            background-color: var(--primary-blue);
+            border: 3px solid #b3e0ff;
+            color: var(--off-white);
+        }
+        /* Trạng thái COMPLETED */
+        .vertical-step.completed {
+            color: var(--dark-text);
+            font-weight: 500;
+        }
+        .vertical-step.completed .step-icon {
+            background-color: var(--success-green);
+            color: var(--off-white);
+            border: none;
+            font-size: 1rem;
+        }
+        .vertical-step.completed:not(:last-child)::before {
+            background-color: var(--success-green);
+        }
+
+
+        /* 4. BREADCRUMB & CONTENT HEADER */
+        .breadcrumb-section {
+            padding: 10px 0 0; 
+            font-size: 0.9rem;
+            color: #999;
+        }
+        .breadcrumb a {
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+        .breadcrumb span {
+            margin: 0 5px;
+            color: #ccc;
+        }
+
+        .content-header {
+            background-color: var(--off-white);
+            padding: 25px 30px; 
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+        }
+        .content-header p:first-child {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .content-header h1 {
+            font-size: 1.8rem;
+            color: var(--dark-text);
+            margin-bottom: 10px;
+        }
+        .content-header p:last-child {
+            color: var(--dark-text); 
+            font-weight: 500;
+            margin: 0;
+        }
+        /* 5. FORM CHỌN HÌNH THỨC KHÁM (BOOKING TYPES) - KHÔNG DÙNG Ở TRANG NÀY */
+
+        /* NÚT TIẾP TỤC */
+        .main-content-area .form-actions {
+            margin-top: 10px;
+            text-align: right;
+            padding-bottom: 50px;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: var(--button-radius);
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 181, 241, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 181, 241, 0.6);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            pointer-events: none;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* NÚT QUAY LẠI */
+        .btn-secondary {
+            background: transparent;
+            color: var(--dark-text);
+            padding: 15px 40px;
+            border: 2px solid var(--border-light);
+            border-radius: var(--button-radius);
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-right: 15px;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        .form-actions-group {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        /* MODAL - HỘP THÔNG BÁO THAY THẾ ALERT */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .custom-modal {
+            background: var(--off-white);
+            padding: 30px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            animation: fadeIn 0.3s;
+        }
+        .custom-modal h3 {
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+        }
+        .custom-modal button {
+            margin-top: 20px;
+            background: var(--primary-blue);
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ------------------------------------------------ */
+        /* BỔ SUNG: FORM THÔNG TIN CÁ NHÂN */
+        /* ------------------------------------------------ */
+
+        .personal-info-card {
+            background-color: var(--off-white);
+            padding: 30px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px 30px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 5px; /* Giảm khoảng cách mặc định do dùng gap trong grid */
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 500;
+            color: var(--dark-text);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="text"], 
+        input[type="email"], 
+        input[type="tel"], 
+        input[type="date"], 
+        select {
+            padding: 12px 15px;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--dark-text);
+            background-color: var(--off-white);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 181, 241, 0.2);
+            outline: none;
+        }
+
+        /* Lựa chọn giới tính (Gender Switch) */
+        .gender-selection {
+            display: flex;
+            gap: 15px;
+        }
+
+        .gender-selection input[type="radio"] {
+            display: none;
+        }
+
+        .gender-selection label {
+            /* Ghi đè label mặc định */
+            margin-bottom: 0;
+            padding: 10px 20px;
+            border: 2px solid var(--border-light);
+            border-radius: var(--button-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gender-selection input[type="radio"]:checked + label {
+            border-color: var(--primary-blue);
+            background-color: #e6f7ff; /* Nền xanh nhạt */
+            color: var(--primary-blue);
+            font-weight: 700;
+        }
+        
+        .required-star {
+            color: red;
+            margin-left: 4px;
+        }
+
+        /* ------------------------------------------------ */
+        /* RESPONSIVE (Mobile/Tablet) */
+        /* ------------------------------------------------ */
+        @media (max-width: 992px) {
+            .sidebar-steps {
+                display: none; 
+            }
+            .page-wrapper {
+                display: block;
+                padding: 15px;
+            }
+            .content-header {
+                margin-bottom: 20px;
+                padding: 20px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .main-content-area .form-actions {
+                text-align: center;
+                padding-bottom: 20px;
+            }
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                padding: 12px;
+                font-size: 1rem;
+                margin-top: 10px;
+                margin-right: 0;
+            }
+            .form-actions-group {
+                flex-direction: column-reverse; /* Đảo ngược thứ tự để Tiếp tục nằm dưới cùng trên mobile */
+            }
+            .gender-selection {
+                flex-wrap: wrap;
+            }
+            .gender-selection label {
+                flex-grow: 1; /* Cho phép các nút giới tính mở rộng */
+                justify-content: center;
+            }
+        }
+    @media (max-width: 768px) {
+        .hero-section { padding: 80px 0 60px; }
+        .hero-section h1 { font-size: 2rem; }
+        
+        /* 1. KHẮC PHỤC LỖI HIỂN THỊ HAMBURGER */
+    /* 1. HIỂN THỊ NÚT HAMBURGER (Phải có !important để ghi đè display: none ở trên) */
+        .hamburger-toggle {
+            display: block !important; 
+            z-index: 1001; 
+            position: relative; 
+        }
+
+        /* 2. CHUYỂN .nav-area THÀNH OVERLAY MENU */
+        .nav-area {
+            position: fixed;
+            top: 0;
+            left: -100%; 
+            width: 80%;
+            max-width: 300px;
+            height: 100%;
+            background-color: var(--off-white); 
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+            z-index: 999;
+            padding: 80px 20px 20px; 
+            transition: left 0.3s ease-in-out;
+            display: block !important; /* Ghi đè display: flex desktop */
+        }
+        
+        /* 3. MENU MỞ */
+        .nav-area.open {
+            left: 0; 
+        }
+
+        /* 4. Đảm bảo logo và hamburger nằm đúng vị trí */
+        .header-content {
+            padding: 0 15px; /* Giữ padding ngang */
+        }
+        
+        /* 5. Sắp xếp lại các liên kết menu theo chiều dọc */
+        /* Lưu ý: Các thẻ này nằm trong menu.html được nhúng vào */
+        .nav-area .nav-links {
+            list-style: none;
+            flex-direction: column;
+            width: 100%;
+            gap: 0;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            margin-bottom: 20px;
+        }
+        .nav-area .nav-links li {
+            border-bottom: 1px solid #eee;
+            width: 100%;
+        }
+        .nav-area .nav-links a {
+            padding: 15px 0;
+            font-size: 1.1rem;
+            font-weight: 500;
+            display: block;
+        }
+        .nav-area .btn-login {
+            margin-left: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .ai-search-box { flex-direction: column; padding: 10px; }
+        .btn-ai-search { width: 100%; padding: 15px; }
+        .ai-search-box input { padding: 15px 10px; }
+        .feature-container { margin-top: 0px; margin-bottom: 40px; }
+        .feature-grid { grid-template-columns: repeat(4, 1fr); padding: 15px; gap: 5px; }
+        .feature-item p { font-size: 0.75rem; }
+        .feature-item { padding: 10px 3px; }
+        .section-title { font-size: 1.8rem; margin-bottom: 25px; }
+        .slider-button { display: none; }
+        .hospital-doctor-grid { margin: 0; padding-left: 0; padding-right: 0; }
+    }
+
+    /* BỔ SUNG: CSS cho Menu Mobile (Đặt ở đây để ưu tiên xử lý cơ bản trước) */
+    /* NÚT HAMBURGER (Mới) */
+    .hamburger-toggle {
+        display: none; /* Mặc định ẩn trên desktop */
+        background: none;
+        border: none;
+        font-size: 2rem;
+        cursor: pointer;
+        color: var(--dark-text);
+        padding: 0;
+        line-height: 1;
+        z-index: 1001; /* Đảm bảo nút nằm trên menu */
+    }
+
+    /* NGĂN CHẶN CUỘN TRANG KHI MENU MỞ */
+    body.menu-open {
+        overflow: hidden;
+    }
+
+    /* Quy tắc này phải được thêm vào phần CSS chung (ngoài @media) */
+    .map-container {
+        /* Bo góc cho khối bọc map ở cả PC và Mobile */
+        border-radius: var(--card-radius); 
+    }
+    .map-container iframe {
+        /* Đảm bảo iframe bên trong cũng bo góc để khớp */
+        border-radius: var(--card-radius); 
+    }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+    <div class="container header-content">
+        <div class="logo">HEALTH<span style="color: #666; font-weight: 500;">CARE</span></div>
+        
+        <button class="hamburger-toggle" id="menu-toggle" aria-label="Toggle Menu">
+            &#9776; 
+        </button>
+        
+        <div class="nav-area" id="main-nav-area" data-include-html="../menu.html">
+            <p style="margin: 0; color: #aaa;">Đang tải menu...</p>
+        </div>
+        
+    </div>
+</header>
+
+    <div class="custom-modal-overlay" id="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3 id="modal-title">Thông báo</h3>
+            <p id="modal-message">Nội dung thông báo.</p>
+            <button id="modal-ok-btn">Đồng ý</button>
+        </div>
+    </div>
+
+    <div class="page-wrapper">
+
+        <div class="sidebar-steps">
+            <div class="vertical-steps">
+                <div class="vertical-step completed">
+                    <span class="step-icon"><i class="fas fa-check"></i></span>
+                    <span class="step-label">Chọn hình thức khám</span>
+                </div>
+                <div class="vertical-step completed">
+                    <span class="step-icon"><i class="fas fa-check"></i></span>
+                    <span class="step-label">Chọn thông tin khám</span>
+                </div>
+                <div class="vertical-step current">
+                    <span class="step-icon">3</span>
+                    <span class="step-label">Thông tin cá nhân</span>
+                </div>
+                <div class="vertical-step">
+                    <span class="step-icon">4</span>
+                    <span class="step-label">Hoàn tất</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content-area">
+
+            <div class="breadcrumb-section">
+                <div class="breadcrumb">
+                    <a href="https://healthcare36.netlify.app">Trang Chủ</a>
+                    <span>/</span>
+                    <a href="https://healthcare36.netlify.app/hinh-thuc-dat-kham">Hình thức đặt khám</a>
+                    <span>/</span>
+                    <a href="https://healthcare36.netlify.app/chon-thong-tin-kham">Thông tin khám</a>
+                    <span>/</span>
+                    <span>Thông tin cá nhân</span>
+                </div>
+            </div>
+            
+            <div class="content-header">
+                <p>Bước 3/4</p>
+                <h1>Thông Tin Cá Nhân</h1>
+                <p>Vui lòng điền đầy đủ và chính xác thông tin để quá trình đăng ký diễn ra suôn sẻ.</p>
+            </div>
+
+            <div class="personal-info-card">
+                <form id="personal-info-form">
+                    <div class="form-grid">
+                        
+                        <div class="form-group">
+                            <label for="fullName">Họ và Tên<span class="required-star">*</span></label>
+                            <input type="text" id="fullName" name="fullName" placeholder="Nguyễn Văn A" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phoneNumber">Số Điện Thoại<span class="required-star">*</span></label>
+                            <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="090 123 4567" pattern="[0-9]{10,11}" title="Vui lòng nhập số điện thoại hợp lệ (10-11 số)" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Giới Tính<span class="required-star">*</span></label>
+                            <div class="gender-selection">
+                                <input type="radio" id="genderMale" name="gender" value="Nam" required>
+                                <label for="genderMale"><i class="fas fa-male"></i> Nam</label>
+                                
+                                <input type="radio" id="genderFemale" name="gender" value="Nữ" required>
+                                <label for="genderFemale"><i class="fas fa-female"></i> Nữ</label>
+                                
+                                <input type="radio" id="genderOther" name="gender" value="Khác" required>
+                                <label for="genderOther"><i class="fas fa-genderless"></i> Khác</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dob">Ngày Sinh<span class="required-star">*</span></label>
+                            <input type="date" id="dob" name="dob" max="2025-10-23" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="email@example.com">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="idNumber">CCCD/CMND</label>
+                            <input type="text" id="idNumber" name="idNumber" placeholder="001201123456">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="address">Địa Chỉ Thường Trú<span class="required-star">*</span></label>
+                            <input type="text" id="address" name="address" placeholder="Số nhà, tên đường, Phường/Xã, Quận/Huyện, Tỉnh/Thành phố" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+
+            <div class="form-actions">
+                <div class="form-actions-group">
+                    <button type="button" class="btn-secondary" onclick="window.location.href='../chon-thong-tin-kham.html'">
+                        <i class="fas fa-chevron-left"></i> Quay lại
+                    </button>
+                    <button type="submit" form="personal-info-form" class="btn-primary" id="btn-continue">
+                        Tiếp tục <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div> </div>
+
+    <script type="module">
+        // --- 1. IMPORT CÁC THƯ VIỆN FIREBASE V9 VÀ CÁC HÀM CẦN THIẾT ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- CẤU HÌNH TĨNH DỰ PHÒNG (Dùng khi biến môi trường bị lỗi) ---
+        const STATIC_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
+            authDomain: "health-care-5ba62.firebaseapp.com",
+            projectId: "health-care-5ba62",
+            storageBucket: "health-care-5ba62.firebasestorage.app",
+            messagingSenderId: "564100851159",
+            appId: "1:564100851159:web:34d7d787474edff1abd792",
+            measurementId: "G-2GWB86PCBT"
+        };
+
+
+        // --- 2. KHỞI TẠO BIẾN TOÀN CỤC ---
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+
+        const COLLECTION_NAME = 'bookings';
+        const DOC_ID = 'personal_info'; 
+        const nextPage = '../hoan-tat'; 
+
+        // --- 3. LOGIC MODAL (Thay thế Alert/Confirm) ---
+        function showCustomAlert(message, title = "Thông báo", callback = null) {
+            const overlay = document.getElementById('custom-modal-overlay');
+            const titleEl = document.getElementById('modal-title');
+            const messageEl = document.getElementById('modal-message');
+            const okBtn = document.getElementById('modal-ok-btn');
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            overlay.style.display = 'flex';
+
+            const closeHandler = () => {
+                overlay.style.display = 'none';
+                okBtn.removeEventListener('click', closeHandler);
+                if (callback) {
+                    callback();
+                }
+            };
+
+            // Gán lại sự kiện để tránh nhân đôi listener
+            okBtn.onclick = closeHandler; 
+        }
+
+        // Thêm hàm cập nhật trạng thái kết nối
+        function updateConnectionStatus(state, message = "") {
+            const dot = document.getElementById('status-dot-icon');
+            const text = document.getElementById('status-text');
+
+            if (!dot || !text) return;
+
+            // Xóa tất cả trạng thái cũ
+            dot.classList.remove('loading', 'ready', 'error');
+
+            switch (state) {
+                case 'loading':
+                    dot.classList.add('loading');
+                    text.textContent = message || 'Đang kết nối...';
+                    break;
+                case 'ready':
+                    dot.classList.add('ready');
+                    text.textContent = message || 'Hệ thống sẵn sàng';
+                    break;
+                case 'error':
+                    dot.classList.add('error');
+                    text.textContent = message || 'Lỗi kết nối';
+                    break;
+            }
+        }
+
+        // --- 4. KHỞI TẠO FIREBASE VÀ XÁC THỰC NGƯỜI DÙNG (SỬ DỤNG BIẾN TOÀN CỤC VÀ CẤU HÌNH DỰ PHÒNG) ---
+        async function initializeFirebase() {
+            updateConnectionStatus('loading'); // Bắt đầu kết nối
+            
+            let firebaseConfig = {};
+            const hasEnvironmentConfig = (typeof __firebase_config !== 'undefined' && __firebase_config);
+
+            // 1. THỬ TẢI CẤU HÌNH TỪ BIẾN MÔI TRƯỜNG
+            if (hasEnvironmentConfig) {
+                try {
+                    firebaseConfig = JSON.parse(__firebase_config);
+                    // Đảm bảo kết quả parsing là một đối tượng hợp lệ
+                    if (typeof firebaseConfig !== 'object' || firebaseConfig === null || Object.keys(firebaseConfig).length === 0) {
+                        firebaseConfig = {}; // Đánh dấu cấu hình lỗi
+                    } else {
+                        console.log("[INIT] Sử dụng cấu hình Firebase từ biến môi trường.");
+                    }
+                } catch (e) {
+                    console.error("[INIT] Lỗi parsing cấu hình Firebase môi trường:", e);
+                }
+            }
+
+            // 2. DỰ PHÒNG: NẾU CẤU HÌNH MÔI TRƯỜNG LỖI, SỬ DỤNG CẤU HÌNH TĨNH
+            if (Object.keys(firebaseConfig).length === 0) {
+                console.warn("[INIT] Cấu hình môi trường (__firebase_config) không hợp lệ hoặc bị thiếu. Đang sử dụng cấu hình tĩnh (STATIC_FIREBASE_CONFIG) làm fallback.");
+                firebaseConfig = STATIC_FIREBASE_CONFIG;
+            }
+
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+            if (Object.keys(firebaseConfig).length === 0) {
+                // Nếu cả cấu hình tĩnh cũng trống (không nên xảy ra)
+                console.error("Lỗi: Không tìm thấy cấu hình Firebase tự động hoặc tĩnh.");
+                updateConnectionStatus('error', 'Lỗi Config');
+                showCustomAlert("Lỗi Hệ Thống: Không tìm thấy cấu hình Firebase. Vui lòng liên hệ hỗ trợ kỹ thuật.", "Lỗi");
+                return;
+            }
+
+            try {
+                // Khởi tạo ứng dụng và dịch vụ
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setLogLevel('Debug'); // Bật log debug cho Firestore
+
+                // Lắng nghe trạng thái xác thực
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        isAuthReady = true;
+                        console.log(`[AUTH] Đã xác thực, User ID: ${userId}`);
+                        updateConnectionStatus('ready', `Đã kết nối (User: ${userId.substring(0, 4)}...)`); // Sẵn sàng
+                        // Khi xác thực hoàn tất, tải dữ liệu
+                        await loadSavedData();
+                    } else {
+                        // Nếu không có user, đăng nhập ẩn danh
+                        try {
+                            const anonymousUser = await signInAnonymously(auth);
+                            userId = anonymousUser.user.uid;
+                            isAuthReady = true;
+                            console.log(`[AUTH] Đăng nhập ẩn danh thành công, User ID: ${userId}`);
+                            updateConnectionStatus('ready', `Đã kết nối (Guest: ${userId.substring(0, 4)}...)`); // Sẵn sàng
+                            await loadSavedData();
+                        } catch (error) {
+                            console.error("[AUTH] Lỗi xác thực Firebase:", error);
+                            updateConnectionStatus('error', 'Lỗi Auth');
+                            showCustomAlert("Không thể kết nối dịch vụ. Vui lòng thử lại sau.", "Lỗi Hệ Thống");
+                        }
+                    }
+                });
+
+                // Thực hiện đăng nhập ban đầu bằng Custom Token nếu có
+                if (initialAuthToken) {
+                    try {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("[AUTH] Đăng nhập bằng Custom Token thành công.");
+                    } catch (error) {
+                        console.warn("[AUTH] Lỗi đăng nhập bằng Custom Token. Đang chờ onAuthStateChanged xử lý (thường là đăng nhập ẩn danh).", error);
+                    }
+                } else {
+                     console.log("[AUTH] Không có Custom Token. Chờ onAuthStateChanged xử lý.");
+                }
+
+            } catch (e) {
+                console.error("[INIT] Lỗi khởi tạo Firebase:", e);
+                updateConnectionStatus('error', 'Lỗi Init');
+                showCustomAlert("Lỗi khởi tạo ứng dụng. Vui lòng kiểm tra console log.", "Lỗi Nghiêm Trọng");
+            }
+        }
+        
+        // Hàm lấy tham chiếu Document chính xác theo quy tắc bảo mật
+        function getBookingDocRef() {
+            if (!db || !userId) return null;
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            // Đường dẫn Firestore: /artifacts/{appId}/users/{userId}/bookings/personal_info
+            // LƯU Ý QUAN TRỌNG: Nếu gặp lỗi "permission-denied", bạn cần đảm bảo Firebase Security Rules
+            // của mình cho phép người dùng đã xác thực (request.auth.uid == userId) ghi vào đường dẫn này.
+            // Ví dụ rule cần thiết: allow write: if request.auth != null && request.auth.uid == userId;
+            return doc(db, 'artifacts', appId, 'users', userId, COLLECTION_NAME, DOC_ID);
+        }
+
+        // --- 5. LOGIC FORM & FIREBASE ACTIONS ---
+        function validateForm(form) {
+            let isValid = true;
+            // Chỉ kiểm tra các input có thuộc tính required
+            const requiredInputs = form.querySelectorAll('[required]');
+            
+            requiredInputs.forEach(input => {
+                // Xử lý riêng cho radio button
+                if (input.type === 'radio') {
+                    // Kiểm tra xem có radio nào trong nhóm "gender" được chọn không
+                    const radioGroup = form.querySelectorAll(`input[name="gender"]`);
+                    let isChecked = false;
+                    radioGroup.forEach(radio => {
+                        if (radio.checked) {
+                            isChecked = true;
+                        }
+                    });
+                    if (!isChecked) {
+                        isValid = false;
+                    }
+                } else if (!input.value.trim()) {
+                    // Xử lý cho các input văn bản/ngày tháng
+                    isValid = false;
+                }
+            });
+            return isValid;
+        }
+
+        async function saveFormData(form) {
+            const docRef = getBookingDocRef();
+            if (!docRef) {
+                showCustomAlert("Hệ thống chưa sẵn sàng (Chưa xác thực). Vui lòng chờ 1 lát.", "Lỗi Kết Nối");
+                return false;
+            }
+
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
+                gender: form.querySelector('input[name="gender"]:checked')?.value || '',
+                dob: document.getElementById('dob').value,
+                email: document.getElementById('email').value || null,
+                idNumber: document.getElementById('idNumber').value || null,
+                address: document.getElementById('address').value,
+                lastUpdated: serverTimestamp(), 
+            };
+            
+            try {
+                // LƯU VÀO FIREBASE: Lưu dữ liệu vào trường 'step3' của document personal_info.
+                // { merge: true } ĐẢM BẢO dữ liệu Bước 1 (step1) và Bước 2 (step2) không bị mất.
+                await setDoc(docRef, { step3: formData }, { merge: true });
+                console.log("[FIREBASE] Thông tin cá nhân đã được lưu thành công!");
+                return true;
+            } catch (error) {
+                console.error("[FIREBASE] Lỗi khi lưu vào Firestore:", error);
+                
+                // Cải tiến thông báo lỗi: Hiển thị mã lỗi để chẩn đoán vấn đề quyền truy cập.
+                const errorMessage = `Không thể lưu dữ liệu lên máy chủ. (Lỗi: ${error.code || "Lỗi không xác định"}). Vui lòng thử lại. Nếu lỗi này tiếp diễn, có thể do vấn đề về Quy tắc Bảo mật.`;
+                showCustomAlert(errorMessage, "Lỗi Hệ Thống");
+                
+                return false;
+            }
+        }
+
+        async function loadSavedData() {
+            if (!isAuthReady) return; 
+            const docRef = getBookingDocRef();
+            if (!docRef) return;
+            
+            try {
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data().step3 || {}; // Lấy dữ liệu từ trường 'step3'
+                    document.getElementById('fullName').value = data.fullName || '';
+                    document.getElementById('phoneNumber').value = data.phoneNumber || '';
+                    document.getElementById('dob').value = data.dob || '';
+                    document.getElementById('email').value = data.email || '';
+                    document.getElementById('idNumber').value = data.idNumber || '';
+                    document.getElementById('address').value = data.address || '';
+
+                    // Load giới tính
+                    if (data.gender) {
+                        const form = document.getElementById('personal-info-form');
+                        const radio = form.querySelector(`input[name="gender"][value="${data.gender}"]`);
+                        if (radio) {
+                            radio.checked = true;
+                        }
+                    }
+                    console.log('[FIREBASE] Thông tin cá nhân đã được tải.');
+                } else {
+                    console.log("[FIREBASE] Không tìm thấy dữ liệu đặt chỗ cũ.");
+                }
+            } catch (error) {
+                console.error("[FIREBASE] Lỗi khi tải dữ liệu:", error);
+            }
+        }
+
+        // --- 6. GẮN SỰ KIỆN DOM CONTENT LOADED ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('personal-info-form');
+
+            // 1. Khởi tạo Firebase và Auth
+            initializeFirebase();
+            
+            // 2. Lắng nghe sự kiện submit form
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault(); 
+                
+                if (validateForm(form)) {
+                    const success = await saveFormData(form);
+                    if (success) {
+                        showCustomAlert("Đã lưu thông tin cá nhân. Đang chuyển đến Bước 4...", "Thành công", () => {
+                            window.location.href = nextPage; // <--- DÒNG NÀY ĐÃ BỎ COMMENT
+                            console.log("Chuyển trang đến: " + nextPage);
+                        });
+                    }
+                } else {
+                    showCustomAlert("Vui lòng điền đầy đủ các trường bắt buộc (có dấu *).", "Lỗi Nhập Liệu");
+                }
+            });
+
+            // Logic Hamburger đơn giản (cho giao diện)
+            const menuToggle = document.getElementById('menu-toggle');
+            const navArea = document.getElementById('main-nav-area'); 
+
+            if (menuToggle && navArea) {
+                menuToggle.addEventListener('click', () => {
+                    console.log("Toggle menu clicked.");
+                });
+            }
+        });
+
+    </script>
+<script>
+    /**
+     * Hàm tải nội dung HTML từ một URL và chèn vào một Element
+     */
+    function loadExternalHTML(url, targetElementId) {
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Chèn nội dung HTML đã tải vào element mục tiêu
+                document.getElementById(targetElementId).innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Lỗi tải menu:', error);
+                document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
+            });
+    }
+
+    // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const navArea = document.getElementById('main-nav-area'); // Lấy element menu
+
+        // 1. TẢI NỘI DUNG MENU
+        // SỬA LỖI: Gọi ID đúng là 'main-nav-area'
+        loadExternalHTML('../menu.html', 'main-nav-area'); 
+
+        // 2. LOGIC HAMBURGER
+        if (menuToggle && navArea) {
+            menuToggle.addEventListener('click', () => {
+                // Thêm/Xóa class 'open' để bật/tắt menu
+                navArea.classList.toggle('open');
+                // Ngăn cuộn trang chính khi menu mở
+                document.body.classList.toggle('menu-open'); 
+            });
+        }
+    });
+</script>
+<script src="../include.js"></script> 
+</body>
+</html>

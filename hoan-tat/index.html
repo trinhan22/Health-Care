@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta name="google-site-verification" content="73dRIdwl0wADm4SOV2_fm4zWOu8ZbaaJQbfiFdVc09g" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hoàn tất</title>
+    <meta property="og:title" content="Health Care - Nền tảng đặt khám, bốc số bệnh viện, phòng khám online" />
+    <meta property="og:description" content="Health Care - Nền tảng đặt khám, bốc số bệnh viện, phòng khám online" />
+    <meta property="og:image" content="https://healthcare36.netlify.app/img.webp" />
+    <meta property="og:url" content="https://healthcare36.netlify.app" />
+    <meta property="og:type" content="article" />
+    <!-- Favicon -->
+    <link href="../../data/IMG/LOGO/logo.webp" rel="icon" type="logo"/>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* CSS VARIABLES (Màu sắc và khoảng cách) - DÙNG CSS BẠN CUNG CẤP */
+        :root {
+            --primary-blue: #00b5f1; /* Xanh chủ đạo */
+            --dark-text: #003553; /* Màu chữ chính */
+            --light-bg: #e8f4fd; /* Nền trắng sữa pha xanh nhạt */
+            --off-white: #ffffff; 
+            --card-radius: 16px; /* Bo góc lớn và mềm mại */
+            --button-radius: 30px; /* Nút tròn */
+            --shadow-clean: 0 6px 16px 0 rgba(77, 88, 143, .1); /* Bóng đổ nhẹ, sạch */
+            --border-light: #ddd;
+            --success-green: #4CAF50;
+            --warning-orange: #ff9800;
+        }
+
+        /* RESET & TYPOGRAPHY */
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--dark-text);
+            background-color: var(--light-bg);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            transition: margin-left 0.3s;
+        }
+        a {
+            text-decoration: none;
+            color: var(--primary-blue);
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            margin-top: 0;
+        }
+
+        /* 1. THANH MENU (HEADER) */
+        .main-header {
+            background-color: var(--off-white);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); 
+            padding: 15px 0; 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        .logo {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem; 
+            font-weight: 900; 
+            color: var(--primary-blue);
+        }
+        .nav-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .nav-area .nav-links {
+            list-style: none;
+            display: flex;
+            padding: 0;
+            margin: 0;
+            gap: 20px;
+        }
+        .nav-area .nav-links a {
+            color: var(--dark-text);
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 5px 0;
+            position: relative;
+        }
+        .btn-login {
+            background-color: var(--primary-blue);
+            color: var(--off-white) !important;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            transition: background-color 0.2s;
+        }
+        /* Bổ sung Hamburger Toggle */
+        .hamburger-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--dark-text);
+            padding: 0;
+            line-height: 1;
+            z-index: 1001;
+        }
+
+        /* 2. LAYOUT TRANG CHÍNH (SIDEBAR + CONTENT) */
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 15px;
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Sidebar chứa Vertical Steps */
+        .sidebar-steps {
+            flex-shrink: 0; 
+            width: 250px;
+            position: sticky; 
+            top: 95px; 
+            height: fit-content;
+            padding-top: 25px; 
+        }
+
+        /* Content chính chứa Header và Lựa chọn */
+        .main-content-area {
+            flex-grow: 1; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 3. THANH TIẾN TRÌNH DỌC (PROGRESS STEPS) */
+        .vertical-steps {
+            display: flex;
+            flex-direction: column;
+            padding-left: 10px;
+            gap: 0;
+        }
+        .vertical-step {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px 0;
+            position: relative;
+            color: #666;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .vertical-step:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 12px;
+            top: 35px;
+            bottom: -15px;
+            width: 2px;
+            background-color: #eee;
+            z-index: 1;
+        }
+
+        .step-icon {
+            width: 25px;
+            height: 25px;
+            min-width: 25px;
+            line-height: 25px;
+            border-radius: 50%;
+            background-color: #eee;
+            color: #fff;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-right: 15px;
+            position: relative;
+            z-index: 2;
+            transition: background-color 0.3s, border 0.3s;
+        }
+
+        /* Trạng thái CURRENT */
+        .vertical-step.current {
+            color: var(--dark-text);
+            font-weight: 700;
+        }
+        .vertical-step.current .step-icon {
+            background-color: var(--primary-blue);
+            border: 3px solid #b3e0ff;
+            color: var(--off-white);
+            /* Thay đổi số 3 thành icon check để đồng bộ với các bước trước */
+            content: "\f058"; /* FontAwesome check circle */
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 1rem;
+        }
+        /* Trạng thái COMPLETED */
+        .vertical-step.completed {
+            color: var(--dark-text);
+            font-weight: 500;
+        }
+        .vertical-step.completed .step-icon {
+            background-color: var(--success-green);
+            color: var(--off-white);
+            border: none;
+            font-size: 1rem;
+        }
+        .vertical-step.completed:not(:last-child)::before {
+            background-color: var(--success-green);
+        }
+
+
+        /* 4. BREADCRUMB & CONTENT HEADER */
+        .breadcrumb-section {
+            padding: 10px 0 0; 
+            font-size: 0.9rem;
+            color: #999;
+        }
+        .breadcrumb a {
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+        .breadcrumb span {
+            margin: 0 5px;
+            color: #ccc;
+        }
+
+        .content-header {
+            background-color: var(--off-white);
+            padding: 25px 30px; 
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+        }
+        .content-header p:first-child {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .content-header h1 {
+            font-size: 1.8rem;
+            color: var(--dark-text);
+            margin-bottom: 10px;
+        }
+        .content-header p:last-child {
+            color: var(--dark-text); 
+            font-weight: 500;
+            margin: 0;
+        }
+        
+        /* NÚT TIẾP TỤC */
+        .main-content-area .form-actions {
+            margin-top: 10px;
+            text-align: right;
+            padding-bottom: 50px;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: var(--button-radius);
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 181, 241, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 181, 241, 0.6);
+        }
+        .btn-primary:disabled {
+            opacity: 0.6;
+            pointer-events: none;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* NÚT QUAY LẠI */
+        .btn-secondary {
+            background: transparent;
+            color: var(--dark-text);
+            padding: 15px 40px;
+            border: 2px solid var(--border-light);
+            border-radius: var(--button-radius);
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-right: 15px;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+        .form-actions-group {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        /* MODAL - HỘP THÔNG BÁO THAY THẾ ALERT */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .custom-modal {
+            background: var(--off-white);
+            padding: 30px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            animation: fadeIn 0.3s;
+        }
+        .custom-modal h3 {
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+        }
+        .custom-modal button {
+            margin-top: 20px;
+            background: var(--primary-blue);
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ------------------------------------------------ */
+        /* BỔ SUNG: STYLE RIÊNG CHO TRANG HOÀN TẤT (SUCCESS PAGE) */
+        /* ------------------------------------------------ */
+
+        .success-card {
+            background-color: var(--off-white);
+            padding: 40px;
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow-clean);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px; 
+        }
+
+        .success-icon {
+            font-size: 6rem;
+            color: var(--success-green);
+            margin-bottom: 20px;
+            animation: bounceIn 0.8s;
+        }
+
+        .success-card h2 {
+            font-size: 2.2rem;
+            color: var(--success-green);
+            margin-bottom: 15px;
+        }
+
+        .success-card p {
+            font-size: 1.1rem;
+            color: var(--dark-text);
+            margin-bottom: 25px;
+            max-width: 500px;
+        }
+        
+        .booking-details-summary {
+            background-color: var(--light-bg);
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 450px;
+            text-align: left;
+            margin-top: 15px;
+        }
+
+        .booking-details-summary div {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border-light);
+            font-size: 0.95rem;
+        }
+        .booking-details-summary div:last-child {
+            border-bottom: none;
+        }
+        .booking-details-summary strong {
+            font-weight: 700;
+            color: var(--dark-text);
+        }
+        .booking-details-summary span {
+            color: #666;
+        }
+
+
+        /* ------------------------------------------------ */
+        /* RESPONSIVE (Mobile/Tablet) */
+        /* ------------------------------------------------ */
+        @media (max-width: 992px) {
+            .sidebar-steps {
+                display: none; 
+            }
+            .page-wrapper {
+                display: block;
+                padding: 15px;
+            }
+            .content-header {
+                margin-bottom: 20px;
+                padding: 20px;
+            }
+            .main-content-area .form-actions {
+                text-align: center;
+                padding-bottom: 20px;
+            }
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                padding: 12px;
+                font-size: 1rem;
+                margin-top: 10px;
+                margin-right: 0;
+            }
+            .form-actions-group {
+                flex-direction: column-reverse; 
+            }
+            .success-card {
+                padding: 30px 15px;
+                min-height: 300px;
+            }
+            .success-card h2 {
+                font-size: 1.8rem;
+            }
+            .success-card p {
+                font-size: 1rem;
+            }
+        }
+@media (max-width: 768px) {
+    .hero-section { padding: 80px 0 60px; }
+    .hero-section h1 { font-size: 2rem; }
+    
+    /* 1. KHẮC PHỤC LỖI HIỂN THỊ HAMBURGER */
+/* 1. HIỂN THỊ NÚT HAMBURGER (Phải có !important để ghi đè display: none ở trên) */
+    .hamburger-toggle {
+        display: block !important; 
+        z-index: 1001; 
+        position: relative; 
+    }
+
+    /* 2. CHUYỂN .nav-area THÀNH OVERLAY MENU */
+    .nav-area {
+        position: fixed;
+        top: 0;
+        left: -100%; 
+        width: 80%;
+        max-width: 300px;
+        height: 100%;
+        background-color: var(--off-white); 
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+        z-index: 999;
+        padding: 80px 20px 20px; 
+        transition: left 0.3s ease-in-out;
+        display: block !important; /* Ghi đè display: flex desktop */
+    }
+    
+    /* 3. MENU MỞ */
+    .nav-area.open {
+        left: 0; 
+    }
+
+    /* 4. Đảm bảo logo và hamburger nằm đúng vị trí */
+    .header-content {
+        padding: 0 15px; /* Giữ padding ngang */
+    }
+    
+    /* 5. Sắp xếp lại các liên kết menu theo chiều dọc */
+    /* Lưu ý: Các thẻ này nằm trong menu.html được nhúng vào */
+    .nav-area .nav-links {
+        list-style: none;
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        margin-bottom: 20px;
+    }
+    .nav-area .nav-links li {
+        border-bottom: 1px solid #eee;
+        width: 100%;
+    }
+    .nav-area .nav-links a {
+        padding: 15px 0;
+        font-size: 1.1rem;
+        font-weight: 500;
+        display: block;
+    }
+    .nav-area .btn-login {
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .ai-search-box { flex-direction: column; padding: 10px; }
+    .btn-ai-search { width: 100%; padding: 15px; }
+    .ai-search-box input { padding: 15px 10px; }
+    .feature-container { margin-top: 0px; margin-bottom: 40px; }
+    .feature-grid { grid-template-columns: repeat(4, 1fr); padding: 15px; gap: 5px; }
+    .feature-item p { font-size: 0.75rem; }
+    .feature-item { padding: 10px 3px; }
+    .section-title { font-size: 1.8rem; margin-bottom: 25px; }
+    .slider-button { display: none; }
+    .hospital-doctor-grid { margin: 0; padding-left: 0; padding-right: 0; }
+}
+
+/* BỔ SUNG: CSS cho Menu Mobile (Đặt ở đây để ưu tiên xử lý cơ bản trước) */
+/* NÚT HAMBURGER (Mới) */
+.hamburger-toggle {
+    display: none; /* Mặc định ẩn trên desktop */
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--dark-text);
+    padding: 0;
+    line-height: 1;
+    z-index: 1001; /* Đảm bảo nút nằm trên menu */
+}
+
+/* NGĂN CHẶN CUỘN TRANG KHI MENU MỞ */
+body.menu-open {
+    overflow: hidden;
+}
+
+/* Quy tắc này phải được thêm vào phần CSS chung (ngoài @media) */
+.map-container {
+    /* Bo góc cho khối bọc map ở cả PC và Mobile */
+    border-radius: var(--card-radius); 
+}
+.map-container iframe {
+    /* Đảm bảo iframe bên trong cũng bo góc để khớp */
+    border-radius: var(--card-radius); 
+}
+
+    </style>
+</head>
+<body>
+
+    <!-- THANH MENU (HEADER) -->
+<header class="main-header">
+    <div class="container header-content">
+        <div class="logo">HEALTH<span style="color: #666; font-weight: 500;">CARE</span></div>
+        
+        <button class="hamburger-toggle" id="menu-toggle" aria-label="Toggle Menu">
+            &#9776; 
+        </button>
+        
+        <div class="nav-area" id="main-nav-area" data-include-html="../menu.html">
+            <p style="margin: 0; color: #aaa;">Đang tải menu...</p>
+        </div>
+        
+    </div>
+</header>
+
+    <!-- TRANG CHÍNH -->
+    <div class="page-wrapper">
+
+        <!-- THANH TIẾN TRÌNH DỌC (SIDEBAR) -->
+        <aside class="sidebar-steps">
+            <div class="vertical-steps">
+                <div class="vertical-step completed">
+                    <span class="step-icon"><i class="fas fa-check"></i></span>
+                    Chọn hình thức khám
+                </div>
+                <div class="vertical-step completed">
+                    <span class="step-icon"><i class="fas fa-check"></i></span>
+                    Chọn thông tin khám
+                </div>
+                <div class="vertical-step completed">
+                    <span class="step-icon"><i class="fas fa-check"></i></span>
+                    Thông tin cá nhân
+                </div>
+                <!-- Cập nhật icon cho bước hiện tại để đồng bộ hóa -->
+                <div class="vertical-step current">
+                    <span class="step-icon"><i class="fas fa-check"></i></span>
+                    Hoàn tất
+                </div>
+            </div>
+        </aside>
+
+        <!-- NỘI DUNG CHÍNH -->
+        <main class="main-content-area">
+            
+            <!-- Breadcrumb -->
+            <div class="breadcrumb-section">
+                <div class="breadcrumb">
+                    <a href="https://healthcare36.netlify.app">Trang Chủ</a>
+                    <span>/</span>
+                    <a href="https://healthcare36.netlify.app/hinh-thuc-dat-kham">Hình thức đặt khám</a>
+                    <span>/</span>
+                    <a href="https://healthcare36.netlify.app/chon-thong-tin-kham">Thông tin khám</a>
+                    <span>/</span>
+                    <a href="https://healthcare36.netlify.app/thong-tin-ca-nhan">Thông tin cá nhân</a>
+                    <span>/</span>
+                    <span>Hoàn tất</span>
+                </div>
+            </div>
+
+            <!-- Content Header -->
+            <div class="content-header">
+                <p>Bước 3/3</p>
+                <h1>Xác nhận & Hoàn tất</h1>
+                <p>Thông tin đặt khám đã được lưu lại thành công và gửi đến cơ sở y tế.</p>
+            </div>
+
+            <!-- SUCCESS CARD -->
+            <div class="success-card">
+                <i class="fas fa-circle-check success-icon"></i>
+                <h2>Đặt khám thành công!</h2>
+                <p>
+                    Hồ sơ đặt khám của quý khách đã được ghi nhận. Vui lòng kiểm tra email và tin nhắn điện thoại để xem chi tiết mã số khám, giờ khám và hướng dẫn cần thiết.
+                </p>
+
+                <div class="booking-details-summary">
+                    <div>
+                        <strong>Mã hồ sơ:</strong> <span>#HCBKG-20250923001</span>
+                    </div>
+                    <div>
+                        <strong>Hình thức khám:</strong> <span id="summary-booking-type">Khám tại cơ sở</span>
+                    </div>
+                    <div>
+                        <strong>Người đặt:</strong> <span id="summary-name">Nguyễn Văn A</span>
+                    </div>
+                    <div>
+                        <strong>Ngày khám dự kiến:</strong> <span id="summary-date">25/10/2025</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons for Success Page -->
+                <div class="form-actions" style="margin-top: 40px; text-align: center;">
+                    <button class="btn-secondary" onclick="showCustomAlert('Chức năng xem chi tiết hồ sơ đang được phát triển.', 'info')" style="margin-right: 15px;">
+                        <i class="fas fa-file-invoice"></i> Xem chi tiết hồ sơ
+                    </button>
+                    <a href="#" class="btn-primary">
+                        <i class="fas fa-home"></i> Quay về Trang chủ
+                    </a>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL ALERT (Thay thế cho window.alert) -->
+    <div class="custom-modal-overlay" id="custom-alert-modal">
+        <div class="custom-modal">
+            <h3 id="modal-title">Thông báo</h3>
+            <p id="modal-message">Nội dung thông báo...</p>
+            <button id="modal-close-btn">Đóng</button>
+        </div>
+    </div>
+
+
+    <script>
+        // ------------------------------------------------
+        // JAVASCRIPT LOGIC
+        // ------------------------------------------------
+
+        // 1. Logic Custom Alert Modal (thay thế alert())
+        const modalOverlay = document.getElementById('custom-alert-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+
+        /**
+         * Hiển thị hộp thoại thông báo tùy chỉnh.
+         * @param {string} message - Nội dung thông báo.
+         * @param {string} type - Loại thông báo ('info', 'error', 'success').
+         */
+        function showCustomAlert(message, type = 'info') {
+            let title = 'Thông báo';
+            if (type === 'error') {
+                title = 'Lỗi';
+                modalTitle.style.color = 'var(--warning-orange)';
+            } else if (type === 'success') {
+                title = 'Thành công';
+                modalTitle.style.color = 'var(--success-green)';
+            } else {
+                modalTitle.style.color = 'var(--primary-blue)';
+            }
+
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalOverlay.style.display = 'flex';
+        }
+
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', () => {
+                modalOverlay.style.display = 'none';
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 2. Logic cho Hamburger Menu
+            const menuToggle = document.getElementById('menu-toggle');
+            const navArea = document.getElementById('main-nav-area');
+            
+            if (menuToggle && navArea) {
+                menuToggle.addEventListener('click', () => {
+                    navArea.classList.toggle('open');
+                    document.body.classList.toggle('menu-open'); 
+                });
+            }
+
+            // 3. Logic Hiển thị Tóm tắt Đặt Khám (Mock data or get from Session Storage)
+            // Trong môi trường thực tế, bạn sẽ lấy dữ liệu từ Firebase/Session Storage.
+            
+            const summaryBookingType = document.getElementById('summary-booking-type');
+            const summaryName = document.getElementById('summary-name');
+            const summaryDate = document.getElementById('summary-date');
+
+            // --- Lấy dữ liệu từ Session Storage (Giả lập) ---
+            // Giữ lại logic này để thể hiện cách lấy dữ liệu đặt khám
+            const storedTypeName = sessionStorage.getItem('booking_type_name') || 'Khám tại cơ sở (Mặc định)';
+            const storedFullName = sessionStorage.getItem('full_name') || 'Nguyễn Văn A (Demo)';
+            const storedDob = sessionStorage.getItem('date_of_birth') || '2025-10-23'; // Sử dụng định dạng YYYY-MM-DD
+
+            // Định dạng lại ngày sinh thành ngày khám dự kiến (cho mục đích demo)
+            let displayDate = '25/10/2025';
+            try {
+                const dob = new Date(storedDob);
+                // Giả định ngày khám là 2 ngày sau ngày sinh
+                dob.setDate(dob.getDate() + 2); 
+                const dd = String(dob.getDate()).padStart(2, '0');
+                const mm = String(dob.getMonth() + 1).padStart(2, '0'); 
+                const yyyy = dob.getFullYear();
+                displayDate = `${dd}/${mm}/${yyyy}`;
+            } catch (e) {
+                console.error("Lỗi xử lý ngày:", e);
+            }
+
+            // --- Cập nhật UI ---
+            if (summaryBookingType) summaryBookingType.textContent = storedTypeName;
+            if (summaryName) summaryName.textContent = storedFullName;
+            if (summaryDate) summaryDate.textContent = displayDate;
+            
+            console.log("Trang Hoàn tất đã tải và hiển thị dữ liệu giả lập.");
+        });
+    </script>
+<script>
+    /**
+     * Hàm tải nội dung HTML từ một URL và chèn vào một Element
+     */
+    function loadExternalHTML(url, targetElementId) {
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                // Chèn nội dung HTML đã tải vào element mục tiêu
+                document.getElementById(targetElementId).innerHTML = html;
+            })
+            .catch(error => {
+                console.error('Lỗi tải menu:', error);
+                document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
+            });
+    }
+
+    // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const navArea = document.getElementById('main-nav-area'); // Lấy element menu
+
+        // 1. TẢI NỘI DUNG MENU
+        // SỬA LỖI: Gọi ID đúng là 'main-nav-area'
+        loadExternalHTML('../menu.html', 'main-nav-area'); 
+
+        // 2. LOGIC HAMBURGER
+        if (menuToggle && navArea) {
+            menuToggle.addEventListener('click', () => {
+                // Thêm/Xóa class 'open' để bật/tắt menu
+                navArea.classList.toggle('open');
+                // Ngăn cuộn trang chính khi menu mở
+                document.body.classList.toggle('menu-open'); 
+            });
+        }
+    });
+</script>
+<script src="../include.js"></script> 
+</body>
+</html>

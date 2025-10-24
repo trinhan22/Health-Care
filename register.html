@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta name="google-site-verification" content="73dRIdwl0wADm4SOV2_fm4zWOu8ZbaaJQbfiFdVc09g" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký - Health Care</title>
+    <meta property="og:title" content="Health Care - Nền tảng đặt khám, bốc số bệnh viện, phòng khám online" />
+    <meta property="og:description" content="Health Care - Nền tảng đặt khám, bốc số bệnh viện, phòng khám online" />
+    <meta property="og:image" content="https://healthcare36.netlify.app/img.webp" />
+    <meta property="og:url" content="https://healthcare36.netlify.app" />
+    <meta property="og:type" content="article" />
+    <!-- Favicon -->
+    <link href="data/IMG/LOGO/logo.webp" rel="icon" type="logo"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <style>
+    body {
+      /* Font được giữ lại */
+      font-family: 'Be Vietnam Pro', sans-serif; 
+      /* Nền Gradient Động: chuyển 4 màu với góc -45 độ */
+      background: linear-gradient(-45deg, #e0f2f1, #e0f2fe, #eef2ff, #f1f5f9);
+      /* Phóng to kích thước nền để có không gian di chuyển */
+      background-size: 400% 400%;
+      /* Áp dụng animation */
+      animation: gradientBG 15s ease infinite;
+    }
+
+    /* Định nghĩa hiệu ứng chuyển động */
+    @keyframes gradientBG {
+      0% { 
+          /* Bắt đầu ở bên trái */
+          background-position: 0% 50% 
+      }
+      50% { 
+          /* Di chuyển sang bên phải */
+          background-position: 100% 50% 
+      }
+      100% { 
+          /* Quay lại bên trái và lặp lại */
+          background-position: 0% 50% 
+      }
+    }
+    .text-orange-500 {
+      color: #00b5f1; /* Màu cam chủ đạo của HOPVAN */
+    }
+    .border-orange-500 {
+      border-color: #00b5f1;
+    }
+
+    /* Định nghĩa màu Gradient cho nút Đăng ký */
+    .bg-gradient-hopvan {
+      background: linear-gradient(to right, #00b5f1, #a5e9ff);
+    }
+    
+    /* Hiệu ứng hover cho nút Đăng ký: Đổi gradient nhẹ hơn */
+    .bg-gradient-hopvan:hover {
+      background: linear-gradient(to right, #00b5f1, #a5e9ff);
+      box-shadow: 0 4px 12px rgba(106, 211, 252, 0.4);
+    }
+
+    /* Hiệu ứng xuất hiện cho toàn bộ form */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .login-container {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0; /* Bắt đầu ẩn */
+    }
+    
+    /* Thiết lập chuyển động mượt cho hover trên các nút */
+    .transition-all-smooth {
+        transition: all 0.3s ease-in-out;
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+  <div class="w-full max-w-md bg-white p-8 rounded-xl shadow-2xl login-container">
+    <div class="flex flex-col items-center justify-center mb-6">
+      <h2 class="text-3xl font-bold text-gray-800">Đăng ký tài khoản</h2>
+    </div>
+
+    <p class="text-center mb-4 text-sm text-gray-600">
+      Đã có tài khoản? 
+      <a href="login.html" class="text-blue-400 font-semibold hover:text-blue-500 transition-all-smooth">Đăng nhập ngay</a>
+    </p>
+
+    <form id="register-form" class="space-y-6">
+      <div>
+        <label for="register-display-name" class="block text-sm font-medium text-gray-700">Tên đăng nhập</label>
+        <input type="text" id="register-display-name" required placeholder="Tên đăng ký"
+               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out transition-all-smooth">
+      </div>
+      <div>
+        <label for="register-email" class="block text-sm font-medium text-gray-700">Email</label>
+        <input type="email" id="register-email" required placeholder="Địa chỉ email hợp lệ"
+               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out transition-all-smooth">
+      </div>
+
+      <div>
+        <label for="register-password" class="block text-sm font-medium text-gray-700">Mật khẩu (Tối thiểu 6 ký tự)</label>
+        <input type="password" id="register-password" required placeholder="Nhập mật khẩu"
+               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out transition-all-smooth">
+      </div>
+
+      <div>
+        <label for="register-confirm-password" class="block text-sm font-medium text-gray-700">Nhập lại Mật khẩu</label>
+        <input type="password" id="register-confirm-password" required placeholder="Xác nhận mật khẩu"
+               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out transition-all-smooth">
+      </div>
+
+      <button type="submit" id="register-submit-btn"
+              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-hopvan focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all-smooth">
+        Đăng ký
+      </button>
+    </form>
+  </div>
+
+
+<script type="module">
+    import { 
+        initializeApp 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+        getAuth, 
+        createUserWithEmailAndPassword, 
+        updateProfile,
+        signOut // 💡 ĐÃ THÊM: Dùng để đăng xuất ngay sau khi đăng ký
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+    // Cấu hình Firebase
+        const firebaseConfig = {
+        apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
+        authDomain: "health-care-5ba62.firebaseapp.com",
+        projectId: "health-care-5ba62",
+        storageBucket: "health-care-5ba62.firebasestorage.app",
+        messagingSenderId: "564100851159",
+        appId: "1:564100851159:web:34d7d787474edff1abd792",
+        measurementId: "G-2GWB86PCBT"
+        };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Xử lý Đăng ký bằng Email/Password
+    document.getElementById("register-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const displayName = document.getElementById("register-display-name").value.trim();
+      const email = document.getElementById("register-email").value.trim();
+      const password = document.getElementById("register-password").value;
+      const confirmPassword = document.getElementById("register-confirm-password").value;
+      const submitBtn = document.getElementById("register-submit-btn");
+
+      if (password !== confirmPassword) {
+        alert("Mật khẩu nhập lại không khớp. Vui lòng kiểm tra lại.");
+        return;
+      }
+      
+      if (displayName.length < 2) {
+          alert("Tên đăng nhập phải có ít nhất 2 ký tự.");
+          return;
+      }
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Đang xử lý...';
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // 1. Cập nhật Tên đăng nhập (Display Name)
+        await updateProfile(user, {
+            displayName: displayName
+        });
+        
+        // 2. 🚨 KHẮC PHỤC LỖI AUTO-LOGIN: Đăng xuất người dùng ngay lập tức
+        await signOut(auth); 
+        
+        alert("Đăng ký tài khoản thành công! Vui lòng Đăng nhập.");
+        // 3. Chuyển hướng đến trang đăng nhập
+        window.location.href = "log.html"; 
+        
+      } catch (err) {
+        let message = "Đăng ký thất bại. Vui lòng thử lại.";
+        if (err.code === "auth/email-already-in-use") {
+            message = "Địa chỉ email này đã được sử dụng. Vui lòng chọn email khác.";
+        } else if (err.code === "auth/invalid-email") {
+            message = "Địa chỉ email không hợp lệ.";
+        } else if (err.code === "auth/weak-password") {
+            message = "Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu tối thiểu 6 ký tự.";
+        }
+        alert(message);
+        console.error("Registration error:", err);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Đăng ký';
+      }
+    });
+</script>
+
+</body>
+</html>
