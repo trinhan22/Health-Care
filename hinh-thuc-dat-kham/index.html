@@ -15,6 +15,235 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Thêm Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDK (Dùng type="module" cho các imports) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- CẤU HÌNH TĨNH DỰ PHÒNG (Dùng khi biến môi trường bị lỗi) ---
+        const STATIC_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
+            authDomain: "health-care-5ba62.firebaseapp.com",
+            projectId: "health-care-5ba62",
+            storageBucket: "health-care-5ba62.firebasestorage.app",
+            messagingSenderId: "564100851159",
+            appId: "1:564100851159:web:34d7d787474edff1abd792",
+            measurementId: "G-2GWB86PCBT"
+        };
+
+        // Định nghĩa các biến toàn cục từ môi trường Canvas (BẮT BUỘC)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth, userId;
+
+        // Khởi tạo Firebase và đăng nhập
+        async function setupFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    throw new Error("Cấu hình Firebase không hợp lệ. Vui lòng kiểm tra biến __firebase_config.");
+                }
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // Đăng nhập với Custom Token hoặc ẩn danh
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                console.log("Firebase đã sẵn sàng. User ID:", userId);
+
+            } catch (error) {
+                console.error("Lỗi khởi tạo Firebase hoặc Đăng nhập:", error);
+                showCustomAlert('Lỗi kết nối hệ thống. Vui lòng tải lại trang.', 'error');
+                // Vô hiệu hóa form nếu Firebase lỗi nặng
+                document.getElementById('btnContinue').disabled = true;
+                document.getElementById('btnContinue').classList.remove('active');
+            }
+        }
+        
+        // --- LOGIC FORM CHÍNH ---
+
+        let selectedBookingType = null;
+        const btnContinue = document.getElementById('btnContinue');
+        const bookingTypesContainer = document.getElementById('bookingTypesContainer');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+
+        // Hàm hiển thị thông báo tùy chỉnh (thay thế alert)
+        function showCustomAlert(message, type = 'info') {
+            const box = document.getElementById('custom-message-box');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `custom-alert`;
+            
+            let bgColor = '#00b5f1';
+            if (type === 'warning') bgColor = '#ff9800';
+            if (type === 'error') bgColor = '#f44336';
+            if (type === 'success') bgColor = '#4CAF50';
+
+            alertDiv.style.backgroundColor = bgColor;
+            alertDiv.textContent = message;
+
+            box.appendChild(alertDiv);
+
+            // Tự động đóng sau 4 giây
+            setTimeout(() => {
+                alertDiv.style.animation = 'slideOut 0.5s forwards';
+                alertDiv.addEventListener('animationend', () => alertDiv.remove());
+            }, 4000);
+        }
+
+        // Cập nhật trạng thái nút "Tiếp tục"
+        function checkFormStatus() {
+            if (selectedBookingType) {
+                btnContinue.classList.add('active');
+                btnContinue.disabled = false;
+            } else {
+                btnContinue.classList.remove('active');
+                btnContinue.disabled = true;
+            }
+        }
+
+        // Xử lý khi chọn Card
+        bookingTypesContainer.addEventListener('click', function(event) {
+            const card = event.target.closest('.type-card');
+            if (!card) return;
+
+            // Xóa trạng thái selected khỏi tất cả các card
+            document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+
+            // Đặt trạng thái selected cho card hiện tại
+            card.classList.add('selected');
+
+            // Cập nhật biến lựa chọn
+            selectedBookingType = {
+                type: card.dataset.type,
+                name: card.dataset.name
+            };
+
+            checkFormStatus();
+            showCustomAlert(`Đã chọn: ${selectedBookingType.name}`, 'info');
+        });
+
+        // Xử lý khi nhấn nút Tiếp tục (Bắt đầu booking mới)
+        btnContinue.addEventListener('click', async function() {
+            if (!selectedBookingType) {
+                showCustomAlert('Vui lòng chọn một hình thức khám để tiếp tục.', 'warning');
+                return;
+            }
+            
+            // Hiển thị trạng thái đang xử lý
+            btnContinue.textContent = 'Đang xử lý...';
+            btnContinue.disabled = true;
+
+            try {
+                if (!db || !userId) {
+                    await setupFirebase(); // Thử setup lại nếu chưa có
+                    if (!db || !userId) throw new Error("Firebase chưa được khởi tạo hoặc người dùng chưa đăng nhập.");
+                }
+
+                // 1. Định nghĩa path cho collection bookings của user
+                const bookingCollectionPath = ['artifacts', appId, 'users', userId, 'bookings'];
+                const bookingCollectionRef = collection(db, ...bookingCollectionPath);
+                
+                // 2. Tạo document mới cho booking này (Bước 1)
+                const newBookingData = {
+                    bookingType: selectedBookingType.type,
+                    bookingName: selectedBookingType.name,
+                    step: 1, // Bước hiện tại
+                    createdAt: new Date().toISOString(),
+                    status: 'pending' // Trạng thái booking
+                };
+
+                const docRef = await addDoc(bookingCollectionRef, newBookingData);
+                const newBookingId = docRef.id;
+
+                console.log("Đã tạo Booking ID:", newBookingId);
+                
+                // 3. Lưu Booking ID vào Session Storage để trang tiếp theo sử dụng
+                sessionStorage.setItem('currentBookingId', newBookingId);
+                
+                // 4. Cập nhật Modal và hiển thị
+                const modalTitle = document.getElementById('modalTitle');
+                const modalMessage = document.getElementById('modalMessage');
+                
+                modalTitle.textContent = "Lựa Chọn Đã Được Ghi Nhận";
+                modalMessage.innerHTML = `Bạn đã chọn hình thức: <b>${selectedBookingType.name}</b>. Booking ID: <code>${newBookingId}</code>. Vui lòng nhấn "Tiếp tục" để chuyển đến Bước 2.`;
+                
+                modalOverlay.style.display = 'flex'; 
+
+            } catch (error) {
+                console.error("Lỗi khi tạo Booking Firestore:", error);
+                showCustomAlert('Lỗi hệ thống: Không thể lưu dữ liệu đặt khám. Vui lòng thử lại.', 'error');
+            } finally {
+                // Khôi phục trạng thái nút
+                btnContinue.innerHTML = 'Tiếp tục <i class="fas fa-arrow-right"></i>';
+                checkFormStatus(); // Sẽ kích hoạt lại nút nếu có selectedBookingType
+            }
+        });
+
+        // Xử lý Nút Đóng Modal & Chuyển Trang (Bước 2)
+        modalClose.addEventListener('click', function() {
+            modalOverlay.style.display = 'none'; // Ẩn modal
+            // Chuyển sang trang tiếp theo (Bước 2)
+            window.location.href = 'chon-thong-tin-kham.html';
+        });
+
+        // Tải Menu HTML (Giữ nguyên logic tải file ngoài)
+        function loadExternalHTML(url, targetElementId) {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    document.getElementById(targetElementId).innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Lỗi tải menu:', error);
+                    document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html" (Không bắt buộc).</p>';
+                });
+        }
+        
+        // Logic Menu Mobile (Hamburger)
+        function setupMenuLogic() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const navArea = document.getElementById('main-nav-area'); 
+
+            if (menuToggle && navArea) {
+                menuToggle.addEventListener('click', () => {
+                    navArea.classList.toggle('open');
+                    document.body.classList.toggle('menu-open'); 
+                });
+            }
+        }
+
+
+        // Khởi tạo ứng dụng
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFirebase();
+            checkFormStatus();
+            setupMenuLogic();
+            
+            // 1. TẢI NỘI DUNG MENU (Giả định có file menu.html)
+            loadExternalHTML('../menu.html', 'main-nav-area'); 
+
+            // Kiểm tra xem đã có bookingId trong sessionStorage chưa (để tránh người dùng quay lại)
+            if (sessionStorage.getItem('currentBookingId')) {
+                showCustomAlert('Đang có một phiên đặt lịch dở dang. Bạn có thể tiếp tục hoặc chọn lại.', 'warning');
+                // Tùy chọn: Xóa ID nếu muốn bắt đầu booking mới hoàn toàn, hoặc giữ lại
+                // sessionStorage.removeItem('currentBookingId');
+            }
+        });
+    </script>
     <style>
 /* CSS VARIABLES (Màu sắc và khoảng cách) */
 :root {
@@ -455,8 +684,7 @@ h1, h2, h3, h4 {
     .hero-section { padding: 80px 0 60px; }
     .hero-section h1 { font-size: 2rem; }
     
-    /* 1. KHẮC PHỤC LỖI HIỂN THỊ HAMBURGER */
-/* 1. HIỂN THỊ NÚT HAMBURGER (Phải có !important để ghi đè display: none ở trên) */
+    /* 1. HIỂN THỊ NÚT HAMBURGER */
     .hamburger-toggle {
         display: block !important; 
         z-index: 1001; 
@@ -490,7 +718,6 @@ h1, h2, h3, h4 {
     }
     
     /* 5. Sắp xếp lại các liên kết menu theo chiều dọc */
-    /* Lưu ý: Các thẻ này nằm trong menu.html được nhúng vào */
     .nav-area .nav-links {
         list-style: none;
         flex-direction: column;
@@ -516,21 +743,9 @@ h1, h2, h3, h4 {
         text-align: center;
         padding: 10px;
     }
-
-    .ai-search-box { flex-direction: column; padding: 10px; }
-    .btn-ai-search { width: 100%; padding: 15px; }
-    .ai-search-box input { padding: 15px 10px; }
-    .feature-container { margin-top: 0px; margin-bottom: 40px; }
-    .feature-grid { grid-template-columns: repeat(4, 1fr); padding: 15px; gap: 5px; }
-    .feature-item p { font-size: 0.75rem; }
-    .feature-item { padding: 10px 3px; }
-    .section-title { font-size: 1.8rem; margin-bottom: 25px; }
-    .slider-button { display: none; }
-    .hospital-doctor-grid { margin: 0; padding-left: 0; padding-right: 0; }
 }
 
-/* BỔ SUNG: CSS cho Menu Mobile (Đặt ở đây để ưu tiên xử lý cơ bản trước) */
-/* NÚT HAMBURGER (Mới) */
+/* BỔ SUNG: CSS cho Menu Mobile */
 .hamburger-toggle {
     display: none; /* Mặc định ẩn trên desktop */
     background: none;
@@ -548,42 +763,36 @@ body.menu-open {
     overflow: hidden;
 }
 
-/* Quy tắc này phải được thêm vào phần CSS chung (ngoài @media) */
-.map-container {
-    /* Bo góc cho khối bọc map ở cả PC và Mobile */
-    border-radius: var(--card-radius); 
-}
-.map-container iframe {
-    /* Đảm bảo iframe bên trong cũng bo góc để khớp */
-    border-radius: var(--card-radius); 
+/* --- Custom Alert Styles --- */
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
-        /* --- Custom Alert Styles (Tùy chỉnh) --- */
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+@keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+}
 
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
+#custom-message-box {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
-        .custom-alert {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            font-weight: 500;
-            z-index: 2000;
-            animation: slideIn 0.5s forwards;
-            color: white;
-            min-width: 250px;
-        }
-
-        
+.custom-alert {
+    padding: 15px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    font-weight: 500;
+    animation: slideIn 0.5s forwards;
+    color: white;
+    min-width: 250px;
+}
     </style>
 </head>
 <body>
@@ -747,315 +956,7 @@ body.menu-open {
                 Tiếp tục <i class="fas fa-arrow-right"></i>
             </button>
         </div>
-        
-    </div> <!-- /.main-content-area -->
-
-</div> <!-- /.page-wrapper -->
-
-
-    <!-- Firebase SDK Imports (Module Type) -->
-    <script type="module">
-        // Import các hàm cần thiết từ Firebase Modular SDK v11
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, setDoc, doc, collection, FieldValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // --- KHỞI TẠO VÀ XÁC THỰC FIREBASE (MANDATORY) ---
-
-        let db, auth;
-        let userId;
-        const nextPage = '../chon-thong-tin-kham'; // Đường dẫn đến Bước 2
-
-        /**
-         * Hiển thị Modal thông báo tùy chỉnh
-         * @param {string} message - Nội dung thông báo
-         * @param {('info'|'error'|'waiting')} type - Loại thông báo
-         * @param {('continue'|'error'|'waiting')} action - Hành động sau khi đóng modal
-         */
-        function showCustomAlert(message, type = 'info', action = 'waiting') {
-            const modalOverlay = document.getElementById('modalOverlay');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalMessage = document.getElementById('modalMessage');
-            const modalClose = document.getElementById('modalClose');
-
-            if (modalOverlay) {
-                let icon = '';
-                let titleText = '';
-                let closeText = '';
-                
-                modalTitle.classList.remove('text-red-600', 'text-indigo-600', 'text-yellow-600');
-
-                if (type === 'info') {
-                    titleText = 'Thông Báo';
-                    icon = '<i class="fas fa-check-circle mr-2 text-indigo-600"></i>';
-                    closeText = 'Tiếp tục';
-                    modalTitle.classList.add('text-indigo-600');
-                } else if (type === 'error') {
-                    titleText = 'Lỗi!';
-                    icon = '<i class="fas fa-exclamation-triangle mr-2 text-red-600"></i>';
-                    closeText = 'Đóng';
-                    modalTitle.classList.add('text-red-600');
-                } else if (type === 'waiting') {
-                    titleText = 'Đang Xử Lý...';
-                    icon = '<i class="fas fa-spinner fa-spin mr-2 text-gray-500"></i>';
-                    closeText = 'Vui lòng chờ';
-                    modalTitle.classList.add('text-gray-700');
-                }
-
-                modalTitle.innerHTML = icon + titleText;
-                modalMessage.innerHTML = message;
-                modalClose.textContent = closeText;
-                
-                // Ẩn nút nếu đang ở trạng thái chờ (waiting)
-                modalClose.style.display = (action === 'waiting') ? 'none' : 'block';
-                
-                modalOverlay.style.display = 'flex';
-                
-                // Xử lý đóng Modal và Chuyển trang/Đóng
-                modalClose.onclick = function() {
-                    modalOverlay.style.display = 'none';
-                    
-                    if (action === 'continue') {
-                        window.location.href = nextPage; 
-                    }
-                };
-                
-                // Đóng khi click ra ngoài (Chỉ đóng, không chuyển trang)
-                modalOverlay.onclick = function(e) {
-                    if (e.target === modalOverlay && action !== 'waiting') {
-                        modalOverlay.style.display = 'none';
-                    }
-                };
-            }
-        }
-
-
-        // Hàm khởi tạo Firebase và xác thực người dùng
-        async function initializeFirebase() {
-            try {
-                // Các biến toàn cục được cung cấp bởi môi trường Canvas (Bắt buộc)
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                let firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-
-                if (Object.keys(firebaseConfig).length === 0) {
-                    console.warn("Cấu hình Firebase trống. Sử dụng cấu hình mẫu của người dùng.");
-                    // Lấy cấu hình mẫu của người dùng nếu không có config môi trường
-                    firebaseConfig = {
-                        apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
-                        authDomain: "health-care-5ba62.firebaseapp.com",
-                        projectId: "health-care-5ba62",
-                        storageBucket: "health-care-5ba62.firebasestorage.app",
-                        messagingSenderId: "564100851159",
-                        appId: "1:564100851159:web:34d7d787474edff1abd792",
-                        measurementId: "G-2GWB86PCBT"
-                    };
-                }
-
-                // Khởi tạo App, Firestore và Auth
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                // Xác thực người dùng (Canvas Mandatory)
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                
-                userId = auth.currentUser?.uid || crypto.randomUUID();
-                
-                console.log("Firebase đã khởi tạo và người dùng đã xác thực. User ID:", userId);
-
-            } catch (error) {
-                console.error("Lỗi khởi tạo hoặc xác thực Firebase:", error);
-                showCustomAlert("Lỗi hệ thống: Không thể kết nối đến dịch vụ Firebase. Vui lòng thử lại sau.", "error");
-            }
-        }
-        
-        /**
-         * Lưu thông tin đặt khám bước 1 lên Firestore (Sử dụng Modular V11)
-         */
-        async function saveBookingTypeToFirestore(typeId, typeName) {
-            if (!db || !userId) {
-                console.error('Firestore hoặc User ID chưa sẵn sàng.');
-                return false;
-            }
-            
-            // Lấy Booking ID hiện tại hoặc tạo ID mới nếu là bước 1
-            let currentBookingId = sessionStorage.getItem('current_booking_id');
-            if (!currentBookingId) {
-                 // Tạo ID mới cho booking mới (Dùng timestamp)
-                currentBookingId = "BOOKING_" + new Date().getTime().toString(); 
-            }
-            
-            // Đường dẫn lưu trữ Private: /artifacts/{appId}/users/{userId}/bookings/{id}
-            const bookingDocPath = `artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'}/users/${userId}/bookings/${currentBookingId}`;
-            
-            const bookingData = {
-                step: 1, 
-                typeId: typeId,
-                typeName: typeName,
-                status: "pending_step_2",
-                // Sử dụng hàm serverTimestamp() Modular
-                timestamp: serverTimestamp(), 
-                lastUpdated: serverTimestamp()
-            };
-
-            try {
-                // setDoc (Modular V11) để tạo hoặc ghi đè document
-                await setDoc(doc(db, bookingDocPath), bookingData, { merge: true });
-                
-                // Lưu ID vừa tạo/cập nhật vào Session để sử dụng cho Bước 2 và 3
-                sessionStorage.setItem('current_booking_id', currentBookingId); 
-                console.log("Lưu dữ liệu bước 1 thành công. ID:", currentBookingId);
-                return true;
-            } catch (e) {
-                console.error("Lỗi khi lưu dữ liệu lên Firestore: ", e);
-                return false;
-            }
-        }
-
-
-        // --- LOGIC XỬ LÝ CHỌN CARD VÀ NÚT TIẾP TỤC (Giữ nguyên logic của bạn) ---
-        document.addEventListener('DOMContentLoaded', function() {
-            
-            const typeCards = document.querySelectorAll('.type-card');
-            const btnContinue = document.getElementById('btnContinue');
-            
-            // Khôi phục trạng thái từ Session Storage
-            let selectedType = sessionStorage.getItem('booking_type_id');
-            let selectedName = sessionStorage.getItem('booking_type_name');
-
-            /**
-             * Cập nhật trạng thái của nút "Tiếp tục"
-             */
-            function updateContinueButton() {
-                if (selectedType) {
-                    btnContinue.disabled = false;
-                    btnContinue.classList.add('active', 'bg-indigo-600'); 
-                    btnContinue.classList.remove('bg-gray-400'); 
-                } else {
-                    btnContinue.disabled = true;
-                    btnContinue.classList.remove('active', 'bg-indigo-600');
-                    btnContinue.classList.add('bg-gray-400');
-                }
-            }
-            
-            // Khôi phục trạng thái UI
-            if (selectedType) {
-                typeCards.forEach(card => {
-                    if(card.getAttribute('data-type') === selectedType) {
-                        card.classList.add('selected');
-                    }
-                });
-            }
-            updateContinueButton(); 
-
-            /**
-             * Xử lý khi click vào một card
-             */
-            function handleCardClick(event) {
-                typeCards.forEach(card => card.classList.remove('selected'));
-                const clickedCard = event.currentTarget;
-                clickedCard.classList.add('selected');
-
-                selectedType = clickedCard.getAttribute('data-type');
-                selectedName = clickedCard.getAttribute('data-name');
-                sessionStorage.setItem('booking_type_id', selectedType);
-                sessionStorage.setItem('booking_type_name', selectedName);
-                
-                updateContinueButton();
-                console.log(`Đã chọn: ${selectedName} (${selectedType})`);
-            }
-
-            // Gán sự kiện click cho từng card
-            typeCards.forEach(card => {
-                card.addEventListener('click', handleCardClick);
-            });
-
-            // Xử lý nút Tiếp tục (Có tích hợp Firebase)
-            if (btnContinue) {
-                btnContinue.addEventListener('click', async () => { 
-                    
-                    if (!selectedType) {
-                        showCustomAlert('Vui lòng chọn một hình thức đặt khám trước khi tiếp tục.', 'error', 'error');
-                        return; 
-                    }
-                    
-                    // Hiển thị thông báo đang xử lý
-                    showCustomAlert("Hệ thống đang lưu lựa chọn của bạn. Vui lòng chờ...", "waiting", 'waiting'); 
-
-                    // Vô hiệu hóa nút chính trong lúc chờ
-                    btnContinue.disabled = true;
-
-                    // GỌI HÀM LƯU LÊN FIREBASE
-                    const saveSuccess = await saveBookingTypeToFirestore(selectedType, selectedName);
-                    
-                    // Kích hoạt lại nút chính
-                    btnContinue.disabled = false;
-
-                    // Ẩn modal waiting (bằng cách gọi lại modal mới)
-                    document.getElementById('modalOverlay').style.display = 'none';
-
-                    if (saveSuccess) {
-                        // LƯU THÀNH CÔNG -> HIỂN THỊ MODAL CHUYỂN TRANG
-                        showCustomAlert(`Bạn đã chọn hình thức: <b>${selectedName}</b>. Nhấn "Tiếp tục" để sang Bước 2.`, "info", 'continue'); 
-                    } else {
-                        // LƯU THẤT BẠI -> HIỂN THỊ MODAL LỖI
-                        showCustomAlert('Lỗi lưu dữ liệu: Không thể tiếp tục. Vui lòng kiểm tra Console (F12) để biết chi tiết lỗi Firebase.', 'error', 'error');
-                    }
-                });
-            }
-            
-            // Khởi tạo Firebase khi trang tải xong
-            initializeFirebase();
-
-        });
-
-    </script>
-<script>
-    /**
-     * Hàm tải nội dung HTML từ một URL và chèn vào một Element
-     */
-    function loadExternalHTML(url, targetElementId) {
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.text();
-            })
-            .then(html => {
-                // Chèn nội dung HTML đã tải vào element mục tiêu
-                document.getElementById(targetElementId).innerHTML = html;
-            })
-            .catch(error => {
-                console.error('Lỗi tải menu:', error);
-                document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
-            });
-    }
-
-    // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
-    document.addEventListener('DOMContentLoaded', function() {
-        const menuToggle = document.getElementById('menu-toggle');
-        const navArea = document.getElementById('main-nav-area'); // Lấy element menu
-
-        // 1. TẢI NỘI DUNG MENU
-        // SỬA LỖI: Gọi ID đúng là 'main-nav-area'
-        loadExternalHTML('../menu.html', 'main-nav-area'); 
-
-        // 2. LOGIC HAMBURGER
-        if (menuToggle && navArea) {
-            menuToggle.addEventListener('click', () => {
-                // Thêm/Xóa class 'open' để bật/tắt menu
-                navArea.classList.toggle('open');
-                // Ngăn cuộn trang chính khi menu mở
-                document.body.classList.toggle('menu-open'); 
-            });
-        }
-    });
-</script>
-<script src="../include.js"></script> 
+    </div>
+</div>
 </body>
 </html>
