@@ -631,38 +631,37 @@ body.menu-open {
             </div>
 
             <!-- SUCCESS CARD -->
-            <div class="success-card">
-                <i class="fas fa-circle-check success-icon"></i>
-                <h2>Đặt khám thành công!</h2>
-                <p>
-                    Hồ sơ đặt khám của quý khách đã được ghi nhận. Vui lòng kiểm tra email và tin nhắn điện thoại để xem chi tiết mã số khám, giờ khám và hướng dẫn cần thiết.
-                </p>
+<div class="success-card">
+    <i class="fas fa-circle-check success-icon"></i>
+    <h2>Đặt khám thành công!</h2>
+    <p>
+        Hồ sơ đặt khám của quý khách đã được ghi nhận. Vui lòng kiểm tra email và tin nhắn điện thoại để xem chi tiết mã số khám, giờ khám và hướng dẫn cần thiết.
+    </p>
 
-                <div class="booking-details-summary">
-                    <div>
-                        <strong>Mã hồ sơ:</strong> <span>#HCBKG-20250923001</span>
-                    </div>
-                    <div>
-                        <strong>Hình thức khám:</strong> <span id="summary-booking-type">Khám tại cơ sở</span>
-                    </div>
-                    <div>
-                        <strong>Người đặt:</strong> <span id="summary-name">Nguyễn Văn A</span>
-                    </div>
-                    <div>
-                        <strong>Ngày khám dự kiến:</strong> <span id="summary-date">25/10/2025</span>
-                    </div>
-                </div>
+    <div class="booking-details-summary">
+        <div>
+            <strong>Mã hồ sơ:</strong> <span id="summary-booking-id">Đang tải...</span>
+        </div>
+        <div>
+            <strong>Hình thức khám:</strong> <span id="summary-booking-type">Đang tải...</span>
+        </div>
+        <div>
+            <strong>Người đặt:</strong> <span id="summary-name">Đang tải...</span>
+        </div>
+        <div>
+            <strong>Ngày khám dự kiến:</strong> <span id="summary-date">Đang tải...</span>
+        </div>
+    </div>
 
-                <!-- Action Buttons for Success Page -->
-                <div class="form-actions" style="margin-top: 40px; text-align: center;">
-                    <button class="btn-secondary" onclick="showCustomAlert('Chức năng xem chi tiết hồ sơ đang được phát triển.', 'info')" style="margin-right: 15px;">
-                        <i class="fas fa-file-invoice"></i> Xem chi tiết hồ sơ
-                    </button>
-                    <a href="https://healthcare36.netlify.app" class="btn-primary">
-                        <i class="fas fa-home"></i> Quay về Trang chủ
-                    </a>
-                </div>
-            </div>
+    <div class="form-actions" style="margin-top: 40px; text-align: center;">
+        <button class="btn-secondary" onclick="showCustomAlert('Chức năng xem chi tiết hồ sơ đang được phát triển.', 'info')" style="margin-right: 15px;">
+            <i class="fas fa-file-invoice"></i> Xem chi tiết hồ sơ
+        </button>
+        <a href="https://healthcare36.netlify.app" class="btn-primary">
+            <i class="fas fa-home"></i> Quay về Trang chủ
+        </a>
+    </div>
+</div>
 
         </main>
     </div>
@@ -677,134 +676,134 @@ body.menu-open {
     </div>
 
 
-    <script>
-        // ------------------------------------------------
-        // JAVASCRIPT LOGIC
-        // ------------------------------------------------
+<script type="module">
+    import { 
+        initializeApp 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+        getAuth, 
+        onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+        getFirestore, 
+        doc, 
+        getDoc
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+    // --- 1. KHAI BÁO CẤU HÌNH VÀ BIẾN ---
+    const firebaseConfig = {
+        // !!! CẬP NHẬT KEY CỦA BẠN TẠI ĐÂY !!!
+        apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88", 
+        authDomain: "health-care-5ba62.firebaseapp.com",
+        projectId: "health-care-5ba62",
+        storageBucket: "health-care-5ba62.firebasestorage.app",
+        messagingSenderId: "564100851159",
+        appId: "1:564100851159:web:34d7d7d792",
+        measurementId: "G-2GWB86PCBT"
+    };
 
-        // 1. Logic Custom Alert Modal (thay thế alert())
-        const modalOverlay = document.getElementById('custom-alert-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalMessage = document.getElementById('modal-message');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
+    let db, auth;
+    let userId = null;
 
-        /**
-         * Hiển thị hộp thoại thông báo tùy chỉnh.
-         * @param {string} message - Nội dung thông báo.
-         * @param {string} type - Loại thông báo ('info', 'error', 'success').
-         */
-        function showCustomAlert(message, type = 'info') {
-            let title = 'Thông báo';
-            if (type === 'error') {
-                title = 'Lỗi';
-                modalTitle.style.color = 'var(--warning-orange)';
-            } else if (type === 'success') {
-                title = 'Thành công';
-                modalTitle.style.color = 'var(--success-green)';
-            } else {
-                modalTitle.style.color = 'var(--primary-blue)';
-            }
+    // Hàm lấy tham số từ URL
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        const results = regex.exec(location.search);
+        return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+    
+    // Lấy Booking ID từ URL (ví dụ: ?bookingId=xyz)
+    const FINAL_BOOKING_ID = getUrlParameter('bookingId');
+    const LOGIN_PAGE = 'log.html'; 
+    
+    
+    // --- 2. HÀM TẢI DỮ LIỆU ---
 
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            modalOverlay.style.display = 'flex';
-        }
-
-        if (modalCloseBtn) {
-            modalCloseBtn.addEventListener('click', () => {
-                modalOverlay.style.display = 'none';
-            });
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            // 2. Logic cho Hamburger Menu
-            const menuToggle = document.getElementById('menu-toggle');
-            const navArea = document.getElementById('main-nav-area');
-            
-            if (menuToggle && navArea) {
-                menuToggle.addEventListener('click', () => {
-                    navArea.classList.toggle('open');
-                    document.body.classList.toggle('menu-open'); 
-                });
-            }
-
-            // 3. Logic Hiển thị Tóm tắt Đặt Khám (Mock data or get from Session Storage)
-            // Trong môi trường thực tế, bạn sẽ lấy dữ liệu từ Firebase/Session Storage.
-            
-            const summaryBookingType = document.getElementById('summary-booking-type');
-            const summaryName = document.getElementById('summary-name');
-            const summaryDate = document.getElementById('summary-date');
-
-            // --- Lấy dữ liệu từ Session Storage (Giả lập) ---
-            // Giữ lại logic này để thể hiện cách lấy dữ liệu đặt khám
-            const storedTypeName = sessionStorage.getItem('booking_type_name') || 'Khám tại cơ sở (Mặc định)';
-            const storedFullName = sessionStorage.getItem('full_name') || 'Nguyễn Văn A';
-            const storedDob = sessionStorage.getItem('date_of_birth') || '2025-10-23'; // Sử dụng định dạng YYYY-MM-DD
-
-            // Định dạng lại ngày sinh thành ngày khám dự kiến (cho mục đích demo)
-            let displayDate = '25/10/2025';
-            try {
-                const dob = new Date(storedDob);
-                // Giả định ngày khám là 2 ngày sau ngày sinh
-                dob.setDate(dob.getDate() + 2); 
-                const dd = String(dob.getDate()).padStart(2, '0');
-                const mm = String(dob.getMonth() + 1).padStart(2, '0'); 
-                const yyyy = dob.getFullYear();
-                displayDate = `${dd}/${mm}/${yyyy}`;
-            } catch (e) {
-                console.error("Lỗi xử lý ngày:", e);
-            }
-
-            // --- Cập nhật UI ---
-            if (summaryBookingType) summaryBookingType.textContent = storedTypeName;
-            if (summaryName) summaryName.textContent = storedFullName;
-            if (summaryDate) summaryDate.textContent = displayDate;
-            
-            console.log("Trang Hoàn tất đã tải và hiển thị dữ liệu giả lập.");
-        });
-    </script>
-<script>
     /**
-     * Hàm tải nội dung HTML từ một URL và chèn vào một Element
+     * Tải dữ liệu đặt khám hoàn tất từ Firestore và điền vào UI
      */
-    function loadExternalHTML(url, targetElementId) {
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.text();
-            })
-            .then(html => {
-                // Chèn nội dung HTML đã tải vào element mục tiêu
-                document.getElementById(targetElementId).innerHTML = html;
-            })
-            .catch(error => {
-                console.error('Lỗi tải menu:', error);
-                document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
-            });
+    async function loadFinalBookingData() {
+        if (!FINAL_BOOKING_ID || !userId) {
+            // Nếu thiếu ID hoặc chưa đăng nhập
+            console.error("Thiếu Booking ID hoặc chưa đăng nhập.");
+            document.querySelector('.success-card').innerHTML = `
+                <i class="fas fa-exclamation-triangle" style="font-size: 60px; color: orange; margin-bottom: 20px;"></i>
+                <h2>Lỗi Tải Dữ Liệu!</h2>
+                <p>Không tìm thấy thông tin hồ sơ. Vui lòng kiểm tra lại URL hoặc <a href="${LOGIN_PAGE}">đăng nhập</a>.</p>
+            `;
+            return false;
+        }
+
+        // Đường dẫn: artifacts/{appId}/users/{userId}/bookings/{FINAL_BOOKING_ID}
+        const bookingDocPath = `artifacts/${firebaseConfig.appId.split(':')[1]}/users/${userId}/bookings/${FINAL_BOOKING_ID}`;
+        
+        try {
+            const docSnap = await getDoc(doc(db, bookingDocPath));
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // ĐIỀN DỮ LIỆU VÀO HTML
+                document.querySelector('.booking-details-summary div:nth-child(1) span').textContent = `#${FINAL_BOOKING_ID}`;
+                
+                // 1. Hình thức khám
+                document.getElementById('summary-booking-type').textContent = data.typeName || 'N/A';
+                
+                // 2. Người đặt/Người đi khám (Lấy từ bước 3/4)
+                document.getElementById('summary-name').textContent = data.fullName || 'N/A';
+                
+                // 3. Ngày khám
+                document.getElementById('summary-date').textContent = data.appointmentDate || 'N/A';
+                
+                // Hiển thị thành công và thông tin
+                document.querySelector('.success-card').style.opacity = 1;
+
+                return true;
+            } else {
+                console.error("Không tìm thấy hồ sơ đặt khám với ID này.");
+                return false;
+            }
+        } catch (e) {
+            console.error("Lỗi tải dữ liệu đặt khám:", e);
+            document.querySelector('.success-card').innerHTML = `
+                <i class="fas fa-server" style="font-size: 60px; color: red; margin-bottom: 20px;"></i>
+                <h2>Lỗi Kết Nối Firebase!</h2>
+                <p>Không thể kết nối đến máy chủ. Vui lòng kiểm tra cấu hình Firebase Config.</p>
+            `;
+            return false;
+        }
     }
 
-    // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
+    // --- 3. KHỞI TẠO CHÍNH ---
+    async function initializeAppAndAuth() {
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        
+        // Ẩn nội dung thẻ success-card cho đến khi dữ liệu tải xong
+        document.querySelector('.success-card').style.opacity = 0; 
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                await loadFinalBookingData();
+            } else {
+                // Nếu chưa đăng nhập, không tải được booking data
+                console.error("Người dùng chưa đăng nhập.");
+                document.querySelector('.success-card').innerHTML = `
+                    <i class="fas fa-lock" style="font-size: 60px; color: orange; margin-bottom: 20px;"></i>
+                    <h2>Yêu cầu Đăng nhập</h2>
+                    <p>Vui lòng <a href="${LOGIN_PAGE}?redirect=${encodeURIComponent(window.location.href)}">đăng nhập</a> để xem chi tiết hồ sơ đặt khám.</p>
+                `;
+            }
+        });
+    }
+
+    // --- 4. ĐĂNG KÝ SỰ KIỆN ---
     document.addEventListener('DOMContentLoaded', function() {
-        const menuToggle = document.getElementById('menu-toggle');
-        const navArea = document.getElementById('main-nav-area'); // Lấy element menu
-
-        // 1. TẢI NỘI DUNG MENU
-        // SỬA LỖI: Gọi ID đúng là 'main-nav-area'
-        loadExternalHTML('../menu.html', 'main-nav-area'); 
-
-        // 2. LOGIC HAMBURGER
-        if (menuToggle && navArea) {
-            menuToggle.addEventListener('click', () => {
-                // Thêm/Xóa class 'open' để bật/tắt menu
-                navArea.classList.toggle('open');
-                // Ngăn cuộn trang chính khi menu mở
-                document.body.classList.toggle('menu-open'); 
-            });
-        }
+        initializeAppAndAuth();
     });
+
 </script>
-<script src="../include.js"></script> 
 </body>
 </html>

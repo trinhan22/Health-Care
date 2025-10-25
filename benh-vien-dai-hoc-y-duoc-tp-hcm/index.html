@@ -557,30 +557,30 @@ body.menu-open {
             <span>/</span>
             <a href="#">Đặt khám</a>
             <span>/</span>
-            <span>Bệnh viện Đại học Y Dược TP.HCM</span>
+            <span id="breadcrumb-hospital-name">Bệnh viện Đại học Y Dược TP.HCM</span>
         </div>
     </div>
 </section>
 
-    <div class="page-hospital">
-        <div class="container">
-            
-            <div class="hospital-header">
-                <div class="hospital-logo">
-                    <img src="../benh-vien-dai-hoc-y-duoc-tp-hcm/logo.webp" alt="Logo Bệnh viện">
-                </div>
-                <div class="hospital-info-text">
-                    <h1>Bệnh viện Đại học Y Dược TP.HCM - Cơ sở 1</h1>
-                    <p>Địa chỉ: 215 Hồng Bàng, Phường 11, Quận 5, TP. HCM</p>
-                    <div class="rating-box">
-                        <span class="rating-stars">★★★★★</span>
-                        <span>4.8 (8,500 đánh giá)</span>
-                        <a href="../hinh-thuc-dat-kham/" class="btn-follow">Đặt Khám ngay</a>
-                    </div>
+<div class="page-hospital">
+    <div class="container">
+        
+        <div class="hospital-header">
+            <div class="hospital-logo">
+                <img src="../benh-vien-dai-hoc-y-duoc-tp-hcm/logo.webp" alt="Logo Bệnh viện">
+            </div>
+            <div class="hospital-info-text">
+                <h1 id="hospital-name">Bệnh viện Đại học Y Dược TP.HCM - Cơ sở 1</h1>
+                <p id="hospital-address">Địa chỉ: 215 Hồng Bàng, Phường 11, Quận 5, TP. HCM</p>
+                <div class="rating-box">
+                    <span id="rating-stars" class="rating-stars">★★★★★</span>
+                    <span id="hospital-rating-text">4.8 (8,500 đánh giá)</span>
+                    <a href="hinh-thuc-dat-kham/index.html?hospitalId=dh-y-duoc-tphcm" id="btn-dat-kham" class="btn-follow">Đặt Khám ngay</a>
                 </div>
             </div>
+        </div>
             
-            <div class="content-layout">
+<div class="content-layout">
                 
                 <div class="sidebar-left-column"> <div class="sidebar-nav">
                         <ul>
@@ -605,17 +605,20 @@ body.menu-open {
                     </div>
                 </div>
                 
-                <div class="hospital-info">
+<div class="hospital-info">
                     
                     <div id="gioi-thieu" class="section-block">
                         <h2>Giới thiệu về Bệnh viện</h2>
-                        <p>Bệnh viện Đại học Y Dược TP.HCM là một trong những cơ sở y tế hàng đầu tại Việt Nam, kết hợp giữa khám chữa bệnh và đào tạo y khoa. Bệnh viện luôn đi đầu trong việc áp dụng các kỹ thuật y tế tiên tiến nhất, mang đến chất lượng dịch vụ tốt nhất cho người bệnh.</p>
-                        <p>Đội ngũ y bác sĩ tại Bệnh viện đều là những chuyên gia đầu ngành, có trình độ chuyên môn cao và kinh nghiệm lâu năm. Cơ sở vật chất hiện đại, môi trường thân thiện, chuyên nghiệp.</p>
+                        <p id="hospital-description">
+                            Bệnh viện Đại học Y Dược TP.HCM là một trong những cơ sở y tế hàng đầu tại Việt Nam, kết hợp giữa khám chữa bệnh và đào tạo y khoa. Bệnh viện luôn đi đầu trong việc áp dụng các kỹ thuật y tế tiên tiến nhất, mang đến chất lượng dịch vụ tốt nhất cho người bệnh.
+                            <br><br>
+                            Đội ngũ y bác sĩ tại Bệnh viện đều là những chuyên gia đầu ngành, có trình độ chuyên môn cao và kinh nghiệm lâu năm. Cơ sở vật chất hiện đại, môi trường thân thiện, chuyên nghiệp.
+                        </p>
                     </div>
 
-                    <div id="chuyen-khoa" class="section-block">
+<div id="chuyen-khoa" class="section-block">
                         <h2>Các Chuyên khoa nổi bật</h2>
-                        <div class="department-grid">
+                        <div class="department-grid" id="chuyen-khoa-grid">
                             <a href="#" class="department-item">Khoa Nội Tổng Quát</a>
                             <a href="#" class="department-item">Khoa Tim Mạch</a>
                             <a href="#" class="department-item">Khoa Tiêu Hóa</a>
@@ -627,7 +630,7 @@ body.menu-open {
 
                     <div id="bac-si" class="section-block">
                         <h2>Đội ngũ Bác sĩ tiêu biểu</h2>
-                        <div class="doctor-list">
+                            <div class="doctor-list" id="doctor-list-container">
                             <div class="doctor-card">
                                 <div class="doctor-avatar">
                                     <img src="../data/IMG/BACSI/bacsi.webp" alt="Bác sĩ A">
@@ -670,47 +673,153 @@ body.menu-open {
     </div>
 
 </body>
-<script>
-    /**
-     * Hàm tải nội dung HTML từ một URL và chèn vào một Element
-     */
-    function loadExternalHTML(url, targetElementId) {
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.text();
-            })
-            .then(html => {
-                // Chèn nội dung HTML đã tải vào element mục tiêu
-                document.getElementById(targetElementId).innerHTML = html;
-            })
-            .catch(error => {
-                console.error('Lỗi tải menu:', error);
-                document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
+<script type="module">
+    import { 
+        initializeApp 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+        getFirestore, 
+        doc, 
+        getDoc, 
+        collection, 
+        query, 
+        where, // ⬅️ Vẫn giữ lại nhưng không dùng cho Doctors/Departments nữa
+        getDocs,
+        limit 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; 
+
+    // ⚠️ QUAN TRỌNG: Cấu hình Firebase của bạn
+    const firebaseConfig = {
+        apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88", 
+        authDomain: "health-care-5ba62.firebaseapp.com",
+        projectId: "health-care-5ba62",
+        storageBucket: "health-care-5ba62.firebasestorage.app",
+        messagingSenderId: "564100851159",
+        appId: "1:564100851159:web:34d7d787474edff1abd792",
+        measurementId: "G-2GWB86PCBT"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const HOSPITAL_ID = "dh-y-duoc-tphcm"; 
+
+    async function loadHospitalDetails() {
+        try {
+            // --- 1. Tải thông tin chi tiết Bệnh viện (Collection gốc) ---
+            const hospitalRef = doc(db, "hospitals", HOSPITAL_ID);
+            const hospitalSnap = await getDoc(hospitalRef);
+            const hospitalNameElement = document.getElementById('hospital-name');
+
+            if (hospitalSnap.exists()) {
+                const data = hospitalSnap.data();
+                
+                hospitalNameElement.textContent = data.name; 
+                document.getElementById('breadcrumb-hospital-name').textContent = data.name;
+                document.getElementById('hospital-address').textContent = `Địa chỉ: ${data.address}`; 
+                
+                const rating = data.rating || 0;
+                const reviewCount = data.review_count || 0;
+                document.getElementById('hospital-rating-text').textContent = `${rating.toFixed(1)} (${reviewCount} đánh giá)`; 
+                
+                document.getElementById('hospital-description').innerHTML = data.description 
+                    ? data.description.replace(/\n/g, '<br>')
+                    : "Đang cập nhật mô tả...";
+
+                document.getElementById('btn-dat-kham').href = `../hinh-thuc-dat-kham?hospitalId=${HOSPITAL_ID}`;
+            } else {
+                console.error("Không tìm thấy thông tin bệnh viện:", HOSPITAL_ID);
+                hospitalNameElement.textContent = "Lỗi: Dữ liệu bệnh viện không tồn tại";
+            }
+
+            // -----------------------------------------------------
+            // --- 2. 🚀 CẬP NHẬT: Tải danh sách Chuyên khoa (Sub-collection) ---
+            // Đường dẫn mới: /hospitals/{hospitalId}/departments
+            // -----------------------------------------------------
+            const departmentGrid = document.getElementById('chuyen-khoa-grid'); 
+            const departmentsQuery = query(
+                collection(db, "hospitals", HOSPITAL_ID, "departments")
+                // KHÔNG cần dùng where("hospitalId", "==", HOSPITAL_ID) nữa!
+            );
+            const departmentsSnapshot = await getDocs(departmentsQuery);
+
+            departmentGrid.innerHTML = departmentsSnapshot.empty 
+                ? "<p class='text-center text-gray-500'>Hiện chưa có thông tin về các chuyên khoa.</p>"
+                : ''; 
+
+            departmentsSnapshot.forEach(doc => {
+                const dept = doc.data();
+                const deptId = doc.id;
+
+                const link = document.createElement('a');
+                link.href = `hinh-thuc-dat-kham/index.html?hospitalId=${HOSPITAL_ID}&deptId=${deptId}`;
+                link.className = 'department-item';
+                link.innerHTML = `
+                    <img src="${dept.iconUrl || '../data/IMG/SERVICE/default.webp'}" alt="${dept.name}" class="dept-icon">
+                    <span class="dept-name">${dept.name}</span>
+                `;
+                departmentGrid.appendChild(link);
             });
+            
+            // --------------------------------------------------
+            // --- 3. 🚀 CẬP NHẬT: Tải danh sách Bác sĩ (Sub-collection) ---
+            // Đường dẫn mới: /hospitals/{hospitalId}/doctors
+            // --------------------------------------------------
+            const doctorListContainer = document.getElementById('doctor-list-container');
+            const doctorsQuery = query(
+                collection(db, "hospitals", HOSPITAL_ID, "doctors"),
+                limit(4) 
+                // KHÔNG cần dùng where("hospitalId", "==", HOSPITAL_ID) nữa!
+            );
+            const doctorsSnapshot = await getDocs(doctorsQuery);
+            
+            doctorListContainer.innerHTML = doctorsSnapshot.empty
+                ? "<p>Hiện chưa có thông tin về bác sĩ tiêu biểu.</p>"
+                : ''; 
+
+            doctorsSnapshot.forEach(doc => {
+                const doctor = doc.data();
+                const doctorId = doc.id;
+                
+                const card = document.createElement('div');
+                card.className = 'doctor-card';
+                card.innerHTML = `
+                    <div class="doctor-avatar">
+                        <img src="${doctor.avatarUrl || '../data/IMG/BACSI/bacsi.webp'}" alt="Bác sĩ ${doctor.name}">
+                    </div>
+                    <div class="doctor-details">
+                        <h3>${doctor.name}</h3>
+                        <p>${doctor.title || 'Bác sĩ chuyên khoa'} - ${doctor.departmentName || 'Đa khoa'}</p>
+                        <a href="hinh-thuc-dat-kham/index.html?hospitalId=${HOSPITAL_ID}&doctorId=${doctorId}" class="btn-book">Đặt lịch khám</a>
+                    </div>
+                `;
+                doctorListContainer.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("Lỗi tải dữ liệu Firestore:", error);
+            document.getElementById('hospital-name').textContent = "LỖI KẾT NỐI HỆ THỐNG!";
+            document.getElementById('chuyen-khoa-grid').innerHTML = "<p>Lỗi tải chuyên khoa.</p>";
+            document.getElementById('doctor-list-container').innerHTML = "<p>Lỗi tải bác sĩ.</p>";
+        }
     }
 
-    // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
-    document.addEventListener('DOMContentLoaded', function() {
+    // Khởi chạy khi DOM tải xong
+    document.addEventListener('DOMContentLoaded', () => {
+        loadHospitalDetails(); 
+
+        // Logic Hamburger Menu (Giữ nguyên)
         const menuToggle = document.getElementById('menu-toggle');
-        const navArea = document.getElementById('main-nav-area'); // Lấy element menu
-
-        // 1. TẢI NỘI DUNG MENU
-        // SỬA LỖI: Gọi ID đúng là 'main-nav-area'
-        loadExternalHTML('../menu.html', 'main-nav-area'); 
-
-        // 2. LOGIC HAMBURGER
+        const navArea = document.getElementById('main-nav-area');
+        
         if (menuToggle && navArea) {
             menuToggle.addEventListener('click', () => {
-                // Thêm/Xóa class 'open' để bật/tắt menu
                 navArea.classList.toggle('open');
-                // Ngăn cuộn trang chính khi menu mở
                 document.body.classList.toggle('menu-open'); 
             });
         }
     });
+
 </script>
 <script src="../include.js"></script> 
 </body>

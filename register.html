@@ -139,11 +139,18 @@
         getAuth, 
         createUserWithEmailAndPassword, 
         updateProfile,
-        signOut // 💡 ĐÃ THÊM: Dùng để đăng xuất ngay sau khi đăng ký
+        signOut 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+        getFirestore, // ⬅️ Khởi tạo Firestore
+        doc, 
+        setDoc,
+        serverTimestamp // ⬅️ Dấu thời gian
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; // ⬅️ ĐẢM BẢO URL THƯ VIỆN FIRESTORE
 
-    // Cấu hình Firebase
-        const firebaseConfig = {
+    // Cấu hình Firebase (Giữ nguyên)
+    // ... firebaseConfig của bạn ...
+    const firebaseConfig = {
         apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
         authDomain: "health-care-5ba62.firebaseapp.com",
         projectId: "health-care-5ba62",
@@ -151,10 +158,11 @@
         messagingSenderId: "564100851159",
         appId: "1:564100851159:web:34d7d787474edff1abd792",
         measurementId: "G-2GWB86PCBT"
-        };
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app); // ⬅️ THÊM: Khởi tạo Firestore
 
     // Xử lý Đăng ký bằng Email/Password
     document.getElementById("register-form").addEventListener("submit", async (e) => {
@@ -166,6 +174,7 @@
       const confirmPassword = document.getElementById("register-confirm-password").value;
       const submitBtn = document.getElementById("register-submit-btn");
 
+      // ... (Phần kiểm tra mật khẩu, tên hiển thị) ...
       if (password !== confirmPassword) {
         alert("Mật khẩu nhập lại không khớp. Vui lòng kiểm tra lại.");
         return;
@@ -188,14 +197,24 @@
             displayName: displayName
         });
         
-        // 2. 🚨 KHẮC PHỤC LỖI AUTO-LOGIN: Đăng xuất người dùng ngay lập tức
+        // 2. ⬅️ GHI DỮ LIỆU VÀO FIRESTORE ⬅️
+        await setDoc(doc(db, "users", user.uid), {
+            uid: user.uid,
+            email: user.email,
+            displayName: displayName,
+            role: "patient",
+            createdAt: serverTimestamp() 
+        });
+        
+        // 3. Đăng xuất người dùng ngay lập tức
         await signOut(auth); 
         
         alert("Đăng ký tài khoản thành công! Vui lòng Đăng nhập.");
-        // 3. Chuyển hướng đến trang đăng nhập
-        window.location.href = "log.html"; 
+        // 4. Chuyển hướng đến trang đăng nhập
+        window.location.href = "login.html"; // ⚠️ LƯU Ý: Chuyển hướng đến login.html (thay vì log.html)
         
       } catch (err) {
+        // ... (Phần xử lý lỗi) ...
         let message = "Đăng ký thất bại. Vui lòng thử lại.";
         if (err.code === "auth/email-already-in-use") {
             message = "Địa chỉ email này đã được sử dụng. Vui lòng chọn email khác.";

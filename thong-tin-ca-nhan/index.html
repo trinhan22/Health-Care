@@ -709,8 +709,7 @@
 
             <div class="form-actions">
                 <div class="form-actions-group">
-                    <button type="button" class="btn-secondary" onclick="window.location.href='../chon-thong-tin-kham.html'">
-                        <i class="fas fa-chevron-left"></i> Quay lại
+<button type="button" class="btn-secondary" id="btnBack"> <i class="fas fa-chevron-left"></i> Quay lại </button>
                     </button>
                     <button type="submit" form="personal-info-form" class="btn-primary" id="btn-continue">
                         Tiếp tục <i class="fas fa-chevron-right"></i>
@@ -720,361 +719,223 @@
 
         </div> </div>
 
-    <script type="module">
-        // --- 1. IMPORT CÁC THƯ VIỆN FIREBASE V9 VÀ CÁC HÀM CẦN THIẾT ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<script type="module">
+    import { 
+        initializeApp 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+        getAuth, 
+        onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+        getFirestore, 
+        setDoc, 
+        doc, 
+        getDoc
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+    // --- 1. KHAI BÁO CẤU HÌNH VÀ BIẾN ---
+    const firebaseConfig = {
+        // !!! CẬP NHẬT KEY CỦA BẠN TẠI ĐÂY !!!
+        apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88", 
+        authDomain: "health-care-5ba62.firebaseapp.com",
+        projectId: "health-care-5ba62",
+        storageBucket: "health-care-5ba62.firebasestorage.app",
+        messagingSenderId: "564100851159",
+        appId: "1:564100851159:web:34d7d7d792",
+        measurementId: "G-2GWB86PCBT"
+    };
 
-        // --- CẤU HÌNH TĨNH DỰ PHÒNG (Dùng khi biến môi trường bị lỗi) ---
-        const STATIC_FIREBASE_CONFIG = {
-            apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
-            authDomain: "health-care-5ba62.firebaseapp.com",
-            projectId: "health-care-5ba62",
-            storageBucket: "health-care-5ba62.firebasestorage.app",
-            messagingSenderId: "564100851159",
-            appId: "1:564100851159:web:34d7d787474edff1abd792",
-            measurementId: "G-2GWB86PCBT"
-        };
+    let db, auth;
+    let userId = null;
+    let currentUser = null; 
+    let currentBookingData = {}; // Lưu trữ dữ liệu đặt khám hiện tại
 
+    const BOOKING_ID = sessionStorage.getItem('current_booking_id');
+    const HOSPITAL_ID = sessionStorage.getItem('hospital_id'); 
+    
+    // Đường dẫn chuyển hướng
+    const NEXT_STEP_PATH = `../hoan-tat?hospitalId=${HOSPITAL_ID}`; // Bước 4 (Chọn Lịch Khám)
+    const PREV_STEP_PATH = '../chon-thong-tin-kham/index.html';
+    const LOGIN_PAGE = '../../login.html'; 
 
-        // --- 2. KHỞI TẠO BIẾN TOÀN CỤC ---
-        let app;
-        let db;
-        let auth;
-        let userId = null;
-        let isAuthReady = false;
+    // Lấy các element
+    const personalInfoForm = document.getElementById('personal-info-form');
+    const btnContinue = document.getElementById('btn-continue');
+    const btnBack = document.querySelector('.btn-secondary'); // Nút Quay lại
+    
+    
+    // --- 2. HÀM TIỆN ÍCH ---
 
-        const COLLECTION_NAME = 'bookings';
-        const DOC_ID = 'personal_info'; 
-        const nextPage = '../hoan-tat'; 
-
-        // --- 3. LOGIC MODAL (Thay thế Alert/Confirm) ---
-        function showCustomAlert(message, title = "Thông báo", callback = null) {
-            const overlay = document.getElementById('custom-modal-overlay');
-            const titleEl = document.getElementById('modal-title');
-            const messageEl = document.getElementById('modal-message');
-            const okBtn = document.getElementById('modal-ok-btn');
-            
-            titleEl.textContent = title;
-            messageEl.textContent = message;
-            overlay.style.display = 'flex';
-
-            const closeHandler = () => {
-                overlay.style.display = 'none';
-                okBtn.removeEventListener('click', closeHandler);
-                if (callback) {
-                    callback();
-                }
-            };
-
-            // Gán lại sự kiện để tránh nhân đôi listener
-            okBtn.onclick = closeHandler; 
-        }
-
-        // Thêm hàm cập nhật trạng thái kết nối
-        function updateConnectionStatus(state, message = "") {
-            const dot = document.getElementById('status-dot-icon');
-            const text = document.getElementById('status-text');
-
-            if (!dot || !text) return;
-
-            // Xóa tất cả trạng thái cũ
-            dot.classList.remove('loading', 'ready', 'error');
-
-            switch (state) {
-                case 'loading':
-                    dot.classList.add('loading');
-                    text.textContent = message || 'Đang kết nối...';
-                    break;
-                case 'ready':
-                    dot.classList.add('ready');
-                    text.textContent = message || 'Hệ thống sẵn sàng';
-                    break;
-                case 'error':
-                    dot.classList.add('error');
-                    text.textContent = message || 'Lỗi kết nối';
-                    break;
-            }
-        }
-
-        // --- 4. KHỞI TẠO FIREBASE VÀ XÁC THỰC NGƯỜI DÙNG (SỬ DỤNG BIẾN TOÀN CỤC VÀ CẤU HÌNH DỰ PHÒNG) ---
-        async function initializeFirebase() {
-            updateConnectionStatus('loading'); // Bắt đầu kết nối
-            
-            let firebaseConfig = {};
-            const hasEnvironmentConfig = (typeof __firebase_config !== 'undefined' && __firebase_config);
-
-            // 1. THỬ TẢI CẤU HÌNH TỪ BIẾN MÔI TRƯỜNG
-            if (hasEnvironmentConfig) {
-                try {
-                    firebaseConfig = JSON.parse(__firebase_config);
-                    // Đảm bảo kết quả parsing là một đối tượng hợp lệ
-                    if (typeof firebaseConfig !== 'object' || firebaseConfig === null || Object.keys(firebaseConfig).length === 0) {
-                        firebaseConfig = {}; // Đánh dấu cấu hình lỗi
-                    } else {
-                        console.log("[INIT] Sử dụng cấu hình Firebase từ biến môi trường.");
-                    }
-                } catch (e) {
-                    console.error("[INIT] Lỗi parsing cấu hình Firebase môi trường:", e);
-                }
-            }
-
-            // 2. DỰ PHÒNG: NẾU CẤU HÌNH MÔI TRƯỜNG LỖI, SỬ DỤNG CẤU HÌNH TĨNH
-            if (Object.keys(firebaseConfig).length === 0) {
-                console.warn("[INIT] Cấu hình môi trường (__firebase_config) không hợp lệ hoặc bị thiếu. Đang sử dụng cấu hình tĩnh (STATIC_FIREBASE_CONFIG) làm fallback.");
-                firebaseConfig = STATIC_FIREBASE_CONFIG;
-            }
-
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-            if (Object.keys(firebaseConfig).length === 0) {
-                // Nếu cả cấu hình tĩnh cũng trống (không nên xảy ra)
-                console.error("Lỗi: Không tìm thấy cấu hình Firebase tự động hoặc tĩnh.");
-                updateConnectionStatus('error', 'Lỗi Config');
-                showCustomAlert("Lỗi Hệ Thống: Không tìm thấy cấu hình Firebase. Vui lòng liên hệ hỗ trợ kỹ thuật.", "Lỗi");
-                return;
-            }
-
-            try {
-                // Khởi tạo ứng dụng và dịch vụ
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                setLogLevel('Debug'); // Bật log debug cho Firestore
-
-                // Lắng nghe trạng thái xác thực
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        isAuthReady = true;
-                        console.log(`[AUTH] Đã xác thực, User ID: ${userId}`);
-                        updateConnectionStatus('ready', `Đã kết nối (User: ${userId.substring(0, 4)}...)`); // Sẵn sàng
-                        // Khi xác thực hoàn tất, tải dữ liệu
-                        await loadSavedData();
-                    } else {
-                        // Nếu không có user, đăng nhập ẩn danh
-                        try {
-                            const anonymousUser = await signInAnonymously(auth);
-                            userId = anonymousUser.user.uid;
-                            isAuthReady = true;
-                            console.log(`[AUTH] Đăng nhập ẩn danh thành công, User ID: ${userId}`);
-                            updateConnectionStatus('ready', `Đã kết nối (Guest: ${userId.substring(0, 4)}...)`); // Sẵn sàng
-                            await loadSavedData();
-                        } catch (error) {
-                            console.error("[AUTH] Lỗi xác thực Firebase:", error);
-                            updateConnectionStatus('error', 'Lỗi Auth');
-                            showCustomAlert("Không thể kết nối dịch vụ. Vui lòng thử lại sau.", "Lỗi Hệ Thống");
-                        }
-                    }
-                });
-
-                // Thực hiện đăng nhập ban đầu bằng Custom Token nếu có
-                if (initialAuthToken) {
-                    try {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                        console.log("[AUTH] Đăng nhập bằng Custom Token thành công.");
-                    } catch (error) {
-                        console.warn("[AUTH] Lỗi đăng nhập bằng Custom Token. Đang chờ onAuthStateChanged xử lý (thường là đăng nhập ẩn danh).", error);
-                    }
-                } else {
-                     console.log("[AUTH] Không có Custom Token. Chờ onAuthStateChanged xử lý.");
-                }
-
-            } catch (e) {
-                console.error("[INIT] Lỗi khởi tạo Firebase:", e);
-                updateConnectionStatus('error', 'Lỗi Init');
-                showCustomAlert("Lỗi khởi tạo ứng dụng. Vui lòng kiểm tra console log.", "Lỗi Nghiêm Trọng");
-            }
-        }
-        
-        // Hàm lấy tham chiếu Document chính xác theo quy tắc bảo mật
-        function getBookingDocRef() {
-            if (!db || !userId) return null;
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            // Đường dẫn Firestore: /artifacts/{appId}/users/{userId}/bookings/personal_info
-            // LƯU Ý QUAN TRỌNG: Nếu gặp lỗi "permission-denied", bạn cần đảm bảo Firebase Security Rules
-            // của mình cho phép người dùng đã xác thực (request.auth.uid == userId) ghi vào đường dẫn này.
-            // Ví dụ rule cần thiết: allow write: if request.auth != null && request.auth.uid == userId;
-            return doc(db, 'artifacts', appId, 'users', userId, COLLECTION_NAME, DOC_ID);
-        }
-
-        // --- 5. LOGIC FORM & FIREBASE ACTIONS ---
-        function validateForm(form) {
-            let isValid = true;
-            // Chỉ kiểm tra các input có thuộc tính required
-            const requiredInputs = form.querySelectorAll('[required]');
-            
-            requiredInputs.forEach(input => {
-                // Xử lý riêng cho radio button
-                if (input.type === 'radio') {
-                    // Kiểm tra xem có radio nào trong nhóm "gender" được chọn không
-                    const radioGroup = form.querySelectorAll(`input[name="gender"]`);
-                    let isChecked = false;
-                    radioGroup.forEach(radio => {
-                        if (radio.checked) {
-                            isChecked = true;
-                        }
-                    });
-                    if (!isChecked) {
-                        isValid = false;
-                    }
-                } else if (!input.value.trim()) {
-                    // Xử lý cho các input văn bản/ngày tháng
-                    isValid = false;
-                }
-            });
-            return isValid;
-        }
-
-        async function saveFormData(form) {
-            const docRef = getBookingDocRef();
-            if (!docRef) {
-                showCustomAlert("Hệ thống chưa sẵn sàng (Chưa xác thực). Vui lòng chờ 1 lát.", "Lỗi Kết Nối");
-                return false;
-            }
-
-            const formData = {
-                fullName: document.getElementById('fullName').value,
-                phoneNumber: document.getElementById('phoneNumber').value,
-                gender: form.querySelector('input[name="gender"]:checked')?.value || '',
-                dob: document.getElementById('dob').value,
-                email: document.getElementById('email').value || null,
-                idNumber: document.getElementById('idNumber').value || null,
-                address: document.getElementById('address').value,
-                lastUpdated: serverTimestamp(), 
-            };
-            
-            try {
-                // LƯU VÀO FIREBASE: Lưu dữ liệu vào trường 'step3' của document personal_info.
-                // { merge: true } ĐẢM BẢO dữ liệu Bước 1 (step1) và Bước 2 (step2) không bị mất.
-                await setDoc(docRef, { step3: formData }, { merge: true });
-                console.log("[FIREBASE] Thông tin cá nhân đã được lưu thành công!");
-                return true;
-            } catch (error) {
-                console.error("[FIREBASE] Lỗi khi lưu vào Firestore:", error);
-                
-                // Cải tiến thông báo lỗi: Hiển thị mã lỗi để chẩn đoán vấn đề quyền truy cập.
-                const errorMessage = `Không thể lưu dữ liệu lên máy chủ. (Lỗi: ${error.code || "Lỗi không xác định"}). Vui lòng thử lại. Nếu lỗi này tiếp diễn, có thể do vấn đề về Quy tắc Bảo mật.`;
-                showCustomAlert(errorMessage, "Lỗi Hệ Thống");
-                
-                return false;
-            }
-        }
-
-        async function loadSavedData() {
-            if (!isAuthReady) return; 
-            const docRef = getBookingDocRef();
-            if (!docRef) return;
-            
-            try {
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data().step3 || {}; // Lấy dữ liệu từ trường 'step3'
-                    document.getElementById('fullName').value = data.fullName || '';
-                    document.getElementById('phoneNumber').value = data.phoneNumber || '';
-                    document.getElementById('dob').value = data.dob || '';
-                    document.getElementById('email').value = data.email || '';
-                    document.getElementById('idNumber').value = data.idNumber || '';
-                    document.getElementById('address').value = data.address || '';
-
-                    // Load giới tính
-                    if (data.gender) {
-                        const form = document.getElementById('personal-info-form');
-                        const radio = form.querySelector(`input[name="gender"][value="${data.gender}"]`);
-                        if (radio) {
-                            radio.checked = true;
-                        }
-                    }
-                    console.log('[FIREBASE] Thông tin cá nhân đã được tải.');
-                } else {
-                    console.log("[FIREBASE] Không tìm thấy dữ liệu đặt chỗ cũ.");
-                }
-            } catch (error) {
-                console.error("[FIREBASE] Lỗi khi tải dữ liệu:", error);
-            }
-        }
-
-        // --- 6. GẮN SỰ KIỆN DOM CONTENT LOADED ---
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('personal-info-form');
-
-            // 1. Khởi tạo Firebase và Auth
-            initializeFirebase();
-            
-            // 2. Lắng nghe sự kiện submit form
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault(); 
-                
-                if (validateForm(form)) {
-                    const success = await saveFormData(form);
-                    if (success) {
-                        showCustomAlert("Đã lưu thông tin cá nhân. Đang chuyển đến Bước 4...", "Thành công", () => {
-                            window.location.href = nextPage; // <--- DÒNG NÀY ĐÃ BỎ COMMENT
-                            console.log("Chuyển trang đến: " + nextPage);
-                        });
-                    }
-                } else {
-                    showCustomAlert("Vui lòng điền đầy đủ các trường bắt buộc (có dấu *).", "Lỗi Nhập Liệu");
-                }
-            });
-
-            // Logic Hamburger đơn giản (cho giao diện)
-            const menuToggle = document.getElementById('menu-toggle');
-            const navArea = document.getElementById('main-nav-area'); 
-
-            if (menuToggle && navArea) {
-                menuToggle.addEventListener('click', () => {
-                    console.log("Toggle menu clicked.");
-                });
-            }
-        });
-
-    </script>
-<script>
     /**
-     * Hàm tải nội dung HTML từ một URL và chèn vào một Element
+     * Hiển thị modal thông báo
      */
-    function loadExternalHTML(url, targetElementId) {
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+    function alertMessage(message, type = 'info') {
+        const modalOverlay = document.getElementById('custom-modal-overlay');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalOkBtn = document.getElementById('modal-ok-btn');
+
+        modalTitle.textContent = type === 'error' ? 'Lỗi' : 'Thông báo';
+        modalMessage.textContent = message;
+        modalTitle.style.color = type === 'error' ? 'red' : 'var(--primary-blue)';
+        
+        modalOverlay.style.display = 'flex';
+
+        modalOkBtn.onclick = () => {
+            modalOverlay.style.display = 'none';
+        };
+    }
+    
+    /**
+     * Tải dữ liệu toàn bộ quá trình đặt khám từ Firestore và điền form nếu có dữ liệu cũ.
+     */
+    async function loadCurrentBookingData() {
+        if (!BOOKING_ID || !userId) {
+            alertMessage("Lỗi dữ liệu. Vui lòng quay lại Bước 1.", 'error');
+            window.location.href = PREV_STEP_PATH; // Hoặc trang chủ
+            return false;
+        }
+
+        const bookingDocPath = `artifacts/${firebaseConfig.appId.split(':')[1]}/users/${userId}/bookings/${BOOKING_ID}`;
+        
+        try {
+            const docSnap = await getDoc(doc(db, bookingDocPath));
+            if (docSnap.exists()) {
+                currentBookingData = docSnap.data();
+                
+                // ⚠️ Kiểm tra xem đã qua Bước 2 chưa
+                if (currentBookingData.step < 2) {
+                     alertMessage("Lỗi: Dữ liệu chưa đủ. Quay lại bước Chọn Thông Tin Khám.", 'error');
+                     window.location.href = PREV_STEP_PATH;
+                     return false;
                 }
-                return response.text();
-            })
-            .then(html => {
-                // Chèn nội dung HTML đã tải vào element mục tiêu
-                document.getElementById(targetElementId).innerHTML = html;
-            })
-            .catch(error => {
-                console.error('Lỗi tải menu:', error);
-                document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
-            });
+                
+                // Điền dữ liệu cá nhân đã lưu (nếu có)
+                prefillForm(currentBookingData);
+                return true;
+            } else {
+                console.error("Không tìm thấy Booking ID.");
+                return false;
+            }
+        } catch (e) {
+            console.error("Lỗi tải dữ liệu đặt khám:", e);
+            alertMessage("Lỗi kết nối CSDL. Vui lòng kiểm tra console.", 'error');
+            return false;
+        }
+    }
+    
+    /**
+     * Điền thông tin vào form từ dữ liệu Firebase Auth và Booking
+     */
+    function prefillForm(data) {
+        // 1. Dữ liệu từ Firebase Auth (luôn ưu tiên)
+        document.getElementById('fullName').value = currentUser.displayName || data.fullName || '';
+        document.getElementById('email').value = currentUser.email || data.email || '';
+        
+        // 2. Dữ liệu từ Booking Document (ưu tiên thông tin cũ đã lưu)
+        document.getElementById('phoneNumber').value = data.phoneNumber || '';
+        document.getElementById('dob').value = data.dob || '';
+        document.getElementById('idNumber').value = data.idNumber || '';
+        document.getElementById('address').value = data.address || '';
+        
+        // Giới tính
+        const genderValue = data.gender || '';
+        const genderRadio = document.querySelector(`input[name="gender"][value="${genderValue}"]`);
+        if (genderRadio) {
+            genderRadio.checked = true;
+        }
     }
 
-    // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
-    document.addEventListener('DOMContentLoaded', function() {
-        const menuToggle = document.getElementById('menu-toggle');
-        const navArea = document.getElementById('main-nav-area'); // Lấy element menu
 
-        // 1. TẢI NỘI DUNG MENU
-        // SỬA LỖI: Gọi ID đúng là 'main-nav-area'
-        loadExternalHTML('../menu.html', 'main-nav-area'); 
+    // --- 3. XỬ LÝ LƯU VÀ CHUYỂN HƯỚNG ---
 
-        // 2. LOGIC HAMBURGER
-        if (menuToggle && navArea) {
-            menuToggle.addEventListener('click', () => {
-                // Thêm/Xóa class 'open' để bật/tắt menu
-                navArea.classList.toggle('open');
-                // Ngăn cuộn trang chính khi menu mở
-                document.body.classList.toggle('menu-open'); 
-            });
+    /**
+     * Lưu thông tin cá nhân vào Firestore và chuyển hướng
+     */
+    async function handleFormSubmit(event) {
+        event.preventDefault();
+        
+        if (btnContinue.disabled) return;
+        
+        btnContinue.disabled = true;
+        btnContinue.textContent = 'Đang lưu...';
+        
+        const form = event.target;
+        const formData = new FormData(form);
+        const dataToSave = {};
+
+        // Lấy dữ liệu từ form
+        for (const [key, value] of formData.entries()) {
+            dataToSave[key] = value.trim();
         }
+        
+        // Kiểm tra validation bổ sung (chỉ cần HTML 'required' là đủ, nhưng thêm JS để chắc chắn)
+        if (!dataToSave.fullName || !dataToSave.phoneNumber || !dataToSave.gender || !dataToSave.dob || !dataToSave.address) {
+            alertMessage("Vui lòng điền đầy đủ các trường bắt buộc (*).", 'error');
+            btnContinue.disabled = false;
+            btnContinue.textContent = 'Tiếp tục';
+            return;
+        }
+
+        // Thêm trường `step` và `email` của người đặt
+        dataToSave.step = 3; 
+
+        // Đường dẫn: artifacts/{appId}/users/{userId}/bookings/{BOOKING_ID}
+        const bookingDocPath = `artifacts/${firebaseConfig.appId.split(':')[1]}/users/${userId}/bookings/${BOOKING_ID}`;
+        
+        try {
+            await setDoc(doc(db, bookingDocPath), dataToSave, { merge: true });
+            
+            // Thành công -> Chuyển sang Bước 4 (Chọn Lịch Khám)
+            window.location.href = NEXT_STEP_PATH;
+
+        } catch (e) {
+            console.error("Lỗi khi lưu thông tin cá nhân:", e);
+            alertMessage("Lỗi hệ thống: Không thể lưu thông tin cá nhân. Vui lòng kiểm tra console.", 'error');
+            btnContinue.disabled = false;
+            btnContinue.textContent = 'Tiếp tục';
+        }
+    }
+
+
+    // --- 4. KHỞI TẠO CHÍNH ---
+    async function initializeAppAndAuth() {
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+        
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                currentUser = user;
+                // Bắt đầu tải dữ liệu sau khi xác thực
+                await loadCurrentBookingData();
+            } else {
+                // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+                alertMessage("Vui lòng đăng nhập để tiếp tục đặt khám.", 'info');
+                // Lưu lại URL hiện tại để quay lại sau khi đăng nhập
+                if (!window.location.search.includes('redirect')) {
+                    window.location.href = LOGIN_PAGE + '?redirect=' + encodeURIComponent(window.location.href);
+                }
+            }
+        });
+    }
+
+    // --- 5. ĐĂNG KÝ SỰ KIỆN ---
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeAppAndAuth();
+        
+        // Sự kiện Submit Form
+        personalInfoForm.addEventListener('submit', handleFormSubmit);
+
+        // Sự kiện nút Quay lại
+        btnBack.addEventListener('click', () => {
+             // Quay lại bước Chọn Thông Tin Khám (Bước 2)
+             window.location.href = PREV_STEP_PATH + `?hospitalId=${HOSPITAL_ID}`;
+        });
     });
+
 </script>
-<script src="../include.js"></script> 
 </body>
 </html>

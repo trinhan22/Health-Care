@@ -754,308 +754,346 @@ body.menu-open {
 
 
     <!-- Firebase SDK Imports (Module Type) -->
-    <script type="module">
-        // Import các hàm cần thiết từ Firebase Modular SDK v11
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, setDoc, doc, collection, FieldValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        
-        // --- KHỞI TẠO VÀ XÁC THỰC FIREBASE (MANDATORY) ---
+<script type="module">
+    import { 
+        initializeApp 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+        getAuth, 
+        onAuthStateChanged, // 👈 THÊM: Theo dõi trạng thái đăng nhập
+        signInAnonymously // Đã loại bỏ
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+        getFirestore, 
+        setDoc, 
+        doc, 
+        FieldValue, 
+        serverTimestamp, 
+        getDoc
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+    // --- KHAI BÁO BIẾN TOÀN CỤC ---
 
-        let db, auth;
-        let userId;
-        const nextPage = '../chon-thong-tin-kham'; // Đường dẫn đến Bước 2
+    let db, auth;
+    let userId = null; // Khởi tạo là null
+    const nextPagePath = '../chon-thong-tin-kham';
+    const LOGIN_PAGE = '../../login.html'; // 👈 ĐƯỜNG DẪN ĐẾN TRANG LOGIN
 
-        /**
-         * Hiển thị Modal thông báo tùy chỉnh
-         * @param {string} message - Nội dung thông báo
-         * @param {('info'|'error'|'waiting')} type - Loại thông báo
-         * @param {('continue'|'error'|'waiting')} action - Hành động sau khi đóng modal
-         */
-        function showCustomAlert(message, type = 'info', action = 'waiting') {
-            const modalOverlay = document.getElementById('modalOverlay');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalMessage = document.getElementById('modalMessage');
-            const modalClose = document.getElementById('modalClose');
-
-            if (modalOverlay) {
-                let icon = '';
-                let titleText = '';
-                let closeText = '';
-                
-                modalTitle.classList.remove('text-red-600', 'text-indigo-600', 'text-yellow-600');
-
-                if (type === 'info') {
-                    titleText = 'Thông Báo';
-                    icon = '<i class="fas fa-check-circle mr-2 text-indigo-600"></i>';
-                    closeText = 'Tiếp tục';
-                    modalTitle.classList.add('text-indigo-600');
-                } else if (type === 'error') {
-                    titleText = 'Lỗi!';
-                    icon = '<i class="fas fa-exclamation-triangle mr-2 text-red-600"></i>';
-                    closeText = 'Đóng';
-                    modalTitle.classList.add('text-red-600');
-                } else if (type === 'waiting') {
-                    titleText = 'Đang Xử Lý...';
-                    icon = '<i class="fas fa-spinner fa-spin mr-2 text-gray-500"></i>';
-                    closeText = 'Vui lòng chờ';
-                    modalTitle.classList.add('text-gray-700');
-                }
-
-                modalTitle.innerHTML = icon + titleText;
-                modalMessage.innerHTML = message;
-                modalClose.textContent = closeText;
-                
-                // Ẩn nút nếu đang ở trạng thái chờ (waiting)
-                modalClose.style.display = (action === 'waiting') ? 'none' : 'block';
-                
-                modalOverlay.style.display = 'flex';
-                
-                // Xử lý đóng Modal và Chuyển trang/Đóng
-                modalClose.onclick = function() {
-                    modalOverlay.style.display = 'none';
-                    
-                    if (action === 'continue') {
-                        window.location.href = nextPage; 
-                    }
-                };
-                
-                // Đóng khi click ra ngoài (Chỉ đóng, không chuyển trang)
-                modalOverlay.onclick = function(e) {
-                    if (e.target === modalOverlay && action !== 'waiting') {
-                        modalOverlay.style.display = 'none';
-                    }
-                };
-            }
-        }
+    // Hàm lấy tham số từ URL
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        const results = regex.exec(location.search);
+        return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+    
+    const HOSPITAL_ID = getUrlParameter('hospitalId');
+    const mainContent = document.getElementById('main-booking-content');
 
 
-        // Hàm khởi tạo Firebase và xác thực người dùng
-        async function initializeFirebase() {
-            try {
-                // Các biến toàn cục được cung cấp bởi môi trường Canvas (Bắt buộc)
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                let firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-
-                if (Object.keys(firebaseConfig).length === 0) {
-                    console.warn("Cấu hình Firebase trống. Sử dụng cấu hình mẫu của người dùng.");
-                    // Lấy cấu hình mẫu của người dùng nếu không có config môi trường
-                    firebaseConfig = {
-                        apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
-                        authDomain: "health-care-5ba62.firebaseapp.com",
-                        projectId: "health-care-5ba62",
-                        storageBucket: "health-care-5ba62.firebasestorage.app",
-                        messagingSenderId: "564100851159",
-                        appId: "1:564100851159:web:34d7d787474edff1abd792",
-                        measurementId: "G-2GWB86PCBT"
-                    };
-                }
-
-                // Khởi tạo App, Firestore và Auth
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                
-                // Xác thực người dùng (Canvas Mandatory)
-                if (typeof __initial_auth_token !== 'undefined') {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-                
-                userId = auth.currentUser?.uid || crypto.randomUUID();
-                
-                console.log("Firebase đã khởi tạo và người dùng đã xác thực. User ID:", userId);
-
-            } catch (error) {
-                console.error("Lỗi khởi tạo hoặc xác thực Firebase:", error);
-                showCustomAlert("Lỗi hệ thống: Không thể kết nối đến dịch vụ Firebase. Vui lòng thử lại sau.", "error");
-            }
-        }
-        
-        /**
-         * Lưu thông tin đặt khám bước 1 lên Firestore (Sử dụng Modular V11)
-         */
-        async function saveBookingTypeToFirestore(typeId, typeName) {
-            if (!db || !userId) {
-                console.error('Firestore hoặc User ID chưa sẵn sàng.');
-                return false;
-            }
-            
-            // Lấy Booking ID hiện tại hoặc tạo ID mới nếu là bước 1
-            let currentBookingId = sessionStorage.getItem('current_booking_id');
-            if (!currentBookingId) {
-                 // Tạo ID mới cho booking mới (Dùng timestamp)
-                currentBookingId = "BOOKING_" + new Date().getTime().toString(); 
-            }
-            
-            // Đường dẫn lưu trữ Private: /artifacts/{appId}/users/{userId}/bookings/{id}
-            const bookingDocPath = `artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'}/users/${userId}/bookings/${currentBookingId}`;
-            
-            const bookingData = {
-                step: 1, 
-                typeId: typeId,
-                typeName: typeName,
-                status: "pending_step_2",
-                // Sử dụng hàm serverTimestamp() Modular
-                timestamp: serverTimestamp(), 
-                lastUpdated: serverTimestamp()
-            };
-
-            try {
-                // setDoc (Modular V11) để tạo hoặc ghi đè document
-                await setDoc(doc(db, bookingDocPath), bookingData, { merge: true });
-                
-                // Lưu ID vừa tạo/cập nhật vào Session để sử dụng cho Bước 2 và 3
-                sessionStorage.setItem('current_booking_id', currentBookingId); 
-                console.log("Lưu dữ liệu bước 1 thành công. ID:", currentBookingId);
-                return true;
-            } catch (e) {
-                console.error("Lỗi khi lưu dữ liệu lên Firestore: ", e);
-                return false;
-            }
-        }
-
-
-        // --- LOGIC XỬ LÝ CHỌN CARD VÀ NÚT TIẾP TỤC (Giữ nguyên logic của bạn) ---
-        document.addEventListener('DOMContentLoaded', function() {
-            
-            const typeCards = document.querySelectorAll('.type-card');
-            const btnContinue = document.getElementById('btnContinue');
-            
-            // Khôi phục trạng thái từ Session Storage
-            let selectedType = sessionStorage.getItem('booking_type_id');
-            let selectedName = sessionStorage.getItem('booking_type_name');
-
-            /**
-             * Cập nhật trạng thái của nút "Tiếp tục"
-             */
-            function updateContinueButton() {
-                if (selectedType) {
-                    btnContinue.disabled = false;
-                    btnContinue.classList.add('active', 'bg-indigo-600'); 
-                    btnContinue.classList.remove('bg-gray-400'); 
-                } else {
-                    btnContinue.disabled = true;
-                    btnContinue.classList.remove('active', 'bg-indigo-600');
-                    btnContinue.classList.add('bg-gray-400');
-                }
-            }
-            
-            // Khôi phục trạng thái UI
-            if (selectedType) {
-                typeCards.forEach(card => {
-                    if(card.getAttribute('data-type') === selectedType) {
-                        card.classList.add('selected');
-                    }
-                });
-            }
-            updateContinueButton(); 
-
-            /**
-             * Xử lý khi click vào một card
-             */
-            function handleCardClick(event) {
-                typeCards.forEach(card => card.classList.remove('selected'));
-                const clickedCard = event.currentTarget;
-                clickedCard.classList.add('selected');
-
-                selectedType = clickedCard.getAttribute('data-type');
-                selectedName = clickedCard.getAttribute('data-name');
-                sessionStorage.setItem('booking_type_id', selectedType);
-                sessionStorage.setItem('booking_type_name', selectedName);
-                
-                updateContinueButton();
-                console.log(`Đã chọn: ${selectedName} (${selectedType})`);
-            }
-
-            // Gán sự kiện click cho từng card
-            typeCards.forEach(card => {
-                card.addEventListener('click', handleCardClick);
-            });
-
-            // Xử lý nút Tiếp tục (Có tích hợp Firebase)
-            if (btnContinue) {
-                btnContinue.addEventListener('click', async () => { 
-                    
-                    if (!selectedType) {
-                        showCustomAlert('Vui lòng chọn một hình thức đặt khám trước khi tiếp tục.', 'error', 'error');
-                        return; 
-                    }
-                    
-                    // Hiển thị thông báo đang xử lý
-                    showCustomAlert("Hệ thống đang lưu lựa chọn của bạn. Vui lòng chờ...", "waiting", 'waiting'); 
-
-                    // Vô hiệu hóa nút chính trong lúc chờ
-                    btnContinue.disabled = true;
-
-                    // GỌI HÀM LƯU LÊN FIREBASE
-                    const saveSuccess = await saveBookingTypeToFirestore(selectedType, selectedName);
-                    
-                    // Kích hoạt lại nút chính
-                    btnContinue.disabled = false;
-
-                    // Ẩn modal waiting (bằng cách gọi lại modal mới)
-                    document.getElementById('modalOverlay').style.display = 'none';
-
-                    if (saveSuccess) {
-                        // LƯU THÀNH CÔNG -> HIỂN THỊ MODAL CHUYỂN TRANG
-                        showCustomAlert(`Bạn đã chọn hình thức: <b>${selectedName}</b>. Nhấn "Tiếp tục" để sang Bước 2.`, "info", 'continue'); 
-                    } else {
-                        // LƯU THẤT BẠI -> HIỂN THỊ MODAL LỖI
-                        showCustomAlert('Lỗi lưu dữ liệu: Không thể tiếp tục. Vui lòng kiểm tra Console (F12) để biết chi tiết lỗi Firebase.', 'error', 'error');
-                    }
-                });
-            }
-            
-            // Khởi tạo Firebase khi trang tải xong
-            initializeFirebase();
-
-        });
-
-    </script>
-<script>
     /**
-     * Hàm tải nội dung HTML từ một URL và chèn vào một Element
+     * Hiển thị Modal thông báo tùy chỉnh (GIỮ NGUYÊN)
      */
-    function loadExternalHTML(url, targetElementId) {
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+    function showCustomAlert(message, type = 'info', action = 'waiting') {
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalClose = document.getElementById('modalClose');
+
+        if (modalOverlay) {
+            let icon = '';
+            let titleText = '';
+            let closeText = '';
+            
+            modalTitle.classList.remove('text-red-600', 'text-indigo-600', 'text-yellow-600', 'text-gray-700');
+
+            if (type === 'info') {
+                titleText = 'Thông Báo';
+                icon = '<i class="fas fa-check-circle mr-2 text-indigo-600"></i>';
+                closeText = 'Tiếp tục';
+                modalTitle.classList.add('text-indigo-600');
+            } else if (type === 'error') {
+                titleText = 'Lỗi!';
+                icon = '<i class="fas fa-exclamation-triangle mr-2 text-red-600"></i>';
+                closeText = 'Đóng';
+                modalTitle.classList.add('text-red-600');
+            } else if (type === 'auth_required') { // 👈 Loại mới cho yêu cầu đăng nhập
+                titleText = 'Cần Đăng Nhập!';
+                icon = '<i class="fas fa-lock mr-2 text-red-600"></i>';
+                closeText = 'Đăng nhập ngay';
+                modalTitle.classList.add('text-red-600');
+            } else if (type === 'waiting') {
+                titleText = 'Đang Xử Lý...';
+                icon = '<i class="fas fa-spinner fa-spin mr-2 text-gray-500"></i>';
+                closeText = 'Vui lòng chờ';
+                modalTitle.classList.add('text-gray-700');
+            }
+
+            modalTitle.innerHTML = icon + titleText;
+            modalMessage.innerHTML = message;
+            modalClose.textContent = closeText;
+            
+            // Xử lý nút Đóng
+            if (action === 'waiting') {
+                modalClose.style.display = 'none';
+            } else if (action === 'login_redirect') { // 👈 Logic chuyển hướng khi Đăng nhập
+                 modalClose.style.display = 'block';
+                 modalClose.onclick = function() {
+                     window.location.href = LOGIN_PAGE + '?redirect=' + encodeURIComponent(window.location.href);
+                 };
+            } else {
+                 modalClose.style.display = 'block';
+                 modalClose.onclick = function() {
+                     modalOverlay.style.display = 'none';
+                 };
+            }
+
+            modalOverlay.style.display = 'flex';
+            
+            modalOverlay.onclick = function(e) {
+                if (e.target === modalOverlay && action !== 'waiting') {
+                    modalOverlay.style.display = 'none';
                 }
-                return response.text();
-            })
-            .then(html => {
-                // Chèn nội dung HTML đã tải vào element mục tiêu
-                document.getElementById(targetElementId).innerHTML = html;
-            })
-            .catch(error => {
-                console.error('Lỗi tải menu:', error);
-                document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
-            });
+            };
+        }
     }
 
-    // Đảm bảo rằng DOM đã tải xong trước khi thực hiện chèn
+
+    // --- HÀM XÁC THỰC NGƯỜI DÙNG (CẬP NHẬT) ---
+    async function initializeFirebase() {
+        try {
+            // Lấy cấu hình Firebase
+            let firebaseConfig = {
+                apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
+                authDomain: "health-care-5ba62.firebaseapp.com",
+                projectId: "health-care-5ba62",
+                storageBucket: "health-care-5ba62.firebasestorage.app",
+                messagingSenderId: "564100851159",
+                appId: "1:564100851159:web:34d7d787474edff1abd792",
+                measurementId: "G-2GWB86PCBT"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            // Theo dõi trạng thái xác thực
+            return new Promise((resolve, reject) => {
+                const unsubscribe = onAuthStateChanged(auth, (user) => {
+                    unsubscribe(); // Hủy theo dõi sau khi có kết quả đầu tiên
+
+                    if (user) {
+                        // Đã đăng nhập
+                        userId = user.uid;
+                        console.log("Người dùng đã đăng nhập. User ID:", userId);
+                        resolve(true); // Thành công
+                    } else {
+                        // Chưa đăng nhập -> Yêu cầu Đăng nhập
+                        console.log("Người dùng chưa đăng nhập. Chuyển hướng...");
+                        
+                        showCustomAlert(
+                            "Bạn cần phải đăng nhập để tiếp tục quá trình đặt lịch khám.", 
+                            "auth_required", 
+                            'login_redirect' // Hành động mới: chuyển hướng đến trang login
+                        );
+                        
+                        // Vô hiệu hóa nút Tiếp tục và làm mờ giao diện
+                        document.getElementById('btnContinue').disabled = true;
+                        document.body.style.opacity = 0.5;
+
+                        reject(false); // Thất bại (vì chưa đăng nhập)
+                    }
+                });
+            });
+
+        } catch (error) {
+            console.error("Lỗi khởi tạo hoặc xác thực Firebase:", error);
+            showCustomAlert("Lỗi hệ thống: Không thể kết nối đến dịch vụ Firebase. Vui lòng thử lại sau.", "error");
+            return false;
+        }
+    }
+
+
+    // --- TẢI VÀ HIỂN THỊ THÔNG TIN HEADER BỆNH VIỆN (GIỮ NGUYÊN) ---
+    async function loadHospitalHeader() {
+        if (!HOSPITAL_ID) {
+            const header = document.querySelector('.content-header');
+            header.innerHTML = "<h1>Lỗi: Không tìm thấy ID Bệnh viện</h1><p>Vui lòng quay lại trang chi tiết bệnh viện để đặt lịch.</p>";
+            document.getElementById('btnContinue').style.display = 'none';
+            return false;
+        }
+
+        try {
+            const hospitalRef = doc(db, "hospitals", HOSPITAL_ID);
+            const hospitalSnap = await getDoc(hospitalRef);
+            const breadcrumbLink = document.querySelector('.breadcrumb span:last-of-type'); 
+
+            if (hospitalSnap.exists()) {
+                const data = hospitalSnap.data();
+                
+                const newLink = document.createElement('a');
+                newLink.href = `../${HOSPITAL_ID}/index.html`; 
+                newLink.textContent = data.name;
+                
+                breadcrumbLink.parentNode.replaceChild(newLink, breadcrumbLink);
+                
+                const newSpan = document.createElement('span');
+                newSpan.textContent = " / Hình thức đặt khám";
+                document.querySelector('.breadcrumb').appendChild(newSpan);
+
+                document.querySelector('.content-header p:last-child').textContent = `Bạn đang đặt lịch khám tại: ${data.name}. Vui lòng chọn hình thức khám phù hợp để tiếp tục.`;
+                document.title = `Bước 1: Chọn Hình Thức Khám - ${data.name}`;
+                
+            } else {
+                console.warn("Không tìm thấy thông tin bệnh viện:", HOSPITAL_ID);
+            }
+        } catch (error) {
+            console.error("Lỗi tải thông tin bệnh viện:", error);
+        }
+    }
+
+
+    /**
+     * Lưu thông tin đặt khám bước 1 lên Firestore (GIỮ NGUYÊN)
+     */
+    async function saveBookingTypeToFirestore(typeId, typeName) {
+        // Kiểm tra userId trước khi lưu
+        if (!db || !userId) {
+            console.error('Lỗi: User ID không khả dụng. Vui lòng đăng nhập.');
+            return false;
+        }
+        
+        let currentBookingId = sessionStorage.getItem('current_booking_id');
+        if (!currentBookingId) {
+            currentBookingId = "BOOKING_" + new Date().getTime().toString(); 
+        }
+        
+        const bookingDocPath = `artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'}/users/${userId}/bookings/${currentBookingId}`;
+        
+        const bookingData = {
+            step: 1, 
+            hospitalId: HOSPITAL_ID,
+            typeId: typeId,
+            typeName: typeName,
+            status: "pending_step_2",
+            timestamp: serverTimestamp(), 
+            lastUpdated: serverTimestamp()
+        };
+
+        try {
+            await setDoc(doc(db, bookingDocPath), bookingData, { merge: true });
+            
+            sessionStorage.setItem('current_booking_id', currentBookingId); 
+            console.log("Lưu dữ liệu bước 1 thành công. ID:", currentBookingId);
+            return true;
+        } catch (e) {
+            console.error("Lỗi khi lưu dữ liệu lên Firestore: ", e);
+            return false;
+        }
+    }
+
+
+    // --- LOGIC XỬ LÝ CHỌN CARD VÀ NÚT TIẾP TỤC (GIỮ NGUYÊN) ---
     document.addEventListener('DOMContentLoaded', function() {
-        const menuToggle = document.getElementById('menu-toggle');
-        const navArea = document.getElementById('main-nav-area'); // Lấy element menu
+        
+        const typeCards = document.querySelectorAll('.type-card');
+        const btnContinue = document.getElementById('btnContinue');
+        
+        let selectedType = sessionStorage.getItem('booking_type_id');
+        let selectedName = sessionStorage.getItem('booking_type_name');
 
-        // 1. TẢI NỘI DUNG MENU
-        // SỬA LỖI: Gọi ID đúng là 'main-nav-area'
-        loadExternalHTML('../menu.html', 'main-nav-area'); 
-
-        // 2. LOGIC HAMBURGER
-        if (menuToggle && navArea) {
-            menuToggle.addEventListener('click', () => {
-                // Thêm/Xóa class 'open' để bật/tắt menu
-                navArea.classList.toggle('open');
-                // Ngăn cuộn trang chính khi menu mở
-                document.body.classList.toggle('menu-open'); 
+        function updateContinueButton() {
+            if (selectedType && HOSPITAL_ID && userId) { // 👈 CẬP NHẬT: Kiểm tra cả userId
+                btnContinue.disabled = false;
+                btnContinue.classList.add('active'); 
+            } else {
+                btnContinue.disabled = true;
+                btnContinue.classList.remove('active');
+            }
+        }
+        
+        if (selectedType) {
+            typeCards.forEach(card => {
+                if(card.getAttribute('data-type') === selectedType) {
+                    card.classList.add('selected');
+                }
             });
         }
+        
+        function handleCardClick(event) {
+            typeCards.forEach(card => card.classList.remove('selected'));
+            const clickedCard = event.currentTarget;
+            clickedCard.classList.add('selected');
+
+            selectedType = clickedCard.getAttribute('data-type');
+            selectedName = clickedCard.getAttribute('data-name');
+            sessionStorage.setItem('booking_type_id', selectedType);
+            sessionStorage.setItem('booking_type_name', selectedName);
+            
+            updateContinueButton();
+            console.log(`Đã chọn: ${selectedName} (${selectedType})`);
+        }
+
+        typeCards.forEach(card => {
+            card.addEventListener('click', handleCardClick);
+        });
+
+        // Xử lý nút Tiếp tục (Có tích hợp Firebase)
+        if (btnContinue) {
+            btnContinue.addEventListener('click', async () => { 
+                
+                if (!userId) { // 👈 BẮT BUỘC: Kiểm tra lại trước khi nhấn nút
+                    showCustomAlert("Bạn cần phải đăng nhập để tiếp tục.", "auth_required", 'login_redirect');
+                    return;
+                }
+
+                if (!selectedType) {
+                    showCustomAlert('Vui lòng chọn một hình thức đặt khám trước khi tiếp tục.', 'error', 'error');
+                    return; 
+                }
+                
+                showCustomAlert("Hệ thống đang lưu lựa chọn của bạn. Vui lòng chờ...", "waiting", 'waiting'); 
+                btnContinue.disabled = true;
+
+                const saveSuccess = await saveBookingTypeToFirestore(selectedType, selectedName);
+                
+                btnContinue.disabled = false;
+                document.getElementById('modalOverlay').style.display = 'none';
+
+                if (saveSuccess) {
+                    let finalNextPage = `../${nextPagePath}/index.html?hospitalId=${HOSPITAL_ID}`;
+                    
+                    if (selectedType === 'theo_bac_si') {
+                         finalNextPage += `&bookingType=${selectedType}`;
+                    }
+
+                    const modalClose = document.getElementById('modalClose');
+                    modalClose.onclick = function() {
+                        document.getElementById('modalOverlay').style.display = 'none';
+                        window.location.href = finalNextPage; 
+                    };
+                    
+                    showCustomAlert(`Bạn đã chọn hình thức: <b>${selectedName}</b>. Nhấn "Tiếp tục" để sang Bước 2.`, "info", 'continue'); 
+                } else {
+                    showCustomAlert('Lỗi lưu dữ liệu: Không thể tiếp tục. Vui lòng kiểm tra Console (F12) để biết chi tiết lỗi Firebase.', 'error', 'error');
+                }
+            });
+        }
+        
+        // Khởi tạo Firebase và tải Header khi trang tải xong
+        initializeFirebase().then((isLoggedIn) => {
+            if (isLoggedIn) {
+                loadHospitalHeader(); 
+                updateContinueButton();
+                document.body.style.opacity = 1; // Ẩn trạng thái mờ nếu đã đăng nhập
+            }
+        }).catch(() => {
+            // Xử lý khi Firebase initialize thất bại hoặc chưa đăng nhập
+            document.body.style.opacity = 1; 
+        });
+
     });
+
 </script>
-<script src="../include.js"></script> 
 </body>
 </html>

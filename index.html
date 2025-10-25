@@ -729,10 +729,8 @@ body.menu-open {
         </div>
     </div>
 
-    <script>
-        
 
-        
+    <script>
         // HÀM MỚI: TÍCH HỢP AI GEMINI
         // KHUYẾN NGHỊ: NÊN SỬ DỤNG BACK-END PROXY ĐỂ BẢO MẬT API KEY.
         window.simulateAIChat = async function() {
@@ -853,7 +851,28 @@ body.menu-open {
             }
         });
 
+// TẠO FILE: include.js
+// Vui lòng thay thế các giá trị bên dưới bằng cấu hình THẬT của project Firebase của bạn
+const firebaseConfig = {
+  apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
+  authDomain: "health-care-5ba62.firebaseapp.com",
+  projectId: "health-care-5ba62",
+  storageBucket: "health-care-5ba62.firebasestorage.app",
+  messagingSenderId: "564100851159",
+  appId: "1:564100851159:web:34d7d787474edff1abd792",
+  measurementId: "G-2GWB86PCBT"
+};
+
+// Khởi tạo ứng dụng Firebase
+const app = firebase.initializeApp(firebaseConfig);
+
+// Lấy các đối tượng dịch vụ để sử dụng cho toàn bộ ứng dụng
+const auth = app.auth();        // Dịch vụ Xác thực (cho login/register)
+const db = app.firestore();     // Dịch vụ Cơ sở dữ liệu (cho lịch hẹn, bệnh án)
+
     </script>
     <script src="include.js"></script> 
+
+    
 </body>
 </html>

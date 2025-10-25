@@ -595,49 +595,16 @@ body.menu-open {
 
 
             <!-- CARD: LỰA CHỌN BỆNH VIỆN VÀ CHUYÊN KHOA -->
-            <div class="selection-card">
-                <h2><i class="fas fa-clinic-medical"></i> Địa điểm & Chuyên khoa</h2>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label for="hospitalSelect" class="form-label">1. Chọn Bệnh Viện/Phòng Khám</label>
-                        <div class="select-wrapper">
-                            <select id="hospitalSelect" class="form-select">
-                                <option value="" disabled selected>--- Chọn cơ sở y tế ---</option>
-                                <option value="dhydtphcm">Bệnh viện Đại học Y dược TP.HCM</option>
-                                <option value="bvndct">Bệnh viện Nhi đồng Cần Thơ</option>
-                                <option value="bvtd">Bệnh viện Từ Dũ</option>
-                                <option value="bvnd1">Bệnh viện Nhi đồng 1</option>
-                                <option value="bvdktwct">Bệnh viện Đa khoa TW Cần Thơ</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="specialtySelect" class="form-label">2. Chọn Chuyên Khoa</label>
-                        <div class="select-wrapper">
-                            <select id="specialtySelect" class="form-select">
-                                <option value="" disabled selected>--- Chọn chuyên khoa ---</option>
-                                <option value="tim_mach">Tim mạch</option>
-                                <option value="co_xuong_khop">Cơ Xương Khớp</option>
-                                <option value="da_lieu">Da Liễu</option>
-                                <option value="tieu_hoa">Tiêu Hóa</option>
-                                <option value="phu_san">Sản Phụ Khoa</option>
-                                <option value="mat">Mắt</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div> <!-- /.selection-card -->
-            
-            <!-- CARD: LỊCH KHÁM VÀ KHUNG GIỜ -->
-            <div class="selection-card">
-                <h2><i class="fas fa-calendar-alt"></i> Ngày & Giờ Khám</h2>
-                <div class="form-grid" style="grid-template-columns: 1fr;">
-                    <div class="form-group" style="max-width: 300px;">
-                        <label for="dateSelect" class="form-label">3. Chọn Ngày Khám</label>
-                        <input type="date" id="dateSelect" class="form-control" min="">
-                    </div>
-                </div>
+<div id="main-content-area" class="mt-8">
+    
+    <div id="service-list" class="list-grid">
+        </div>
+
+    <div id="doctor-list" class="list-grid">
+        </div>
+    
+    <p id="loading-message" class="text-center text-gray-500 py-10">Đang tải dữ liệu...</p>
+</div>
 
                 <h3 style="font-size: 1.1rem; font-weight: 500; margin-top: 25px; margin-bottom: 10px;">4. Chọn Khung Giờ Khám:</h3>
                 <p id="slotMessage" style="color: #666; font-size: 0.9rem; margin-bottom: 15px;">Vui lòng chọn Bệnh viện, Chuyên khoa và Ngày khám để xem các khung giờ khả dụng.</p>
@@ -658,351 +625,351 @@ body.menu-open {
     
 
     <!-- Script Module của bạn -->
-    <script type="module">
-        // Import các hàm cần thiết từ Firebase Modular SDK v11
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        // QUAN TRỌNG: Thêm serverTimestamp để ghi thời gian đúng chuẩn Firestore
-        import { getFirestore, setDoc, doc, serverTimestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { 
+        getAuth, 
+        onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+        getFirestore, 
+        setDoc, 
+        doc, 
+        getDoc, 
+        collection, 
+        query, 
+        getDocs,
+        serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+    // --- KHAI BÁO BIẾN CẦN THIẾT ---
+    let db, auth;
+    let userId = null;
+    let selectedItemId = null; // Lưu ID đã chọn (deptId hoặc doctorId)
+    let selectedItemName = null; // Lưu Tên đã chọn
+    const NEXT_STEP_PATH = '../thong-tin-ca-nhan'; // Thư mục cho Bước 3
+    const PREV_STEP_PATH = '../hinh-thuc-dat-kham'; // Thư mục cho Bước 1
+    const LOGIN_PAGE = '../../login.html'; // Đường dẫn đến trang đăng nhập
 
-        // --- CẤU HÌNH FIREBASE (Sử dụng cấu hình bạn cung cấp làm mặc định) ---
-        const userProvidedConfig = {
+    // Hàm lấy tham số từ URL
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        const results = regex.exec(location.search);
+        return results === null ? null : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+    
+    // Lấy thông tin bắt buộc từ URL và Session Storage
+    const HOSPITAL_ID = getUrlParameter('hospitalId');
+    const BOOKING_TYPE = getUrlParameter('bookingType') || sessionStorage.getItem('booking_type_id');
+    const BOOKING_ID = sessionStorage.getItem('current_booking_id');
+
+    const mainTitle = document.getElementById('main-content-title');
+    const contentArea = document.getElementById('main-content-area');
+    const btnContinue = document.getElementById('btnContinue');
+    const loadingMessage = document.getElementById('loading-message');
+
+
+    // --- FIREBASE VÀ XÁC THỰC ---
+
+    async function initializeFirebase() {
+        let firebaseConfig = {
             apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
             authDomain: "health-care-5ba62.firebaseapp.com",
             projectId: "health-care-5ba62",
             storageBucket: "health-care-5ba62.firebasestorage.app",
             messagingSenderId: "564100851159",
-            appId: "1:564100851159:web:34d7d787474edff1abd792",
+            appId: "1:564100851159:web:34d7d7d792",
             measurementId: "G-2GWB86PCBT"
         };
+
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
         
-        // Ưu tiên biến môi trường Canvas, nếu không có thì dùng cấu hình mặc định
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : userProvidedConfig;
-            
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        const NEXT_PAGE_URL = '../thong-tin-ca-nhan'; 
-
-        let db, auth, userId = null;
-        let isFirebaseReady = false;
-
-        const initializeFirebase = async () => {
-            try {
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                setLogLevel('debug'); 
-
-                if (initialAuthToken) {
-                    console.log("Attempting sign-in with Custom Token...");
-                    await signInWithCustomToken(auth, initialAuthToken);
+        return new Promise((resolve) => {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    userId = user.uid;
+                    resolve(true); 
                 } else {
-                    console.log("Attempting Anonymous sign-in...");
-                    await signInAnonymously(auth); 
-                }
-                
-                // Lấy User ID sau khi xác thực thành công
-                userId = auth.currentUser?.uid || crypto.randomUUID();
-                isFirebaseReady = true;
-                console.log("Firebase initialized successfully. User ID:", userId);
-
-                // Hiển thị User ID trên giao diện
-                const displayUserId = document.getElementById('displayUserId');
-                if (displayUserId) {
-                    displayUserId.textContent = userId;
-                }
-
-            } catch (error) {
-                console.error("LỖI KHỞI TẠO HOẶC XÁC THỰC FIREBASE. Vui lòng kiểm tra Console.", error);
-                alertMessage(`Lỗi kết nối Firebase: ${error.code || 'Unknown'}. Kiểm tra API Key và bật Anonymous Auth.`, "error");
-            }
-        };
-
-        // --- LOGIC LƯU TRỮ VÀ XỬ LÝ DỮ LIỆU ---
-
-        const dummyTimeSlots = [
-            '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', 
-            '10:00', '10:30', '11:00', '11:30', 
-            '13:00', '13:30', '14:00', '14:30', '15:00', 
-            '15:30', '16:00', '16:30', 
-            '17:00' 
-        ];
-        
-        let selectedHospital = null;
-        let selectedSpecialty = null;
-        let selectedDate = null;
-        let selectedTime = null;
-
-        // Lấy các phần tử DOM
-        const hospitalSelect = document.getElementById('hospitalSelect');
-        const specialtySelect = document.getElementById('specialtySelect');
-        const dateSelect = document.getElementById('dateSelect');
-        const timeSlotGrid = document.getElementById('timeSlotGrid');
-        const btnContinue = document.getElementById('btnContinue');
-        const slotMessage = document.getElementById('slotMessage');
-
-        
-        // Hàm lưu thông tin đặt khám vào Firestore (CẬP NHẬT thông tin)
-        const saveBookingToFirestore = async (data) => {
-            if (!db || !userId) throw new new Error("Firestore hoặc User ID not available.");
-            
-            // Lấy ID booking đã lưu từ Bước 1, nếu chưa có thì tạo mới
-            const currentBookingId = sessionStorage.getItem('current_booking_id') || ('BOOKING_' + new Date().getTime());
-            
-            // 🚨 SỬA LỖI QUAN TRỌNG: Dùng đường dẫn private/multi-user bắt buộc cho Canvas
-            // /artifacts/{appId}/users/{userId}/bookings/{id}
-            const bookingDocPath = `artifacts/${appId}/users/${userId}/bookings/${currentBookingId}`;
-            const bookingDocRef = doc(db, bookingDocPath); 
-
-            const dataToUpdate = {
-                // Bước 2: Thông tin chi tiết lịch khám
-                step: 2, 
-                hospitalId: data.hospitalId,
-                hospitalName: data.hospitalName,
-                specialtyId: data.specialtyId,
-                specialtyName: data.specialtyName,
-                date: data.date,
-                time: data.time,
-                status: "step_2_completed",
-                
-                userId: userId, 
-                lastUpdated: serverTimestamp(), // Dùng serverTimestamp để chuẩn hóa thời gian
-                
-                // Dữ liệu từ bước 1 (nếu có)
-                typeId: sessionStorage.getItem('booking_type_id') || 'N/A',
-                typeName: sessionStorage.getItem('booking_type_name') || 'N/A',
-            };
-
-            try {
-                // setDoc với { merge: true } để cập nhật các trường mới mà không xóa dữ liệu cũ
-                await setDoc(bookingDocRef, dataToUpdate, { merge: true });
-                sessionStorage.setItem('current_booking_id', currentBookingId); 
-                console.log("Booking successfully updated with ID: ", currentBookingId);
-                return currentBookingId;
-            } catch (e) {
-                console.error("Lỗi khi lưu dữ liệu lên Firestore: ", e);
-                // Ném lỗi để khối try/catch bên ngoài có thể bắt được và hiển thị thông báo
-                if (e.code === 'permission-denied') {
-                    throw new Error("Lỗi Quyền Truy Cập (Permission Denied). Vui lòng kiểm tra lại Firestore Security Rules!");
-                }
-                throw new Error(`Lỗi Firebase: ${e.message || "Unknown error"}`);
-            }
-        };
-        
-        // Hàm tùy chỉnh hiển thị thông báo thay cho alert()
-        function alertMessage(message, type) {
-            const existingBox = document.querySelector('.custom-alert');
-            if (existingBox) existingBox.remove();
-            
-            const box = document.createElement('div');
-            box.className = `custom-alert alert-${type}`;
-            box.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 25px;
-                border-radius: 8px;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                font-weight: 500;
-                z-index: 2000;
-                animation: slideIn 0.5s forwards;
-                color: white;
-                min-width: 250px;
-            `;
-            box.innerHTML = `<i class="fas fa-info-circle" style="margin-right: 10px;"></i> ${message}`;
-
-            if (type === 'success') {
-                box.style.backgroundColor = '#4CAF50';
-                box.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 10px;"></i> ${message}`;
-            } else if (type === 'warning') {
-                box.style.backgroundColor = '#ff9800';
-                box.innerHTML = `<i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i> ${message}`;
-            } else if (type === 'error') {
-                box.style.backgroundColor = '#dc3545';
-                box.innerHTML = `<i class="fas fa-times-circle" style="margin-right: 10px;"></i> ${message}`;
-            }
-
-            document.body.appendChild(box);
-
-            setTimeout(() => {
-                box.style.animation = 'slideOut 0.5s forwards';
-                setTimeout(() => box.remove(), 500);
-            }, 3000);
-        }
-
-        // --- HÀM MAIN LOGIC ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Khởi tạo Firebase
-            await initializeFirebase();
-
-            // Thiết lập ngày tối thiểu là ngày hôm nay
-            const today = new Date().toISOString().split('T')[0];
-            dateSelect.setAttribute('min', today);
-            
-            // --- 1. VALIDATION VÀ KIỂM TRA TRẠNG THÁI NÚT TIẾP TỤC ---
-            const checkFormStatus = () => {
-                const allSelected = selectedHospital && selectedSpecialty && selectedDate && selectedTime;
-                if (allSelected) {
-                    btnContinue.classList.add('active');
-                } else {
-                    btnContinue.classList.remove('active');
-                }
-            };
-
-            // --- 2. XỬ LÝ SỰ KIỆN CHỌN (HOSPITAL/SPECIALTY/DATE) ---
-            const handleSelectionChange = (e) => {
-                const targetId = e.target.id;
-                
-                if (targetId === 'hospitalSelect') {
-                    selectedHospital = e.target.value;
-                } else if (targetId === 'specialtySelect') {
-                    selectedSpecialty = e.target.value;
-                } else if (targetId === 'dateSelect') {
-                    selectedDate = e.target.value;
-                }
-                
-                // Reset time slot 
-                selectedTime = null; 
-                renderTimeSlots();
-                checkFormStatus();
-            };
-
-            hospitalSelect.addEventListener('change', handleSelectionChange);
-            specialtySelect.addEventListener('change', handleSelectionChange);
-            dateSelect.addEventListener('change', handleSelectionChange);
-
-
-            // --- 3. HIỂN THỊ KHUNG GIỜ ---
-            const renderTimeSlots = () => {
-                timeSlotGrid.innerHTML = '';
-                
-                if (!selectedHospital || !selectedSpecialty || !selectedDate) {
-                    slotMessage.textContent = 'Vui lòng chọn Bệnh viện, Chuyên khoa và Ngày khám để xem các khung giờ khả dụng.';
-                    return;
-                }
-
-                slotMessage.textContent = 'Chọn một khung giờ trống:';
-                
-                // Xóa các trạng thái đã chọn trước khi render lại
-                document.querySelectorAll('.time-slot').forEach(slot => {
-                    slot.classList.remove('selected');
-                });
-                
-                dummyTimeSlots.forEach(slot => {
-                    const slotElement = document.createElement('div');
-                    slotElement.className = 'time-slot';
-                    slotElement.textContent = slot;
-                    slotElement.setAttribute('data-time', slot);
-
-                    // Logic giả lập: Khung giờ 10:00 và 14:30 bị khóa/đã đầy
-                    if (slot === '10:00' || slot === '14:30') {
-                        slotElement.classList.add('disabled');
-                    } else {
-                        slotElement.addEventListener('click', handleTimeSlotClick);
+                    // Nếu chưa đăng nhập, chuyển hướng ngay lập tức
+                    if (!getUrlParameter('redirect')) {
+                         window.location.href = LOGIN_PAGE + '?redirect=' + encodeURIComponent(window.location.href);
                     }
-
-                    // Nếu đây là khung giờ đã chọn trước đó, highlight lại
-                    if (selectedTime === slot) {
-                        slotElement.classList.add('selected');
-                    }
-
-                    timeSlotGrid.appendChild(slotElement);
-                });
-            };
-
-            // --- 4. XỬ LÝ SỰ KIỆN CHỌN KHUNG GIỜ ---
-            const handleTimeSlotClick = (e) => {
-                const clickedSlot = e.target;
-                
-                document.querySelectorAll('.time-slot').forEach(slot => {
-                    slot.classList.remove('selected');
-                });
-
-                clickedSlot.classList.add('selected');
-                selectedTime = clickedSlot.getAttribute('data-time');
-                checkFormStatus();
-            };
-
-            // --- 5. NÚT TIẾP TỤC (LƯU VÀ CHUYỂN TRANG) ---
-            btnContinue.addEventListener('click', async () => {
-                if (!isFirebaseReady || !btnContinue.classList.contains('active')) {
-                    alertMessage('Vui lòng chọn đầy đủ thông tin trước.', 'warning');
-                    return;
-                }
-                
-                // Vô hiệu hóa nút trong khi xử lý
-                btnContinue.classList.remove('active');
-                
-                const bookingDetails = {
-                    hospitalId: selectedHospital,
-                    specialtyId: selectedSpecialty,
-                    date: selectedDate,
-                    time: selectedTime,
-                };
-                
-                try {
-                    // Lấy tên hiển thị từ option đã chọn
-                    const hospitalName = hospitalSelect.options[hospitalSelect.selectedIndex].text;
-                    const specialtyName = specialtySelect.options[specialtySelect.selectedIndex].text;
-
-                    const dataToSave = {
-                        ...bookingDetails,
-                        hospitalName: hospitalName,
-                        specialtyName: specialtyName,
-                    };
-
-                    // 1. GỌI HÀM LƯU/CẬP NHẬT LÊN FIRESTORE (Đã sửa đường dẫn)
-                    const bookingId = await saveBookingToFirestore(dataToSave);
-                    
-                    // 2. LƯU THÔNG TIN ĐÃ CHỌN VÀO SESSION STORAGE
-                    sessionStorage.setItem('current_booking_id', bookingId);
-                    sessionStorage.setItem('booking_hospital_name', hospitalName);
-                    sessionStorage.setItem('booking_specialty_name', specialtyName);
-                    sessionStorage.setItem('booking_date', selectedDate);
-                    sessionStorage.setItem('booking_time', selectedTime);
-
-                    alertMessage('Đã chọn thành công! Đang chuyển sang Bước 3...', 'success');
-                    
-                    // 3. CHUYỂN HƯỚNG SAU KHI LƯU THÀNH CÔNG
-                    setTimeout(() => {
-                        window.location.href = NEXT_PAGE_URL;
-                    }, 500);
-
-                } catch (error) {
-                    console.error("Lỗi khi lưu thông tin đặt khám:", error);
-                    alertMessage(`Lỗi: ${error.message || 'Không xác định'}. Hãy kiểm tra Firebase Console.`, 'error');
-                    // Kích hoạt lại nút khi có lỗi
-                    checkFormStatus(); // Re-check status which should re-add 'active' class
+                    resolve(false); 
                 }
             });
+        });
+    }
 
-            // Gọi hàm render ban đầu để hiển thị thông báo yêu cầu chọn
-            renderTimeSlots();
-            checkFormStatus(); 
-            
-            // Hàm tải nội dung HTML (Giữ nguyên)
-            function loadExternalHTML(url, targetElementId) {
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.text();
-                    })
-                    .then(html => {
-                        document.getElementById(targetElementId).innerHTML = html;
-                    })
-                    .catch(error => {
-                        console.error('Lỗi tải menu:', error);
-                        document.getElementById(targetElementId).innerHTML = '<p style="color:red; margin: 10px;">Lỗi tải menu. Vui lòng kiểm tra file "menu.html".</p>';
-                    });
+    // --- CÁC HÀM XỬ LÝ GIAO DIỆN VÀ DỮ LIỆU ---
+
+    /**
+     * Cập nhật trạng thái của nút "Tiếp tục"
+     */
+    function updateContinueButton() {
+        if (selectedItemId) {
+            btnContinue.disabled = false;
+            btnContinue.classList.add('active'); 
+        } else {
+            btnContinue.disabled = true;
+            btnContinue.classList.remove('active');
+        }
+    }
+    
+    /**
+     * Xử lý click chọn card
+     */
+    function handleCardSelection(event) {
+        const itemCards = document.querySelectorAll('.item-card');
+        itemCards.forEach(card => card.classList.remove('selected'));
+        
+        const clickedCard = event.currentTarget;
+        clickedCard.classList.add('selected');
+
+        selectedItemId = clickedCard.getAttribute('data-id');
+        selectedItemName = clickedCard.getAttribute('data-name');
+        
+        // Lưu tạm thời vào Session Storage
+        sessionStorage.setItem('selected_item_id', selectedItemId);
+        sessionStorage.setItem('selected_item_name', selectedItemName);
+        
+        updateContinueButton();
+    }
+
+    /**
+     * Tải và hiển thị danh sách CHUYÊN KHOA
+     */
+    async function renderDepartmentList() {
+        mainTitle.textContent = "2. Chọn Chuyên Khoa";
+        const listContainer = document.getElementById('service-list');
+        listContainer.style.display = 'grid'; // Hiển thị danh sách Chuyên khoa
+        document.getElementById('doctor-list').style.display = 'none'; // Ẩn danh sách Bác sĩ
+        loadingMessage.style.display = 'block';
+
+        try {
+            const departmentsQuery = query(
+                collection(db, "hospitals", HOSPITAL_ID, "departments")
+            );
+            const snapshot = await getDocs(departmentsQuery);
+
+            loadingMessage.style.display = 'none';
+
+            if (snapshot.empty) {
+                listContainer.innerHTML = "<p class='text-gray-600 text-center py-5'>Bệnh viện này hiện chưa có thông tin chuyên khoa.</p>";
+                return;
             }
 
-            // TẢI MENU NGAY KHI TẢI TRANG (Giữ nguyên)
-            loadExternalHTML('../menu.html', 'main-nav-area'); 
+            listContainer.innerHTML = ''; // Xóa thông báo tải
+
+            snapshot.forEach(doc => {
+                const dept = doc.data();
+                const deptId = doc.id;
+
+                const card = document.createElement('div');
+                card.className = 'item-card cursor-pointer p-4 border rounded-lg shadow-sm hover:shadow-md transition'; // Dùng class của bạn
+                card.setAttribute('data-id', deptId);
+                card.setAttribute('data-name', dept.name);
+                card.innerHTML = `
+                    <div class="item-icon text-center mb-2">
+                        <i class="fas fa-stethoscope text-2xl text-blue-500"></i>
+                    </div>
+                    <div class="item-info text-center">
+                        <h3 class="font-semibold text-lg text-gray-800">${dept.name}</h3>
+                        <p class="text-sm text-gray-500">Khám chữa bệnh chuyên sâu</p>
+                    </div>
+                `;
+                card.addEventListener('click', handleCardSelection);
+                listContainer.appendChild(card);
+            });
+            
+            // Khôi phục lựa chọn nếu có
+            const storedId = sessionStorage.getItem('selected_item_id');
+            if (storedId) {
+                const storedCard = document.querySelector(`#service-list [data-id="${storedId}"]`);
+                if(storedCard) {
+                    storedCard.classList.add('selected');
+                    selectedItemId = storedId;
+                    selectedItemName = sessionStorage.getItem('selected_item_name');
+                }
+            }
+
+        } catch (error) {
+            console.error("Lỗi tải danh sách chuyên khoa:", error);
+            loadingMessage.style.display = 'none';
+            listContainer.innerHTML = "<p class='text-red-500 text-center py-5'>Lỗi tải chuyên khoa. Vui lòng kiểm tra console.</p>";
+        }
+    }
+
+    /**
+     * Tải và hiển thị danh sách BÁC SĨ
+     */
+    async function renderDoctorList() {
+        mainTitle.textContent = "2. Chọn Bác Sĩ";
+        const listContainer = document.getElementById('doctor-list');
+        listContainer.style.display = 'grid'; // Hiển thị danh sách Bác sĩ
+        document.getElementById('service-list').style.display = 'none'; // Ẩn danh sách Chuyên khoa
+        loadingMessage.style.display = 'block';
+        
+        try {
+            const doctorsQuery = query(
+                collection(db, "hospitals", HOSPITAL_ID, "doctors")
+            );
+            const snapshot = await getDocs(doctorsQuery);
+
+            loadingMessage.style.display = 'none';
+
+            if (snapshot.empty) {
+                listContainer.innerHTML = "<p class='text-gray-600 text-center py-5'>Bệnh viện này hiện chưa có bác sĩ nào có lịch khám online.</p>";
+                return;
+            }
+            
+            listContainer.innerHTML = ''; // Xóa thông báo tải
+
+            snapshot.forEach(doc => {
+                const doctor = doc.data();
+                const doctorId = doc.id;
+                
+                const card = document.createElement('div');
+                card.className = 'item-card doctor-card cursor-pointer p-4 border rounded-lg shadow-sm hover:shadow-md transition flex items-center'; 
+                card.setAttribute('data-id', doctorId);
+                card.setAttribute('data-name', doctor.name);
+                card.innerHTML = `
+                    <div class="doctor-avatar w-16 h-16 rounded-full overflow-hidden mr-4 flex-shrink-0">
+                        <img src="${doctor.avatarUrl || '../../data/IMG/BACSI/bacsi.webp'}" alt="Bác sĩ ${doctor.name}" class="object-cover w-full h-full">
+                    </div>
+                    <div class="doctor-info">
+                        <h3 class="font-semibold text-lg text-blue-700">BS. ${doctor.name}</h3>
+                        <p class="text-sm text-gray-600">${doctor.title || 'Chuyên khoa'} - ${doctor.departmentName || 'Đa khoa'}</p>
+                    </div>
+                `;
+                card.addEventListener('click', handleCardSelection);
+                listContainer.appendChild(card);
+            });
+
+            // Khôi phục lựa chọn nếu có
+            const storedId = sessionStorage.getItem('selected_item_id');
+            if (storedId) {
+                const storedCard = document.querySelector(`#doctor-list [data-id="${storedId}"]`);
+                 if(storedCard) {
+                    storedCard.classList.add('selected');
+                    selectedItemId = storedId;
+                    selectedItemName = sessionStorage.getItem('selected_item_name');
+                }
+            }
+
+        } catch (error) {
+            console.error("Lỗi tải danh sách bác sĩ:", error);
+            loadingMessage.style.display = 'none';
+            listContainer.innerHTML = "<p class='text-red-500 text-center py-5'>Lỗi tải bác sĩ. Vui lòng kiểm tra console.</p>";
+        }
+    }
+
+    /**
+     * Lưu thông tin đã chọn lên Firestore (Bước 2)
+     */
+    async function saveSelectionToFirestore() {
+        if (!db || !userId || !BOOKING_ID) {
+            return false;
+        }
+
+        const bookingDocPath = `artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'}/users/${userId}/bookings/${BOOKING_ID}`;
+        
+        let updateData = {
+            step: 2,
+            status: "pending_step_3",
+            lastUpdated: serverTimestamp()
+        };
+        
+        // Quyết định lưu doctorId hay departmentId
+        if (BOOKING_TYPE === 'theo_bac_si') {
+            updateData.doctorId = selectedItemId;
+            updateData.doctorName = selectedItemName;
+            // Xóa departmentId nếu có từ các lần thử trước
+            updateData.departmentId = null; 
+            updateData.departmentName = null; 
+        } else {
+            updateData.departmentId = selectedItemId;
+            updateData.departmentName = selectedItemName;
+            // Xóa doctorId nếu có từ các lần thử trước
+            updateData.doctorId = null; 
+            updateData.doctorName = null; 
+        }
+
+        try {
+            await setDoc(doc(db, bookingDocPath), updateData, { merge: true });
+            return true;
+        } catch (e) {
+            console.error("Lỗi khi lưu dữ liệu bước 2 lên Firestore: ", e);
+            return false;
+        }
+    }
+
+    // --- LOGIC KHỞI TẠO VÀ SỰ KIỆN ---
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        
+        // 1. Kiểm tra điều kiện bắt buộc
+        if (!HOSPITAL_ID || !BOOKING_TYPE || !BOOKING_ID) {
+            mainTitle.textContent = "Lỗi Dữ Liệu";
+            contentArea.innerHTML = `<div class='error-message p-4 bg-red-100 border border-red-400 rounded'>
+                Không tìm thấy thông tin bệnh viện hoặc hình thức đặt khám. Vui lòng quay lại <a href="../${PREV_STEP_PATH}/index.html?hospitalId=${HOSPITAL_ID}">Bước 1</a>.
+            </div>`;
+            btnContinue.style.display = 'none';
+            loadingMessage.style.display = 'none';
+            return;
+        }
+        
+        // 2. Khởi tạo Firebase và check đăng nhập
+        const isLoggedIn = await initializeFirebase();
+        if (!isLoggedIn) return; 
+
+        // 3. Cập nhật Breadcrumb và Nút Quay lại
+        document.getElementById('breadcrumb-current-step').textContent = "Thông tin khám";
+        // Cập nhật đường dẫn Quay lại Bước 1 (hinh-thuc-dat-kham)
+        const prevStepLink = document.querySelector('.breadcrumb a:last-of-type');
+        if (prevStepLink) {
+            prevStepLink.href = `../${PREV_STEP_PATH}/index.html?hospitalId=${HOSPITAL_ID}`;
+        }
+
+
+        // 4. Phân loại nội dung dựa trên BOOKING_TYPE
+        if (BOOKING_TYPE === 'theo_bac_si') {
+            await renderDoctorList();
+        } else {
+            await renderDepartmentList();
+        }
+        
+        updateContinueButton();
+
+        // 5. Xử lý nút Tiếp tục
+        btnContinue.addEventListener('click', async () => {
+            if (!selectedItemId) {
+                alert('Vui lòng chọn Bác sĩ hoặc Chuyên khoa để tiếp tục.');
+                return;
+            }
+            
+            btnContinue.disabled = true;
+
+            const saveSuccess = await saveSelectionToFirestore();
+            
+            btnContinue.disabled = false;
+
+            if (saveSuccess) {
+                // Xóa thông tin tạm của bước này trước khi chuyển
+                sessionStorage.removeItem('selected_item_id');
+                sessionStorage.removeItem('selected_item_name');
+
+                // Chuyển sang Bước 3: Chọn Lịch Khám
+                const finalNextPage = `../${NEXT_STEP_PATH}/index.html?hospitalId=${HOSPITAL_ID}`;
+                window.location.href = finalNextPage; 
+            } else {
+                alert('Lỗi: Không thể lưu thông tin. Vui lòng thử lại.');
+            }
         });
-    </script>
+    });
+
+</script>
 </body>
 </html>
