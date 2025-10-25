@@ -167,168 +167,143 @@
     import { 
         getAuth, 
         signInWithEmailAndPassword, 
-        GoogleAuthProvider, 
-        signInWithPopup, 
-        onAuthStateChanged,
         setPersistence, 
+        browserSessionPersistence, 
         browserLocalPersistence,
-        browserSessionPersistence,
-        sendPasswordResetEmail // Thêm chức năng reset mật khẩu
+        GoogleAuthProvider, 
+        signInWithPopup 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    // ⬅️ THÊM CÁC HÀM FIRESTORE ⬅️
     import { 
         getFirestore, 
         doc, 
-        getDoc,       // ⬅️ QUAN TRỌNG: Dùng để đọc hồ sơ Firestore
-        setDoc,       // Dùng để tạo hồ sơ cho tài khoản Google mới
+        getDoc, 
+        setDoc, 
         serverTimestamp 
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js"; 
-
-    // Cấu hình Firebase của bạn
-    // Vui lòng đảm bảo các giá trị này là chính xác
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+    // 1. CẤU HÌNH FIREBASE
     const firebaseConfig = {
-        apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
+        // !!! CẬP NHẬT KEY CỦA BẠN TẠI ĐÂY !!!
+        apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88", 
         authDomain: "health-care-5ba62.firebaseapp.com",
         projectId: "health-care-5ba62",
         storageBucket: "health-care-5ba62.firebasestorage.app",
         messagingSenderId: "564100851159",
-        appId: "1:564100851159:web:34d7d787474edff1abd792",
+        appId: "1:564100851159:web:34d7d7d792",
         measurementId: "G-2GWB86PCBT"
     };
 
+    // Khởi tạo ứng dụng và các dịch vụ
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app); // ⬅️ Khởi tạo Firestore
-    
-    // Đường dẫn chuyển hướng. Sử dụng "menu.html" nếu bạn muốn người dùng vào trang menu chính
-    const REDIRECT_PATIENT = "menu.html"; 
-    const REDIRECT_ADMIN = "admin/dashboard.html"; // Giả định đường dẫn admin
-    
-    // Hàm chung để kiểm tra vai trò và chuyển hướng
+    const db = getFirestore(app); // Khởi tạo Firestore
+
+    // Lấy URL chuyển hướng (mặc định là trang chủ nếu không có)
+    const urlParams = new URLSearchParams(window.location.search);
+    const REDIRECT_URL = urlParams.get('redirect') || '/'; // Thay '/' bằng URL trang chủ của bạn
+
+    // 2. HÀM KIỂM TRA VÀ CHUYỂN HƯỚNG DỰA TRÊN DỮ LIỆU FIRESTORE
     async function checkUserRoleAndRedirect(user) {
-        if (!user) return; // Không có user thì không làm gì
-
         const userDocRef = doc(db, "users", user.uid);
-        const userDocSnap = await getDoc(userDocRef);
-        let redirectPath = REDIRECT_PATIENT;
+        
+        try {
+            const docSnap = await getDoc(userDocRef);
 
-        if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            
-            if (userData.role === 'admin') {
-                redirectPath = REDIRECT_ADMIN;
+            if (!docSnap.exists()) {
+                // Nếu hồ sơ Firestore không tồn tại (chỉ xảy ra với người dùng cũ hoặc lỗi)
+                // Tạo hồ sơ cơ bản cho người dùng (Đảm bảo vai trò "patient" tồn tại)
+                await setDoc(userDocRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName || 'Người dùng',
+                    role: "patient",
+                    lastLogin: serverTimestamp()
+                }, { merge: true }); // merge: true để không ghi đè nếu document có sẵn
             } else {
-                redirectPath = REDIRECT_PATIENT;
+                // Cập nhật thời gian đăng nhập lần cuối
+                await setDoc(userDocRef, {
+                    lastLogin: serverTimestamp()
+                }, { merge: true });
+                
+                // Thêm logic kiểm tra vai trò tại đây nếu sau này bạn có vai trò Admin, Doctor...
             }
-        } else {
-            // Trường hợp tài khoản Auth OK, nhưng hồ sơ Firestore thiếu (Rất hiếm)
-            console.warn("Hồ sơ Firestore bị thiếu. Chuyển hướng đến trang chính.");
-            redirectPath = REDIRECT_PATIENT;
-        }
+            
+            // Chuyển hướng đến URL đã xác định
+            window.location.href = REDIRECT_URL;
 
-        window.location.href = redirectPath;
+        } catch (e) {
+            console.error("Lỗi kiểm tra dữ liệu người dùng:", e);
+            alert("Lỗi kiểm tra dữ liệu người dùng. Vui lòng thử lại.");
+        }
     }
 
 
-    // --- 1. TỰ ĐỘNG CHUYỂN HƯỚNG NẾU ĐÃ ĐĂNG NHẬP ---
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            console.log("User is already signed in. Checking role...");
-            // Chờ kiểm tra vai trò và chuyển hướng
-            await checkUserRoleAndRedirect(user);
-        }
-    });
-
-    // --- 2. XỬ LÝ LOGIN BẰNG EMAIL/PASSWORD ---
+    // --- 3. XỬ LÝ LOGIN BẰNG EMAIL VÀ PASSWORD ---
     document.getElementById("login-form").addEventListener("submit", async (e) => {
         e.preventDefault();
-        const email = document.getElementById("login-email").value;
-        const password = document.getElementById("login-password").value;
-        const rememberMe = document.getElementById("remember-me").checked; 
-        const submitBtn = document.getElementById("login-submit-btn");
+        
+        const form = e.target;
+        const email = form['email'].value;
+        const password = form['password'].value;
+        const rememberMe = form['remember-me'].checked;
+        const submitBtn = form.querySelector('button[type="submit"]');
 
         submitBtn.disabled = true;
         submitBtn.textContent = 'Đang đăng nhập...';
 
         try {
-            // 💡 BƯỚC QUAN TRỌNG: THIẾT LẬP PERSISTENCE 
-            const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
-            await setPersistence(auth, persistenceType);
+            // Thiết lập Persistence (Ghi nhớ)
+            if (rememberMe) {
+                // Ghi nhớ vĩnh viễn (cho đến khi đăng xuất)
+                await setPersistence(auth, browserLocalPersistence); 
+            } else {
+                // Chỉ ghi nhớ trong phiên hiện tại (Session Storage)
+                await setPersistence(auth, browserSessionPersistence);
+            }
             
             // Tiến hành đăng nhập
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            // Chờ kiểm tra vai trò và chuyển hướng
-            await checkUserRoleAndRedirect(user); 
+            await signInWithEmailAndPassword(auth, email, password);
+            
+            // ⬅️ KIỂM TRA DỮ LIỆU VÀ CHUYỂN HƯỚNG ⬅️
+            await checkUserRoleAndRedirect(auth.currentUser); 
 
         } catch (err) {
-            let message = "Đăng nhập thất bại. Vui lòng thử lại.";
+            let message = "Sai email hoặc mật khẩu. Vui lòng kiểm tra lại.";
             if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
                 message = "Sai email hoặc mật khẩu. Vui lòng kiểm tra lại.";
             } else if (err.code === "auth/too-many-requests") {
                 message = "Tài khoản của bạn đã bị khóa tạm thời do nhập sai mật khẩu quá nhiều lần. Vui lòng thử lại sau.";
+            } else if (err.code === "auth/operation-not-allowed") {
+                 message = "Lỗi hệ thống: Phương thức Đăng nhập Email/Password chưa được BẬT trong Firebase Console.";
             }
             alert(message);
-            console.error("Login error:", err);
-        } finally {
+            console.error("Lỗi đăng nhập Email/Password:", err);
+            
             submitBtn.disabled = false;
             submitBtn.textContent = 'Đăng nhập';
         }
     });
 
-    // --- 3. XỬ LÝ LOGIN BẰNG GOOGLE (LUÔN GHI NHỚ) ---
-    document.getElementById("google-login-btn").addEventListener("click", async () => {
-        const provider = new GoogleAuthProvider();
-        const submitBtn = document.getElementById("google-login-btn");
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Đang đăng nhập...';
-        
-        try {
-            await setPersistence(auth, browserLocalPersistence); // Luôn ghi nhớ
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-
-            // 🌟 KIỂM TRA VÀ TẠO HỒ SƠ FIRESTORE CHO GOOGLE USER 🌟
-            const userDocRef = doc(db, "users", user.uid);
-            const userDocSnap = await getDoc(userDocRef);
+    // --- 4. XỬ LÝ LOGIN BẰNG GOOGLE ---
+    // Giả định nút có id="google-login-btn"
+    if (document.getElementById("google-login-btn")) {
+        document.getElementById("google-login-btn").addEventListener("click", async () => {
+            const provider = new GoogleAuthProvider();
+            // Luôn ghi nhớ cho Google login
+            await setPersistence(auth, browserLocalPersistence); 
             
-            if (!userDocSnap.exists()) {
-                // Tài khoản Google mới: Tạo hồ sơ Firestore mặc định
-                await setDoc(userDocRef, {
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName,
-                    role: "patient",
-                    createdAt: serverTimestamp()
-                });
-            }
-            
-            // Chờ kiểm tra vai trò và chuyển hướng
-            await checkUserRoleAndRedirect(user);
+            try {
+                // Hiển thị Popup và tiến hành đăng nhập
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
 
-        } catch (err) {
-            console.error("Google login error:", err);
-            alert("Đăng nhập bằng Google thất bại: " + err.message);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Đăng nhập với Google';
-        }
-    });
+                // ⬅️ KIỂM TRA DỮ LIỆU VÀ CHUYỂN HƯỚNG ⬅️
+                await checkUserRoleAndRedirect(user); 
 
-    // --- 4. XỬ LÝ QUÊN MẬT KHẨU (NẾU CÓ FORM RIÊNG) ---
-    // Giả sử bạn có một nút/form riêng cho Quên mật khẩu
-    if (document.getElementById("forgot-password-btn")) {
-        document.getElementById("forgot-password-btn").addEventListener("click", async () => {
-            const email = prompt("Vui lòng nhập Email đã đăng ký để đặt lại mật khẩu:");
-            if (email) {
-                try {
-                    await sendPasswordResetEmail(auth, email);
-                    alert("Đã gửi liên kết đặt lại mật khẩu đến Email của bạn. Vui lòng kiểm tra hộp thư.");
-                } catch (err) {
-                    alert("Lỗi: Không tìm thấy người dùng với email này hoặc email không hợp lệ.");
-                    console.error("Password reset error:", err);
-                }
+            } catch (err) {
+                console.error("Lỗi đăng nhập Google:", err);
+                alert("Đăng nhập bằng Google thất bại: " + err.message);
             }
         });
     }
