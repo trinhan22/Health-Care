@@ -171,7 +171,8 @@
         browserSessionPersistence, 
         browserLocalPersistence,
         GoogleAuthProvider, 
-        signInWithPopup 
+        signInWithPopup,
+        onAuthStateChanged // ⬅️ CẦN THÊM IMPORT NÀY ⬅️
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     // ⬅️ THÊM CÁC HÀM FIRESTORE ⬅️
     import { 
@@ -183,76 +184,139 @@
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     
     // 1. CẤU HÌNH FIREBASE
-const firebaseConfig = {
-  apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
-  authDomain: "health-care-5ba62.firebaseapp.com",
-  projectId: "health-care-5ba62",
-  storageBucket: "health-care-5ba62.firebasestorage.app",
-  messagingSenderId: "564100851159",
-  appId: "1:564100851159:web:34d7d787474edff1abd792",
-  measurementId: "G-2GWB86PCBT"
-};
+    const firebaseConfig = {
+        // !!! CẬP NHẬT KEY CỦA BẠN TẠI ĐÂY !!!
+        apiKey: "AIzaSyBJM2IWD2yW7QjlpqilQ8odAx4M5YhKH88",
+        authDomain: "health-care-5ba62.firebaseapp.com",
+        projectId: "health-care-5ba62",
+        storageBucket: "health-care-5ba62.firebasestorage.app",
+        messagingSenderId: "564100851159",
+        appId: "1:564100851159:web:34d7d787474edff1abd792",
+        measurementId: "G-2GWB86PCBT"
+    };
 
     // Khởi tạo ứng dụng và các dịch vụ
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app); // Khởi tạo Firestore
 
+    // Định nghĩa URL chuyển hướng mặc định sau khi đăng nhập
     const REDIRECT_URL = "hinh-thuc-dat-kham"; 
+    
+    // --- 0. HÀM KIỂM TRA VÀ CHUYỂN HƯỚNG DỰA TRÊN DỮ LIỆU FIRESTORE ---
+    /**
+     * Kiểm tra hồ sơ người dùng trong Firestore. Nếu không tồn tại (Google login lần đầu) thì tạo mới.
+     * Cập nhật thời gian đăng nhập lần cuối và chuyển hướng.
+     */
+    async function checkUserRoleAndRedirect(user) {
+        const userDocRef = doc(db, "users", user.uid);
+        
+        try {
+            const docSnap = await getDoc(userDocRef);
+
+            if (!docSnap.exists()) {
+                // Tạo hồ sơ cơ bản nếu chưa tồn tại (áp dụng cho Google login lần đầu)
+                await setDoc(userDocRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName || 'Người dùng',
+                    role: "patient", 
+                    lastLogin: serverTimestamp(),
+                    createdAt: serverTimestamp() // Thêm trường createdAt cho đầy đủ
+                }, { merge: true });
+            } else {
+                // Cập nhật thời gian đăng nhập lần cuối
+                await setDoc(userDocRef, {
+                    lastLogin: serverTimestamp()
+                }, { merge: true });
+            }
+            
+            // Chuyển hướng đến URL đã xác định
+            window.location.href = REDIRECT_URL;
+
+        } catch (e) {
+            console.error("Lỗi kiểm tra dữ liệu người dùng:", e);
+            alert("Lỗi kiểm tra dữ liệu người dùng. Vui lòng kiểm tra console.");
+        }
+    }
 
     // --- 1. TỰ ĐỘNG CHUYỂN HƯỚNG NẾU ĐÃ ĐĂNG NHẬP ---
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            console.log("User is already signed in. Auto-redirecting...");
-            window.location.href = REDIRECT_URL; 
+            // Nếu đã đăng nhập, kiểm tra và chuyển hướng qua Firestore
+            checkUserRoleAndRedirect(user);
         }
     });
 
     // --- 2. XỬ LÝ LOGIN BẰNG EMAIL/PASSWORD ---
     document.getElementById("login-form").addEventListener("submit", async (e) => {
         e.preventDefault();
+        
         const email = document.getElementById("login-email").value;
         const password = document.getElementById("login-password").value;
         const rememberMe = document.getElementById("remember-me").checked; 
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Đang đăng nhập...';
 
         try {
-            // 💡 BƯỚC QUAN TRỌNG: THIẾT LẬP PERSISTENCE TRƯỚC KHI ĐĂNG NHẬP
+            // Thiết lập Persistence
             if (rememberMe) {
-                // Nếu chọn: Lưu vĩnh viễn (Local Storage)
                 await setPersistence(auth, browserLocalPersistence);
             } else {
-                // Nếu KHÔNG chọn: Chỉ lưu trong phiên hiện tại (Session Storage)
                 await setPersistence(auth, browserSessionPersistence);
             }
             
-            // Tiến hành đăng nhập (sẽ dùng persistence vừa set ở trên)
-            await signInWithEmailAndPassword(auth, email, password);
+            // Tiến hành đăng nhập
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
             
-            // Chuyển hướng sau khi đăng nhập thành công
-            window.location.href = REDIRECT_URL; 
+            // ⬅️ GỌI HÀM KIỂM TRA VÀ CHUYỂN HƯỚNG ⬅️
+            await checkUserRoleAndRedirect(userCredential.user); 
+
         } catch (err) {
             let message = "Sai email hoặc mật khẩu. Vui lòng kiểm tra lại.";
             if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
                 message = "Sai email hoặc mật khẩu. Vui lòng kiểm tra lại.";
             } else if (err.code === "auth/too-many-requests") {
                 message = "Tài khoản của bạn đã bị khóa tạm thời do nhập sai mật khẩu quá nhiều lần. Vui lòng thử lại sau.";
+            } else if (err.code === "auth/operation-not-allowed") {
+                 message = "Lỗi hệ thống: Phương thức Đăng nhập Email/Password chưa được BẬT trong Firebase Console.";
             }
             alert(message);
+            console.error("Lỗi đăng nhập Email/Password:", err);
+            
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Đăng nhập';
         }
     });
 
     // --- 3. XỬ LÝ LOGIN BẰNG GOOGLE (LUÔN GHI NHỚ) ---
-    document.getElementById("google-login-btn").addEventListener("click", async () => {
-        const provider = new GoogleAuthProvider();
-        try {
-            await setPersistence(auth, browserLocalPersistence); // Luôn ghi nhớ
-            await signInWithPopup(auth, provider);
-            window.location.href = REDIRECT_URL; 
-        } catch (err) {
-            console.error("Google login error:", err);
-            alert("Đăng nhập bằng Google thất bại: " + err.message);
-        }
-    });
+    if (document.getElementById("google-login-btn")) {
+        document.getElementById("google-login-btn").addEventListener("click", async () => {
+            const provider = new GoogleAuthProvider();
+            
+            const googleBtn = document.getElementById("google-login-btn");
+            const originalText = googleBtn.textContent;
+            googleBtn.disabled = true;
+            googleBtn.textContent = 'Đang xử lý...';
+            
+            try {
+                await setPersistence(auth, browserLocalPersistence);
+                const result = await signInWithPopup(auth, provider);
+                
+                // ⬅️ GỌI HÀM KIỂM TRA VÀ CHUYỂN HƯỚNG ⬅️
+                await checkUserRoleAndRedirect(result.user); 
+                
+            } catch (err) {
+                console.error("Google login error:", err);
+                alert("Đăng nhập bằng Google thất bại: " + err.message);
+                googleBtn.disabled = false;
+                googleBtn.textContent = originalText;
+            }
+        });
+    }
+
 </script>
 
 </body>
