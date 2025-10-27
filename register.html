@@ -171,67 +171,60 @@
     const registerForm = document.getElementById('register-form');
     const submitBtn = registerForm.querySelector('button[type="submit"]');
 
-    // 2. XỬ LÝ ĐĂNG KÝ
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    // Xử lý Đăng ký bằng Email/Password
+    document.getElementById("register-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const displayName = document.getElementById("register-display-name").value.trim();
+      const email = document.getElementById("register-email").value.trim();
+      const password = document.getElementById("register-password").value;
+      const confirmPassword = document.getElementById("register-confirm-password").value;
+      const submitBtn = document.getElementById("register-submit-btn");
+
+      if (password !== confirmPassword) {
+        alert("Mật khẩu nhập lại không khớp. Vui lòng kiểm tra lại.");
+        return;
+      }
+      
+      if (displayName.length < 2) {
+          alert("Tên đăng nhập phải có ít nhất 2 ký tự.");
+          return;
+      }
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Đang xử lý...';
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
         
-        const email = registerForm['email'].value;
-        const password = registerForm['password'].value;
-        const displayName = registerForm['displayName'].value.trim();
-
-        if (displayName.length < 2) {
-            alert("Tên đăng nhập phải có ít nhất 2 ký tự.");
-            return;
-        }
+        // 1. Cập nhật Tên đăng nhập (Display Name)
+        await updateProfile(user, {
+            displayName: displayName
+        });
         
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Đang xử lý...';
-
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            
-            // 1. Cập nhật Tên đăng nhập (Display Name)
-            await updateProfile(user, {
-                displayName: displayName
-            });
-            
-            // 2. 🚀 GHI DỮ LIỆU NGƯỜI DÙNG VÀO FIRESTORE (COLLECTION: 'users') 🚀
-            // Tạo document trong collection 'users' với UID làm Document ID
-            await setDoc(doc(db, "users", user.uid), {
-                uid: user.uid,
-                email: user.email,
-                displayName: displayName,
-                role: "patient", // Thiết lập vai trò mặc định
-                createdAt: serverTimestamp() // Ghi lại thời gian đăng ký
-            });
-            
-            // 3. Đăng xuất người dùng ngay lập tức (để tránh tự động đăng nhập)
-            await signOut(auth); 
-            
-            alert("Đăng ký tài khoản thành công! Vui lòng Đăng nhập.");
-            
-            // 4. Chuyển hướng đến trang đăng nhập (Đã sửa từ log.html thành login.html)
-            window.location.href = "login.html"; 
-            
-        } catch (err) {
-            let message = "Đăng ký thất bại. Vui lòng thử lại.";
-            if (err.code === "auth/email-already-in-use") {
-                message = "Địa chỉ email này đã được sử dụng. Vui lòng chọn email khác.";
-            } else if (err.code === "auth/invalid-email") {
-                message = "Địa chỉ email không hợp lệ.";
-            } else if (err.code === "auth/weak-password") {
-                message = "Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu tối thiểu 6 ký tự.";
-            } else if (err.code === "auth/operation-not-allowed") {
-                // Lỗi mà bạn đang gặp phải
-                message = "Lỗi hệ thống: Phương thức Đăng ký Email/Password chưa được BẬT trong Firebase Console.";
-            }
-            alert(message);
-            console.error("Lỗi đăng ký:", err);
-
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Đăng ký';
+        // 2. 🚨 KHẮC PHỤC LỖI AUTO-LOGIN: Đăng xuất người dùng ngay lập tức
+        await signOut(auth); 
+        
+        alert("Đăng ký tài khoản thành công! Vui lòng Đăng nhập.");
+        // 3. Chuyển hướng đến trang đăng nhập
+        window.location.href = "login.html"; 
+        
+      } catch (err) {
+        let message = "Đăng ký thất bại. Vui lòng thử lại.";
+        if (err.code === "auth/email-already-in-use") {
+            message = "Địa chỉ email này đã được sử dụng. Vui lòng chọn email khác.";
+        } else if (err.code === "auth/invalid-email") {
+            message = "Địa chỉ email không hợp lệ.";
+        } else if (err.code === "auth/weak-password") {
+            message = "Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu tối thiểu 6 ký tự.";
         }
+        alert(message);
+        console.error("Registration error:", err);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Đăng ký';
+      }
     });
 </script>
 
