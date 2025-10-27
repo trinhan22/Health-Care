@@ -172,9 +172,9 @@
         browserLocalPersistence,
         GoogleAuthProvider, 
         signInWithPopup,
-        onAuthStateChanged // ⬅️ CẦN THÊM IMPORT NÀY ⬅️
+        onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    // ⬅️ THÊM CÁC HÀM FIRESTORE ⬅️
+    // ⬅️ CÁC HÀM FIRESTORE ⬅️
     import { 
         getFirestore, 
         doc, 
@@ -198,16 +198,13 @@
     // Khởi tạo ứng dụng và các dịch vụ
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getFirestore(app); // Khởi tạo Firestore
+    const db = getFirestore(app);
 
     // Định nghĩa URL chuyển hướng mặc định sau khi đăng nhập
-    const REDIRECT_URL = "hinh-thuc-dat-kham"; 
+    const REDIRECT_URL = "hinh-thuc-dat-kham.html"; 
     
     // --- 0. HÀM KIỂM TRA VÀ CHUYỂN HƯỚNG DỰA TRÊN DỮ LIỆU FIRESTORE ---
-    /**
-     * Kiểm tra hồ sơ người dùng trong Firestore. Nếu không tồn tại (Google login lần đầu) thì tạo mới.
-     * Cập nhật thời gian đăng nhập lần cuối và chuyển hướng.
-     */
+    // (Vẫn giữ lại cho Email/Password Login và Auto-redirect)
     async function checkUserRoleAndRedirect(user) {
         const userDocRef = doc(db, "users", user.uid);
         
@@ -215,14 +212,14 @@
             const docSnap = await getDoc(userDocRef);
 
             if (!docSnap.exists()) {
-                // Tạo hồ sơ cơ bản nếu chưa tồn tại (áp dụng cho Google login lần đầu)
+                // Tạo hồ sơ cơ bản nếu chưa tồn tại
                 await setDoc(userDocRef, {
                     uid: user.uid,
                     email: user.email,
                     displayName: user.displayName || 'Người dùng',
                     role: "patient", 
                     lastLogin: serverTimestamp(),
-                    createdAt: serverTimestamp() // Thêm trường createdAt cho đầy đủ
+                    createdAt: serverTimestamp() 
                 }, { merge: true });
             } else {
                 // Cập nhật thời gian đăng nhập lần cuối
@@ -240,15 +237,14 @@
         }
     }
 
-    // --- 1. TỰ ĐỘNG CHUYỂN HƯỚNG NẾU ĐÃ ĐĂNG NHẬP ---
+    // --- 1. TỰ ĐỘNG CHUYỂN HƯỚNG NẾU ĐÃ ĐĂNG NHẬP (Vẫn dùng check Firestore) ---
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            // Nếu đã đăng nhập, kiểm tra và chuyển hướng qua Firestore
             checkUserRoleAndRedirect(user);
         }
     });
 
-    // --- 2. XỬ LÝ LOGIN BẰNG EMAIL/PASSWORD ---
+    // --- 2. XỬ LÝ LOGIN BẰNG EMAIL/PASSWORD (Vẫn dùng check Firestore) ---
     document.getElementById("login-form").addEventListener("submit", async (e) => {
         e.preventDefault();
         
@@ -261,23 +257,21 @@
         submitBtn.textContent = 'Đang đăng nhập...';
 
         try {
-            // Thiết lập Persistence
             if (rememberMe) {
                 await setPersistence(auth, browserLocalPersistence);
             } else {
                 await setPersistence(auth, browserSessionPersistence);
             }
             
-            // Tiến hành đăng nhập
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             
-            // ⬅️ GỌI HÀM KIỂM TRA VÀ CHUYỂN HƯỚNG ⬅️
+            // Vẫn gọi hàm kiểm tra Firestore
             await checkUserRoleAndRedirect(userCredential.user); 
 
         } catch (err) {
             let message = "Sai email hoặc mật khẩu. Vui lòng kiểm tra lại.";
-            if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
-                message = "Sai email hoặc mật khẩu. Vui lòng kiểm tra lại.";
+            if (err.code === "auth/invalid-credential") {
+                message = "Sai Email hoặc Mật khẩu. Vui lòng kiểm tra lại thông tin đăng nhập.";
             } else if (err.code === "auth/too-many-requests") {
                 message = "Tài khoản của bạn đã bị khóa tạm thời do nhập sai mật khẩu quá nhiều lần. Vui lòng thử lại sau.";
             } else if (err.code === "auth/operation-not-allowed") {
@@ -291,7 +285,7 @@
         }
     });
 
-    // --- 3. XỬ LÝ LOGIN BẰNG GOOGLE (LUÔN GHI NHỚ) ---
+    // --- 3. XỬ LÝ LOGIN BẰNG GOOGLE (KHÔNG CẦN CHECK, CHUYỂN HƯỚNG NGAY) ---
     if (document.getElementById("google-login-btn")) {
         document.getElementById("google-login-btn").addEventListener("click", async () => {
             const provider = new GoogleAuthProvider();
@@ -305,12 +299,14 @@
                 await setPersistence(auth, browserLocalPersistence);
                 const result = await signInWithPopup(auth, provider);
                 
-                // ⬅️ GỌI HÀM KIỂM TRA VÀ CHUYỂN HƯỚNG ⬅️
-                await checkUserRoleAndRedirect(result.user); 
+                // 🚀 BỎ QUA checkUserRoleAndRedirect, CHUYỂN HƯỚNG TRỰC TIẾP 🚀
+                window.location.href = REDIRECT_URL; 
                 
             } catch (err) {
                 console.error("Google login error:", err);
                 alert("Đăng nhập bằng Google thất bại: " + err.message);
+                
+                // Kích hoạt lại nút nếu có lỗi
                 googleBtn.disabled = false;
                 googleBtn.textContent = originalText;
             }

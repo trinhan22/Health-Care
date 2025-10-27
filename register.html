@@ -224,23 +224,23 @@
                 // 5. Chuyển hướng đến trang đăng nhập
                 window.location.href = "login.html"; 
                 
-} catch (err) {
-            let message = "Đăng nhập thất bại. Vui lòng thử lại.";
-            
-            // 💡 CẬP NHẬT: Xử lý lỗi chung auth/invalid-credential
-            if (err.code === "auth/invalid-credential") { 
-                 message = "Sai Email hoặc Mật khẩu. Vui lòng kiểm tra lại thông tin đăng nhập.";
-            } else if (err.code === "auth/too-many-requests") {
-                message = "Tài khoản của bạn đã bị khóa tạm thời do nhập sai mật khẩu quá nhiều lần. Vui lòng thử lại sau.";
-            } else if (err.code === "auth/operation-not-allowed") {
-                 message = "Lỗi hệ thống: Phương thức Đăng nhập Email/Password chưa được BẬT trong Firebase Console.";
+            } catch (err) {
+                let message = "Đăng ký thất bại. Vui lòng thử lại.";
+                if (err.code === "auth/email-already-in-use") {
+                    message = "Địa chỉ email này đã được sử dụng. Vui lòng chọn email khác.";
+                } else if (err.code === "auth/invalid-email") {
+                    message = "Địa chỉ email không hợp lệ.";
+                } else if (err.code === "auth/weak-password") {
+                    message = "Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu tối thiểu 6 ký tự.";
+                } else if (err.code === "auth/operation-not-allowed") {
+                     message = "Lỗi hệ thống: Phương thức Đăng ký Email/Password chưa được BẬT trong Firebase Console.";
+                }
+                alert(message);
+                console.error("Registration error:", err);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Đăng ký';
             }
-            alert(message);
-            console.error("Lỗi đăng nhập Email/Password:", err);
-            
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Đăng nhập';
-        }
         });
     } else {
         console.error("Form đăng ký với ID 'register-form' không tìm thấy.");
