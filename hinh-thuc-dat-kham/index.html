@@ -956,41 +956,49 @@ body.menu-open {
     /**
      * Lưu thông tin đặt khám bước 1 lên Firestore (GIỮ NGUYÊN)
      */
-    async function saveBookingTypeToFirestore(typeId, typeName) {
-        // Kiểm tra userId trước khi lưu
-        if (!db || !userId) {
-            console.error('Lỗi: User ID không khả dụng. Vui lòng đăng nhập.');
-            return false;
-        }
-        
-        let currentBookingId = sessionStorage.getItem('current_booking_id');
-        if (!currentBookingId) {
-            currentBookingId = "BOOKING_" + new Date().getTime().toString(); 
-        }
-        
-        const bookingDocPath = `artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'default-app-id'}/users/${userId}/bookings/${currentBookingId}`;
-        
-        const bookingData = {
-            step: 1, 
-            hospitalId: HOSPITAL_ID,
-            typeId: typeId,
-            typeName: typeName,
-            status: "pending_step_2",
-            timestamp: serverTimestamp(), 
-            lastUpdated: serverTimestamp()
-        };
-
-        try {
-            await setDoc(doc(db, bookingDocPath), bookingData, { merge: true });
-            
-            sessionStorage.setItem('current_booking_id', currentBookingId); 
-            console.log("Lưu dữ liệu bước 1 thành công. ID:", currentBookingId);
-            return true;
-        } catch (e) {
-            console.error("Lỗi khi lưu dữ liệu lên Firestore: ", e);
-            return false;
-        }
+async function saveBookingTypeToFirestore(typeId, typeName) {
+    // Kiểm tra userId trước khi lưu
+    if (!db || !userId) {
+        console.error('Lỗi: User ID không khả dụng. Vui lòng đăng nhập.');
+        return false;
     }
+    
+    let currentBookingId = sessionStorage.getItem('current_booking_id');
+    if (!currentBookingId) {
+        // Tạo ID mới dựa trên thời gian
+        currentBookingId = "BOOKING_" + new Date().getTime().toString(); 
+    }
+    
+    // 🚀 ĐƯỜNG DẪN MỚI, CHUẨN VÀ ỔN ĐỊNH: users/{userId}/bookings/{currentBookingId}
+    // Sử dụng cách viết tường minh: doc(db, Collection, DocumentId, SubCollection, SubDocumentId)
+    const bookingDocRef = doc(db, "users", userId, "bookings", currentBookingId);
+    
+    const bookingData = {
+        userId: userId, // Thêm userId vào data để dễ truy vấn sau này
+        hospitalId: HOSPITAL_ID,
+        typeId: typeId,
+        typeName: typeName,
+        step: 1, 
+        status: "pending_step_2",
+        timestamp: serverTimestamp(), 
+        lastUpdated: serverTimestamp()
+    };
+
+    try {
+        await setDoc(bookingDocRef, bookingData, { merge: true });
+        
+        sessionStorage.setItem('current_booking_id', currentBookingId); 
+        console.log("Lưu dữ liệu bước 1 thành công. ID:", currentBookingId);
+        return true;
+    } catch (e) {
+        console.error("Lỗi khi lưu dữ liệu lên Firestore: ", e);
+        // THÊM: Xử lý lỗi quyền truy cập chi tiết hơn
+        if (e.code === 'permission-denied') {
+             showCustomAlert("Lỗi Quyền Truy Cập: Không thể lưu dữ liệu. Vui lòng kiểm tra lại Security Rules trên Firebase Console.", "error", 'error');
+        }
+        return false;
+    }
+}
 
 
     // --- LOGIC XỬ LÝ CHỌN CARD VÀ NÚT TIẾP TỤC (GIỮ NGUYÊN) ---
