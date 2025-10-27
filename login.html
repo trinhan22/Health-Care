@@ -172,9 +172,9 @@
         browserLocalPersistence,
         GoogleAuthProvider, 
         signInWithPopup,
-        onAuthStateChanged 
+        onAuthStateChanged // ⬅️ CẦN THÊM IMPORT NÀY ⬅️
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    // ⬅️ CÁC HÀM FIRESTORE ⬅️
+    // ⬅️ THÊM CÁC HÀM FIRESTORE ⬅️
     import { 
         getFirestore, 
         doc, 
@@ -195,58 +195,99 @@
         measurementId: "G-2GWB86PCBT"
     };
 
-    // Khởi tạo ứng dụng và các dịch vụ
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    // Khởi tạo ứng dụng và các dịch vụ với xử lý lỗi
+    let app, auth, db;
+    
+    try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        console.log("✅ Firebase khởi tạo thành công!");
+    } catch (error) {
+        console.error("❌ Lỗi khởi tạo Firebase:", error);
+        alert("Lỗi khởi tạo Firebase. Vui lòng kiểm tra console để biết chi tiết.");
+    }
 
     // Định nghĩa URL chuyển hướng mặc định sau khi đăng nhập
-    const REDIRECT_URL = "hinh-thuc-dat-kham.html"; 
+    const REDIRECT_URL = "hinh-thuc-dat-kham"; 
     
     // --- 0. HÀM KIỂM TRA VÀ CHUYỂN HƯỚNG DỰA TRÊN DỮ LIỆU FIRESTORE ---
-    // (Vẫn giữ lại cho Email/Password Login và Auto-redirect)
+    /**
+     * Kiểm tra hồ sơ người dùng trong Firestore. Nếu không tồn tại (Google login lần đầu) thì tạo mới.
+     * Cập nhật thời gian đăng nhập lần cuối và chuyển hướng.
+     */
     async function checkUserRoleAndRedirect(user) {
+        // Kiểm tra xem Firebase đã khởi tạo thành công chưa
+        if (!db) {
+            console.error("❌ Firestore chưa được khởi tạo!");
+            alert("Lỗi kết nối database. Vui lòng tải lại trang và thử lại.");
+            return;
+        }
+
         const userDocRef = doc(db, "users", user.uid);
         
         try {
+            console.log("🔍 Đang kiểm tra dữ liệu người dùng:", user.uid);
             const docSnap = await getDoc(userDocRef);
 
             if (!docSnap.exists()) {
-                // Tạo hồ sơ cơ bản nếu chưa tồn tại
+                console.log("📝 Tạo hồ sơ mới cho người dùng:", user.email);
+                // Tạo hồ sơ cơ bản nếu chưa tồn tại (áp dụng cho Google login lần đầu)
                 await setDoc(userDocRef, {
                     uid: user.uid,
                     email: user.email,
                     displayName: user.displayName || 'Người dùng',
                     role: "patient", 
                     lastLogin: serverTimestamp(),
-                    createdAt: serverTimestamp() 
+                    createdAt: serverTimestamp() // Thêm trường createdAt cho đầy đủ
                 }, { merge: true });
+                console.log("✅ Đã tạo hồ sơ mới thành công!");
             } else {
+                console.log("📝 Cập nhật thời gian đăng nhập cho người dùng:", user.email);
                 // Cập nhật thời gian đăng nhập lần cuối
                 await setDoc(userDocRef, {
                     lastLogin: serverTimestamp()
                 }, { merge: true });
+                console.log("✅ Đã cập nhật thời gian đăng nhập!");
             }
             
+            console.log("🚀 Chuyển hướng đến:", REDIRECT_URL);
             // Chuyển hướng đến URL đã xác định
             window.location.href = REDIRECT_URL;
 
         } catch (e) {
-            console.error("Lỗi kiểm tra dữ liệu người dùng:", e);
-            alert("Lỗi kiểm tra dữ liệu người dùng. Vui lòng kiểm tra console.");
+            console.error("❌ Lỗi kiểm tra dữ liệu người dùng:", e);
+            
+            // Xử lý các loại lỗi cụ thể
+            if (e.code === 'permission-denied') {
+                alert("Lỗi quyền truy cập database. Vui lòng kiểm tra quyền Firestore.");
+            } else if (e.code === 'unavailable') {
+                alert("Database hiện không khả dụng. Vui lòng thử lại sau.");
+            } else if (e.code === 'unauthenticated') {
+                alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+            } else {
+                alert("Lỗi kết nối database: " + e.message + "\nVui lòng kiểm tra console để biết chi tiết.");
+            }
         }
     }
 
-    // --- 1. TỰ ĐỘNG CHUYỂN HƯỚNG NẾU ĐÃ ĐĂNG NHẬP (Vẫn dùng check Firestore) ---
+    // --- 1. TỰ ĐỘNG CHUYỂN HƯỚNG NẾU ĐÃ ĐĂNG NHẬP ---
     onAuthStateChanged(auth, (user) => {
         if (user) {
+            // Nếu đã đăng nhập, kiểm tra và chuyển hướng qua Firestore
             checkUserRoleAndRedirect(user);
         }
     });
 
-    // --- 2. XỬ LÝ LOGIN BẰNG EMAIL/PASSWORD (Vẫn dùng check Firestore) ---
+    // --- 2. XỬ LÝ LOGIN BẰNG EMAIL/PASSWORD ---
     document.getElementById("login-form").addEventListener("submit", async (e) => {
         e.preventDefault();
+        
+        // Kiểm tra Firebase đã khởi tạo chưa
+        if (!auth) {
+            alert("Lỗi khởi tạo Firebase. Vui lòng tải lại trang và thử lại.");
+            return;
+        }
         
         const email = document.getElementById("login-email").value;
         const password = document.getElementById("login-password").value;
@@ -257,37 +298,55 @@
         submitBtn.textContent = 'Đang đăng nhập...';
 
         try {
+            console.log("🔐 Bắt đầu đăng nhập với email:", email);
+            
+            // Thiết lập Persistence
             if (rememberMe) {
                 await setPersistence(auth, browserLocalPersistence);
+                console.log("💾 Đã thiết lập lưu trữ cục bộ");
             } else {
                 await setPersistence(auth, browserSessionPersistence);
+                console.log("💾 Đã thiết lập lưu trữ phiên");
             }
             
+            // Tiến hành đăng nhập
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            console.log("✅ Đăng nhập thành công:", userCredential.user.email);
             
-            // Vẫn gọi hàm kiểm tra Firestore
+            // ⬅️ GỌI HÀM KIỂM TRA VÀ CHUYỂN HƯỚNG ⬅️
             await checkUserRoleAndRedirect(userCredential.user); 
 
         } catch (err) {
+            console.error("❌ Lỗi đăng nhập:", err);
+            
             let message = "Sai email hoặc mật khẩu. Vui lòng kiểm tra lại.";
-            if (err.code === "auth/invalid-credential") {
-                message = "Sai Email hoặc Mật khẩu. Vui lòng kiểm tra lại thông tin đăng nhập.";
+            if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
+                message = "Sai email hoặc mật khẩu. Vui lòng kiểm tra lại.";
             } else if (err.code === "auth/too-many-requests") {
                 message = "Tài khoản của bạn đã bị khóa tạm thời do nhập sai mật khẩu quá nhiều lần. Vui lòng thử lại sau.";
             } else if (err.code === "auth/operation-not-allowed") {
                  message = "Lỗi hệ thống: Phương thức Đăng nhập Email/Password chưa được BẬT trong Firebase Console.";
+            } else if (err.code === "auth/network-request-failed") {
+                message = "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet và thử lại.";
+            } else if (err.code === "auth/invalid-email") {
+                message = "Email không hợp lệ. Vui lòng kiểm tra lại.";
             }
             alert(message);
-            console.error("Lỗi đăng nhập Email/Password:", err);
             
             submitBtn.disabled = false;
             submitBtn.textContent = 'Đăng nhập';
         }
     });
 
-    // --- 3. XỬ LÝ LOGIN BẰNG GOOGLE (KHÔNG CẦN CHECK, CHUYỂN HƯỚNG NGAY) ---
+    // --- 3. XỬ LÝ LOGIN BẰNG GOOGLE (LUÔN GHI NHỚ) ---
     if (document.getElementById("google-login-btn")) {
         document.getElementById("google-login-btn").addEventListener("click", async () => {
+            // Kiểm tra Firebase đã khởi tạo chưa
+            if (!auth) {
+                alert("Lỗi khởi tạo Firebase. Vui lòng tải lại trang và thử lại.");
+                return;
+            }
+            
             const provider = new GoogleAuthProvider();
             
             const googleBtn = document.getElementById("google-login-btn");
@@ -296,17 +355,29 @@
             googleBtn.textContent = 'Đang xử lý...';
             
             try {
+                console.log("🔐 Bắt đầu đăng nhập Google...");
                 await setPersistence(auth, browserLocalPersistence);
                 const result = await signInWithPopup(auth, provider);
+                console.log("✅ Đăng nhập Google thành công:", result.user.email);
                 
-                // 🚀 BỎ QUA checkUserRoleAndRedirect, CHUYỂN HƯỚNG TRỰC TIẾP 🚀
-                window.location.href = REDIRECT_URL; 
+                // ⬅️ GỌI HÀM KIỂM TRA VÀ CHUYỂN HƯỚNG ⬅️
+                await checkUserRoleAndRedirect(result.user); 
                 
             } catch (err) {
-                console.error("Google login error:", err);
-                alert("Đăng nhập bằng Google thất bại: " + err.message);
+                console.error("❌ Lỗi đăng nhập Google:", err);
                 
-                // Kích hoạt lại nút nếu có lỗi
+                let message = "Đăng nhập bằng Google thất bại.";
+                if (err.code === "auth/popup-closed-by-user") {
+                    message = "Đăng nhập bị hủy bởi người dùng.";
+                } else if (err.code === "auth/popup-blocked") {
+                    message = "Popup đăng nhập bị chặn. Vui lòng cho phép popup và thử lại.";
+                } else if (err.code === "auth/network-request-failed") {
+                    message = "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet và thử lại.";
+                } else if (err.code === "auth/operation-not-allowed") {
+                    message = "Đăng nhập Google chưa được bật trong Firebase Console.";
+                }
+                
+                alert(message);
                 googleBtn.disabled = false;
                 googleBtn.textContent = originalText;
             }
